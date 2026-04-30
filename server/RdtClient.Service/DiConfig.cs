@@ -31,15 +31,11 @@ public static class DiConfig
         services.AddScoped<Authentication>();
         services.AddScoped<IDownloads, Downloads>();
         services.AddScoped<Downloads>();
-        services.AddScoped<PremiumizeTorrentClient>();
         services.AddScoped<QBittorrent>();
         services.AddScoped<RemoteService>();
-        services.AddScoped<RealDebridTorrentClient>();
         services.AddScoped<Settings>();
-        services.AddScoped<TorBoxTorrentClient>();
         services.AddScoped<Torrents>();
         services.AddScoped<TorrentRunner>();
-        services.AddScoped<DebridLinkClient>();
 
         services.AddSingleton<IDownloadableFileFilter, DownloadableFileFilter>();
         services.AddSingleton<ITrackerListGrabber, TrackerListGrabber>();

@@ -15,7 +15,7 @@ public class DbSettings
     [Description("")]
     public DbSettingsDownloadClient DownloadClient { get; set; } = new();
 
-    [DisplayName("Provider")]
+    [DisplayName("All Debrid")]
     [Description("")]
     public DbSettingsProvider Provider { get; set; } = new();
 
@@ -125,35 +125,10 @@ public class DbSettingsDownloadClient
 
 public class DbSettingsProvider
 {
-    [DisplayName("Provider")]
-    [Description(@"The following 4 providers are supported:
-<a href=""https://real-debrid.com/?id=1348683"" target=""_blank"" rel=""noopener"">https://real-debrid.com</a>
-<a href=""https://alldebrid.com/?uid=2v91l&lang=en"" target=""_blank"" rel=""noopener"">https://alldebrid.com</a>
-<a href=""https://www.premiumize.me/"" target=""_blank"" rel=""noopener"">https://www.premiumize.me/</a>
-<a href=""https://debrid-link.com/"" target=""_blank"" rel=""noopener"">https://debrid-link.com/</a>
-<a href=""https://torbox.app/"" target=""_blank"" rel=""noopener"">https://torbox.app/</a>
-At this point only 1 provider can be used at the time.")]
-    public Provider Provider { get; set; } = Provider.RealDebrid;
-
     [DisplayName("API Key")]
-    [Description(@"You can find your API key here:
-<a href=""https://real-debrid.com/apitoken"" target=""_blank"" rel=""noopener"">https://real-debrid.com/apitoken</a>
-or
-<a href=""https://alldebrid.com/apikeys/"" target=""_blank"" rel=""noopener"">https://alldebrid.com/apikeys/</a>
-or
-<a href=""https://www.premiumize.me/account/"" target=""_blank"" rel=""noopener"">https://www.premiumize.me/account/</a>
-or
-<a href=""https://torbox.app/settings/"" target=""_blank"" rel=""noopener"">https://torbox.app/settings/</a>
-or
-<a href=""https://debrid-link.com/webapp/apikey"" target=""_blank"" rel=""noopener"">https://debrid-link.com/webapp/apikey</a>")]
+    [Description(@"You can find your AllDebrid API key here:
+<a href=""https://alldebrid.com/apikeys/"" target=""_blank"" rel=""noopener"">https://alldebrid.com/apikeys/</a>")]
     public String ApiKey { get; set; } = "";
-
-    /// <summary>
-    /// API hostname to use <b>for Real Debrid only</b> 
-    /// </summary>
-    [DisplayName("API Hostname (RD only)")]
-    [Description("Use this instead of the normal hostname for Real Debrid API requests. Only used by Real Debrid. Leave blank to use default.")]
-    public String? ApiHostname { get; set; }
 
     [DisplayName("Automatically import and process torrents added to provider")]
     [Description("When selected, import downloads that are not added through RealDebridClient but have been directly added to your debrid provider.")]
@@ -174,10 +149,6 @@ or
     [DisplayName("Max parallel downloads")]
     [Description("Limits the number of torrents that will be sent for downloading on the debrid provider at the same time. If set to 0, all downloads will be sent immediately without queuing.")]
     public Int32 MaxParallelDownloads { get; set; } = 0;
-
-    [DisplayName("Prefer zipped downloads")]
-    [Description("Torbox only. When selected, rdt-client will try to download the entire torrent as a .zip from TorBox and unpack it instead of downloading each file individually.")]
-    public Boolean PreferZippedDownloads { get; set; } = false;
 
     [DisplayName("Auto Import Defaults")]
     public DbSettingsDefaultsWithCategory Default { get; set; } = new();

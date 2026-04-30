@@ -1,6 +1,5 @@
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
-using RdtClient.Data.Enums;
 using RdtClient.Data.Models.Data;
 
 namespace RdtClient.Service.Services;
@@ -27,11 +26,6 @@ public class DownloadableFileFilter(ILogger<DownloadableFileFilter> logger) : ID
 
     private Boolean PassesSizeFilter(Torrent torrent, String filePath, Int64 fileSize)
     {
-        if (torrent is { ClientKind: Provider.RealDebrid, DownloadAction: TorrentDownloadAction.DownloadManual })
-        {
-            return true;
-        }
-
         if (torrent.DownloadMinSize <= 0 || fileSize > torrent.DownloadMinSize * 1024 * 1024)
         {
             return true;

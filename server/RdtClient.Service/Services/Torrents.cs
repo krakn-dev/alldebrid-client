@@ -25,11 +25,7 @@ public class Torrents(
     IProcessFactory processFactory,
     IFileSystem fileSystem,
     IEnricher enricher,
-    AllDebridTorrentClient allDebridTorrentClient,
-    PremiumizeTorrentClient premiumizeTorrentClient,
-    RealDebridTorrentClient realDebridTorrentClient,
-    DebridLinkClient debridLinkClient,
-    TorBoxTorrentClient torBoxTorrentClient)
+    AllDebridTorrentClient allDebridTorrentClient)
 {
     private static readonly SemaphoreSlim RealDebridUpdateLock = new(1, 1);
 
@@ -38,21 +34,7 @@ public class Torrents(
         ReferenceHandler = ReferenceHandler.IgnoreCycles
     };
 
-    private ITorrentClient TorrentClient
-    {
-        get
-        {
-            return Settings.Get.Provider.Provider switch
-            {
-                Provider.Premiumize => premiumizeTorrentClient,
-                Provider.RealDebrid => realDebridTorrentClient,
-                Provider.AllDebrid => allDebridTorrentClient,
-                Provider.DebridLink => debridLinkClient,
-                Provider.TorBox => torBoxTorrentClient,
-                _ => throw new("Invalid Provider")
-            };
-        }
-    }
+    private ITorrentClient TorrentClient => allDebridTorrentClient;
 
     private static readonly SemaphoreSlim TorrentResetLock = new(1, 1);
 
