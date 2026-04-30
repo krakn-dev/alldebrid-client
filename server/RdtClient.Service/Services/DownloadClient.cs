@@ -5,7 +5,7 @@ using RdtClient.Service.Services.Downloaders;
 
 namespace RdtClient.Service.Services;
 
-public class DownloadClient(Download download, Torrent torrent, String destinationPath, String? category)
+public class DownloadClient(Download download, Torrent torrent, String destinationPath)
 {
     private static Int64 _totalBytesDownloadedThisSession;
     private static readonly Lock TotalBytesDownloadedLock = new();

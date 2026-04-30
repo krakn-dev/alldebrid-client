@@ -106,7 +106,7 @@ public class SettingsController(Settings settings, Torrents torrents) : Controll
             }
         };
 
-        var downloadClient = new DownloadClient(download, download.Torrent, downloadPath, null);
+        var downloadClient = new DownloadClient(download, download.Torrent, downloadPath);
 
         await downloadClient.Start();
 

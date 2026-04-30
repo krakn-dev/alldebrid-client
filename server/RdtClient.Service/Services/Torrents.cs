@@ -515,7 +515,7 @@ public class Torrents(
 
         var profile = new Profile
         {
-            Provider = Enum.GetName(Settings.Get.Provider.Provider),
+            Provider = "AllDebrid",
             UserName = user.Username,
             Expiration = user.Expiration,
             CurrentVersion = UpdateChecker.CurrentVersion,
@@ -547,7 +547,7 @@ public class Torrents(
                     var newTorrent = new Torrent
                     {
                         Category = Settings.Get.Provider.Default.Category,
-                        DownloadClient = DownloadClient.Internal,
+                        DownloadClient = Data.Enums.DownloadClient.Internal,
                         DownloadAction = Settings.Get.Provider.Default.OnlyDownloadAvailableFiles ? TorrentDownloadAction.DownloadAvailableFiles : TorrentDownloadAction.DownloadAll,
                         HostDownloadAction = Settings.Get.Provider.Default.HostDownloadAction,
                         FinishedActionDelay = Settings.Get.Provider.Default.FinishedActionDelay,
@@ -568,7 +568,7 @@ public class Torrents(
                         continue;
                     }
 
-                    torrent = await torrentData.Add(rdTorrent.Id, rdTorrent.Hash, null, false, DownloadClient.Internal, newTorrent);
+                    torrent = await torrentData.Add(rdTorrent.Id, rdTorrent.Hash, null, false, Data.Enums.DownloadClient.Internal, newTorrent);
 
                     await UpdateTorrentClientData(torrent, rdTorrent);
                 }

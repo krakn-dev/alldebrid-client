@@ -460,7 +460,7 @@ public class QBittorrent(ILogger<QBittorrent> logger, Settings settings, Authent
         var torrent = new Torrent
         {
             Category = category,
-            DownloadClient = DownloadClient.Internal,
+            DownloadClient = Data.Enums.DownloadClient.Internal,
             HostDownloadAction = Settings.Get.Integrations.Default.HostDownloadAction,
             FinishedActionDelay = Settings.Get.Integrations.Default.FinishedActionDelay,
             DownloadAction = Settings.Get.Integrations.Default.OnlyDownloadAvailableFiles ? TorrentDownloadAction.DownloadAvailableFiles : TorrentDownloadAction.DownloadAll,
@@ -485,7 +485,7 @@ public class QBittorrent(ILogger<QBittorrent> logger, Settings settings, Authent
         var torrent = new Torrent
         {
             Category = category,
-            DownloadClient = DownloadClient.Internal,
+            DownloadClient = Data.Enums.DownloadClient.Internal,
             HostDownloadAction = Settings.Get.Integrations.Default.HostDownloadAction,
             FinishedActionDelay = Settings.Get.Integrations.Default.FinishedActionDelay,
             DownloadAction = Settings.Get.Integrations.Default.OnlyDownloadAvailableFiles ? TorrentDownloadAction.DownloadAvailableFiles : TorrentDownloadAction.DownloadAll,

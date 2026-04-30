@@ -79,7 +79,7 @@ public class WatchFolderChecker(ILogger<WatchFolderChecker> logger, IServiceProv
 
                         var torrent = new Torrent
                         {
-                            DownloadClient = DownloadClient.Internal,
+                            DownloadClient = Data.Enums.DownloadClient.Internal,
                             Category = Settings.Get.Watch.Default.Category,
                             HostDownloadAction = Settings.Get.Watch.Default.HostDownloadAction,
                             FinishedActionDelay = Settings.Get.Watch.Default.FinishedActionDelay,
