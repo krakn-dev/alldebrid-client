@@ -2,9 +2,10 @@
 
 public class AppSettings
 {
+    public String DataPath { get; set; } = "./data";
     public AppSettingsLogging? Logging { get; set; }
     public AppSettingsDatabase? Database { get; set; }
-        
+
     public Int32 Port { get; set; }
     public String? BasePath { get; set; }
 }

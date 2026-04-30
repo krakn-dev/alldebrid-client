@@ -9,12 +9,16 @@ public static class DiConfig
 {
     public static void Config(IServiceCollection services, AppSettings appSettings)
     {
-        if (String.IsNullOrWhiteSpace(appSettings.Database?.Path))
+        var dbPath = appSettings.Database?.Path ?? Path.Combine(appSettings.DataPath, "rdtclient.db");
+
+        if (String.IsNullOrWhiteSpace(dbPath))
         {
-            throw new("Invalid database path found in appSettings");
+            throw new("No database path configured. Set DataPath in appsettings.json (e.g. C:\\ProgramData\\RdtClient).");
         }
 
-        var connectionString = $"Data Source={appSettings.Database.Path}";
+        Directory.CreateDirectory(Path.GetDirectoryName(dbPath)!);
+
+        var connectionString = $"Data Source={dbPath}";
         services.AddDbContext<DataContext>(options => options.UseSqlite(connectionString));
 
         services.AddScoped<DownloadData>();

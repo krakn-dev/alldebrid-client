@@ -43,11 +43,11 @@ public class DbSettingsGeneral
     public Int32 UnpackLimit { get; set; } = 1;
 
     [DisplayName("Categories")]
-    [Description("Expose these categories through the QBittorrent API. Define multiple categories by separating them with a comma.")]
+    [Description("Define available categories, separated by commas.")]
     public String? Categories { get; set; } = null;
 
     [DisplayName("Run external program on torrent completion")]
-    [Description("Path to the executable to run when the torrent and all downloads are finished. No arguments should be passed here.When running in Docker, this command will run on your docker instance!")]
+    [Description("Path to the executable to run when the torrent and all downloads are finished. No arguments should be passed here.")]
     public String? RunOnTorrentCompleteFileName { get; set; } = null;
 
     [DisplayName("External program arguments")]
@@ -91,8 +91,8 @@ Supports the following parameters:
 public class DbSettingsDownloadClient
 {
     [DisplayName("Download path")]
-    [Description("Path in the docker container to download files to (i.e. /data/downloads), or a local path when using as a service.")]
-    public String DownloadPath { get; set; } = "/data/downloads";
+    [Description(@"Path to download files to (e.g. C:\Downloads).")]
+    public String DownloadPath { get; set; } = @"C:\Downloads";
 
     [DisplayName("Mapped path")]
     [Description("Path where files are downloaded to on your host (i.e. D:\\Downloads). This path is used for *arr to find your downloads.")]

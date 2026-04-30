@@ -36,20 +36,21 @@ builder.WebHost.ConfigureKestrel(options =>
     options.ListenAnyIP(appSettings.Port);
 });
 
-if (appSettings.Logging?.File?.Path != null)
-{
-    builder.Host.UseSerilog((_, lc) => lc.Enrich.FromLogContext()
-                                         .WriteTo.File(appSettings.Logging.File.Path,
-                                                       rollOnFileSizeLimit: true,
-                                                       fileSizeLimitBytes: appSettings.Logging.File.FileSizeLimitBytes,
-                                                       retainedFileCountLimit: appSettings.Logging.File.MaxRollingFiles,
-                                                       outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext}: {Message:lj}{NewLine}{Exception}",
-                                                       restrictedToMinimumLevel: LogEventLevel.Verbose)
-                                         .WriteTo.Console()
-                                         .MinimumLevel.ControlledBy(Settings.LoggingLevelSwitch)
-                                         .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-                                         .MinimumLevel.Override("System.Net.Http", LogEventLevel.Warning));
-}
+var logPath = appSettings.Logging?.File?.Path ?? Path.Combine(appSettings.DataPath, "rdtclient.log");
+
+Directory.CreateDirectory(Path.GetDirectoryName(logPath)!);
+
+builder.Host.UseSerilog((_, lc) => lc.Enrich.FromLogContext()
+                                     .WriteTo.File(logPath,
+                                                   rollOnFileSizeLimit: true,
+                                                   fileSizeLimitBytes: appSettings.Logging?.File?.FileSizeLimitBytes ?? 5_242_880,
+                                                   retainedFileCountLimit: appSettings.Logging?.File?.MaxRollingFiles ?? 5,
+                                                   outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext}: {Message:lj}{NewLine}{Exception}",
+                                                   restrictedToMinimumLevel: LogEventLevel.Verbose)
+                                     .WriteTo.Console()
+                                     .MinimumLevel.ControlledBy(Settings.LoggingLevelSwitch)
+                                     .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+                                     .MinimumLevel.Override("System.Net.Http", LogEventLevel.Warning));
 
 Serilog.Debugging.SelfLog.Enable(msg =>
 {
