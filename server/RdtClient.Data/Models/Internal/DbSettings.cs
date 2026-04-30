@@ -15,13 +15,9 @@ public class DbSettings
     [Description("")]
     public DbSettingsDownloadClient DownloadClient { get; set; } = new();
 
-    [DisplayName("All Debrid")]
+    [DisplayName("AllDebrid")]
     [Description("")]
     public DbSettingsProvider Provider { get; set; } = new();
-
-    [DisplayName("qBittorrent / *darr")]
-    [Description("The following settings only apply when a torrent gets added through the qbittorrent API, usually Radarr or Sonarr.")]
-    public DbSettingsIntegrations Integrations { get; set; } = new();
 
     [DisplayName("GUI Defaults")]
     [Description("Settings used when adding a torrent through the web interface.")]
@@ -151,11 +147,6 @@ public class DbSettingsProvider
     public Int32 MaxParallelDownloads { get; set; } = 0;
 
     [DisplayName("Auto Import Defaults")]
-    public DbSettingsDefaultsWithCategory Default { get; set; } = new();
-}
-
-public class DbSettingsIntegrations
-{
     public DbSettingsDefaultsWithCategory Default { get; set; } = new();
 }
 
