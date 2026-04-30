@@ -19,8 +19,8 @@ export class AddNewTorrentComponent implements OnInit {
   public magnetLink: string;
   private currentTorrentFile: string;
 
-  public provider: string;
-  public downloadClient: number;
+  public provider: string = 'AllDebrid';
+  public downloadClient: number = 0;
 
   public category: string;
   public hostDownloadAction: number = 0;
@@ -63,10 +63,6 @@ export class AddNewTorrentComponent implements OnInit {
       }
     });
     this.settingsService.get().subscribe((settings) => {
-      const providerSetting = settings.find((m) => m.key === 'Provider:Provider');
-      this.provider = providerSetting.enumValues[providerSetting.value as number];
-      this.downloadClient = settings.find((m) => m.key === 'DownloadClient:Client')?.value as number;
-
       this.category = settings.find((m) => m.key === 'Gui:Default:Category')?.value as string;
       this.hostDownloadAction = this.downloadAction = settings.find((m) => m.key === 'Gui:Default:HostDownloadAction')
         ?.value as number;
@@ -82,19 +78,7 @@ export class AddNewTorrentComponent implements OnInit {
       this.torrentDeleteOnError = settings.find((m) => m.key === 'Gui:Default:DeleteOnError')?.value as number;
       this.torrentLifetime = settings.find((m) => m.key === 'Gui:Default:TorrentLifetime')?.value as number;
       this.priority = settings.find((m) => m.key === 'Gui:Default:Priority')?.value as number;
-
-      this.setFinishAction();
     });
-  }
-
-  public setFinishAction() {
-    if (this.downloadClient === 2) {
-      if (this.finishedAction === 1) {
-        this.finishedAction = 3;
-      } else if (this.finishedAction === 2) {
-        this.finishedAction = 0;
-      }
-    }
   }
 
   public pickFile(evt: Event): void {

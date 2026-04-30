@@ -43,22 +43,6 @@
     <div class="separator">Advanced settings</div>
 
     <div class="field">
-      <label class="label">Downloader</label>
-      <div class="control select is-fullwidth">
-        <select [(ngModel)]="downloadClient" (ngModelChange)="setFinishAction()">
-          <option [ngValue]="0">Internal Downloader</option>
-          <option [ngValue]="1">Bezzad</option>
-          <option [ngValue]="2">Aria2c</option>
-          <option [ngValue]="3">Symlink Downloader</option>
-          <option [ngValue]="4">Synology DownloadStation</option>
-        </select>
-      </div>
-      <p class="help">
-        Select which downloader is used to download this torrent from the debrid provider to your host.
-      </p>
-    </div>
-
-    <div class="field">
       <label class="label">Post Download Action</label>
       <div class="control select is-fullwidth">
         <select [(ngModel)]="hostDownloadAction">
@@ -142,10 +126,8 @@
       <div class="control select is-fullwidth">
         <select [(ngModel)]="finishedAction">
           <option [ngValue]="0">Do nothing</option>
-          @if (downloadClient !== 2) {
-            <option [ngValue]="1">Remove torrent from provider and client</option>
-            <option [ngValue]="2">Remove torrent from provider</option>
-          }
+          <option [ngValue]="1">Remove torrent from provider and client</option>
+          <option [ngValue]="2">Remove torrent from provider</option>
           <option [ngValue]="3">Remove torrent from client</option>
         </select>
       </div>
