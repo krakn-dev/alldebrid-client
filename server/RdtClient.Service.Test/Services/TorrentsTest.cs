@@ -105,11 +105,7 @@ public class TorrentsTest
                                            mocks.ProcessFactoryMock.Object,
                                            fileSystemMock,
                                            mocks.EnricherMock.Object,
-                                           null!, // Torrent Clients are not used by `RunTorrentComplete`, this is fine
-                                           null!,
-                                           null!,
-                                           null!,
-                                           null!);
+                                           null!); // AllDebridTorrentClient not used by RunTorrentComplete
 
         mocks.ProcessMock.Setup(p => p.WaitForExit(It.IsAny<Int32>())).Returns(true);
 
@@ -171,11 +167,7 @@ public class TorrentsTest
                                            mocks.ProcessFactoryMock.Object,
                                            fileSystemMock,
                                            mocks.EnricherMock.Object,
-                                           null!, // Torrent Clients are not used by `RunTorrentComplete`, this is fine
-                                           null!,
-                                           null!,
-                                           null!,
-                                           null!);
+                                           null!); // AllDebridTorrentClient not used by RunTorrentComplete
 
         //Act
         await torrents.RunTorrentComplete(torrent.TorrentId, settings);
@@ -219,11 +211,7 @@ public class TorrentsTest
                                            mocks.ProcessFactoryMock.Object,
                                            fileSystemMock,
                                            mocks.EnricherMock.Object,
-                                           null!, // Torrent Clients are not used by `RunTorrentComplete`, this is fine
-                                           null!,
-                                           null!,
-                                           null!,
-                                           null!);
+                                           null!); // AllDebridTorrentClient not used by RunTorrentComplete
 
         mocks.ProcessMock.Setup(p => p.WaitForExit(It.IsAny<Int32>()))
              .Callback(() =>
@@ -286,11 +274,7 @@ public class TorrentsTest
                                            mocks.ProcessFactoryMock.Object,
                                            fileSystemMock,
                                            mocks.EnricherMock.Object,
-                                           null!, // Torrent Clients are not used by `RunTorrentComplete`, this is fine
-                                           null!,
-                                           null!,
-                                           null!,
-                                           null!);
+                                           null!); // AllDebridTorrentClient not used by RunTorrentComplete
 
         mocks.ProcessMock.Setup(p => p.WaitForExit(It.IsAny<Int32>()))
              .Callback(() =>
