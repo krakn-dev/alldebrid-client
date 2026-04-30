@@ -40,7 +40,7 @@ export class NavbarComponent implements OnInit {
           this.providerLink = 'https://real-debrid.com/?id=1348683';
           break;
         case 'AllDebrid':
-          this.providerLink = 'https://alldebrid.com/?uid=2v91l&lang=en';
+          this.providerLink = 'https://alldebrid.com/account/';
           break;
         case 'Premiumize':
           this.providerLink = 'https://www.premiumize.me/';
