@@ -1,5 +1,4 @@
-﻿using Aria2NET;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using RdtClient.Data.Enums;
 using RdtClient.Data.Models.Data;
 using RdtClient.Data.Models.Internal;
@@ -16,11 +15,6 @@ public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Dow
     public static readonly ConcurrentDictionary<Guid, DownloadClient> ActiveDownloadClients = new();
     public static readonly ConcurrentDictionary<Guid, UnpackClient> ActiveUnpackClients = new();
 
-    private readonly HttpClient _httpClient = new()
-    {
-        Timeout = TimeSpan.FromSeconds(10)
-    };
-
     public async Task Initialize()
     {
         Log("Initializing TorrentRunner");
@@ -30,8 +24,6 @@ public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Dow
         if (settingsCopy != null)
         {
             settingsCopy.Provider.ApiKey = "*****";
-            settingsCopy.DownloadClient.Aria2cSecret = "*****";
-            settingsCopy.DownloadClient.DownloadStationPassword = "*****";
 
             Log(JsonSerializer.Serialize(settingsCopy));
         }
@@ -99,40 +91,6 @@ public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Dow
         if (!ActiveDownloadClients.IsEmpty || !ActiveUnpackClients.IsEmpty)
         {
             Log($"TorrentRunner Tick Start, {ActiveDownloadClients.Count} active downloads, {ActiveUnpackClients.Count} active unpacks");
-        }
-
-        if (ActiveDownloadClients.Any(m => m.Value.Type == Data.Enums.DownloadClient.Aria2c))
-        {
-            Log("Updating Aria2 status");
-
-            var aria2NetClient = new Aria2NetClient(Settings.Get.DownloadClient.Aria2cUrl, Settings.Get.DownloadClient.Aria2cSecret, _httpClient, 1);
-
-            var allDownloads = await aria2NetClient.TellAllAsync();
-
-            Log($"Found {allDownloads.Count} Aria2 downloads");
-
-            foreach (var activeDownload in ActiveDownloadClients)
-            {
-                if (activeDownload.Value.Downloader is Aria2cDownloader aria2Downloader)
-                {
-                    await aria2Downloader.Update(allDownloads);
-                }
-            }
-
-            Log("Finished updating Aria2 status");
-        }
-
-        if (ActiveDownloadClients.Any(m => m.Value.Type == Data.Enums.DownloadClient.DownloadStation))
-        {
-            Log("Updating DownloadStation status");
-
-            foreach (var activeDownload in ActiveDownloadClients)
-            {
-                if (activeDownload.Value.Downloader is DownloadStationDownloader downloadStationDownloader)
-                {
-                    await downloadStationDownloader.Update();
-                }
-            }
         }
 
         // Check if any torrents are finished downloading to the host, remove them from the active download list.
@@ -353,23 +311,6 @@ public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Dow
 
         foreach (var torrent in torrentsToDelete)
         {
-            if (torrent.DownloadClient == Data.Enums.DownloadClient.Symlink)
-            {
-                switch (torrent.FinishedAction)
-                {
-                    case TorrentFinishedAction.RemoveAllTorrents:
-                        Log($"Force setting FinishedAction to RemoveClient as download client is Symlink and FinishedAction is RemoveAllTorrents", torrent);
-                        torrent.FinishedAction = TorrentFinishedAction.RemoveClient;
-
-                        break;
-                    case TorrentFinishedAction.RemoveRealDebrid:
-                        Log($"Force setting FinishedAction to TorrentFinishedAction.None as download client is Symlink and FinishedAction is RemoveRealDebrid", torrent);
-                        torrent.FinishedAction = TorrentFinishedAction.None;
-
-                        break;
-                }
-            }
-
             switch (torrent.FinishedAction)
             {
                 case TorrentFinishedAction.RemoveAllTorrents:
@@ -421,7 +362,7 @@ public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Dow
                 {
                     Log($"Processing to download", download, torrent);
 
-                    if (ActiveDownloadClients.Count >= settingDownloadLimit && torrent.DownloadClient != Data.Enums.DownloadClient.Symlink)
+                    if (ActiveDownloadClients.Count >= settingDownloadLimit)
                     {
                         Log($"Not starting download because there are already the max number of downloads active", download, torrent);
 
@@ -535,7 +476,6 @@ public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Dow
                     var extension = Path.GetExtension(download.FileName);
 
                     if ((extension != ".rar" && extension != ".zip") ||
-                        torrent.DownloadClient == Data.Enums.DownloadClient.Symlink ||
                         settingUnpackLimit == 0)
                     {
                         Log($"No need to unpack, setting it as unpacked", download, torrent);

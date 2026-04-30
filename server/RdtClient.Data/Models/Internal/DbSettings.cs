@@ -123,46 +123,6 @@ public class DbSettingsDownloadClient
     [Description("Buffersize in bytes for the internal downloader, used to read data and write it to disk.")]
     public Int32 BufferSize { get; set; } = 4 * 1024 * 1024;
 
-    [DisplayName("Connection Timeout (only used for the Internal Downloader)")]
-    [Description("Timeout in milliseconds before the downloader times out.")]
-    public Int32 Timeout { get; set; } = 5000;
-
-    [DisplayName("Proxy Server (only used for the Bezzad Downloader)")]
-    [Description("Address of a proxy server to download through (only used for the Bezzad Downloader).")]
-    public String? ProxyServer { get; set; } = null;
-
-    [DisplayName("Aria2c URL (only used for the Aria2c Downloader)")]
-    [Description(@"This is the URL to your Aria2c instance. It must end in /jsonrpc. A common URL is
-http://127.0.0.1:6800/jsonrpc.")]
-    public String Aria2cUrl { get; set; } = "http://127.0.0.1:6800/jsonrpc";
-
-    [DisplayName("Aria2c Secret (only used for the Aria2c Downloader)")]
-    [Description("The secret of your Aria2c instance. Optional.")]
-    public String Aria2cSecret { get; set; } = "mysecret123";
-
-    [DisplayName("Aria2c Download Path")]
-    [Description("The root path to download the file to on the Aria2c host, if empty use the Download path setting.")]
-    public String? Aria2cDownloadPath { get; set; } = null;
-
-    [DisplayName("Rclone mount path (only used for the Symlink Downloader)")]
-    [Description("Path where Rclone is mounted. Required for Symlink Downloader. Suffix this path with a * to search subdirectories too.")]
-    public String RcloneMountPath { get; set; } = "/mnt/rd/";
-
-    [DisplayName("Synology DownloadStation URL")]
-    [Description("The URL to the Synology DownloadStation. A common URL is http://127.0.0.1:5000")]
-    public String DownloadStationUrl { get; set; } = "http://127.0.0.1:5000";
-
-    [DisplayName("Synology DownloadStation Username")]
-    [Description("The username to use when connecting to the Synology DownloadStation.")]
-    public String? DownloadStationUsername { get; set; } = null;
-    [DisplayName("Synology DownloadStation Password")]
-    [Description("The password to use when connecting to the Synology DownloadStation.")]
-    public String? DownloadStationPassword { get; set; } = null;
-
-    [DisplayName("Synology Download Station Download Path")]
-    [Description("The root path to doawnload the file on the Synology DownloadStation host, if empty use the default DownloadStation path.")]
-    public String? DownloadStationDownloadPath { get; set; } = null;
-
     [DisplayName("Log level")]
     [Description("Only set when trying to debug a download client, can generate a lot of logs.")]
     public DownloadClientLogLevel LogLevel { get; set; } = DownloadClientLogLevel.None;
@@ -282,7 +242,7 @@ public class DbSettingsDefaultsWithCategory : DbSettingsDefaults
 public class DbSettingsDefaults
 {
     [DisplayName("Only download available files on debrid provider")]
-    [Description("When selected, it will only download files in the torrent that have been download by Real-Debrid. You can use this in combination with the Min File size setting above.")]
+    [Description("When selected, it will only download files in the torrent that have been download by AllDebrid. You can use this in combination with the Min File size setting above.")]
     public Boolean OnlyDownloadAvailableFiles { get; set; } = true;
 
     [DisplayName("Minimum file size to download")]

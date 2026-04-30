@@ -141,18 +141,11 @@ public class InternalDownloader : IDownloader
         settingDownloadMaxSpeed /= Math.Max(TorrentRunner.ActiveDownloadClients.Count, 1);
         settingDownloadMaxSpeed = settingDownloadMaxSpeed * 1024 * 1024;
 
-        var settingDownloadTimeout = Settings.Get.DownloadClient.Timeout;
-
-        if (settingDownloadTimeout <= 0)
-        {
-            settingDownloadTimeout = 1000;
-        }
-
         _downloadConfiguration.BufferSize = settingBufferSize;
         _downloadConfiguration.LogLevel = (Int32)Settings.Get.DownloadClient.LogLevel;
         _downloadConfiguration.Parallel = settingDownloadParallelCount;
         _downloadConfiguration.MaximumBytesPerSecond = settingDownloadMaxSpeed;
-        _downloadConfiguration.Timeout = settingDownloadTimeout;
+        _downloadConfiguration.Timeout = 5000;
         _downloadConfiguration.RetryCount = 5;
     }
 

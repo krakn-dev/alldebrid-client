@@ -2,7 +2,6 @@
 using RdtClient.Data.Models.Data;
 using RdtClient.Service.Helpers;
 using RdtClient.Service.Services.Downloaders;
-using RdtClient.Service.Services.TorrentClients;
 
 namespace RdtClient.Service.Services;
 
@@ -43,33 +42,16 @@ public class DownloadClient(Download download, Torrent torrent, String destinati
             var filePath = DownloadHelper.GetDownloadPath(destinationPath, torrent, download);
             var downloadPath = DownloadHelper.GetDownloadPath(torrent, download);
 
-            if (torrent.ClientKind == Provider.AllDebrid && Type == Data.Enums.DownloadClient.Symlink)
-            {
-                downloadPath = AllDebridTorrentClient.GetSymlinkPath(torrent, download);
-            }
-
-            if (torrent.ClientKind == Provider.DebridLink && Type == Data.Enums.DownloadClient.Symlink)
-            {
-                downloadPath = DebridLinkClient.GetSymlinkPath(torrent, download);
-            }
-
             if (filePath == null || downloadPath == null)
             {
                 throw new("Invalid download path");
             }
 
-            if (Type != Data.Enums.DownloadClient.Symlink)
-            {
-                await FileHelper.Delete(filePath);
-            }
+            await FileHelper.Delete(filePath);
 
             Downloader = Type switch
             {
                 Data.Enums.DownloadClient.Internal => new InternalDownloader(download.Link, filePath),
-                Data.Enums.DownloadClient.Bezzad => new BezzadDownloader(download.Link, filePath),
-                Data.Enums.DownloadClient.Aria2c => new Aria2cDownloader(download.RemoteId, download.Link, filePath, downloadPath, category),
-                Data.Enums.DownloadClient.Symlink => new SymlinkDownloader(download.Link, filePath, downloadPath, torrent.ClientKind),
-                Data.Enums.DownloadClient.DownloadStation => await DownloadStationDownloader.Init(download.RemoteId, download.Link, filePath, downloadPath, category),
                 _ => throw new($"Unknown download client {Type}")
             };
 

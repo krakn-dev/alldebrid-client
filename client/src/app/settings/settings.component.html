@@ -54,27 +54,6 @@
           }
         }
         <p class="help" [innerHtml]="setting.description | nl2br"></p>
-        @if (setting.key === "DownloadClient:Aria2cSecret") {
-          <button
-            class="button is-warning"
-            (click)="testAria2cConnection()"
-            [disabled]="saving"
-            [ngClass]="{ 'is-loading': saving }"
-          >
-            Test aria2 connection
-          </button>
-          @if (testAria2cConnectionError) {
-            <div class="notification is-danger is-light" style="margin-top: 1rem">
-              Could connect to Aria2 client<br />
-              {{ testAria2cConnectionError }}
-            </div>
-          }
-          @if (testAria2cConnectionSuccess) {
-            <div class="notification is-success is-light" style="margin-top: 1rem">
-              Found Aria2 client version {{ testAria2cConnectionSuccess }}
-            </div>
-          }
-        }
       </div>
     }
   </div>

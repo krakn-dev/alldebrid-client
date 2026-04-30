@@ -43,10 +43,4 @@ export class SettingsService {
     return this.http.get<number>(`${this.baseHref}Api/Settings/TestWriteSpeed`);
   }
 
-  public testAria2cConnection(url: string, secret: string): Observable<{ version: string }> {
-    return this.http.post<{ version: string }>(`${this.baseHref}Api/Settings/TestAria2cConnection`, {
-      url,
-      secret,
-    });
-  }
 }

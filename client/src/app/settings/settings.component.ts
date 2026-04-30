@@ -30,9 +30,6 @@ export class SettingsComponent implements OnInit {
   public testWriteSpeedError: string;
   public testWriteSpeedSuccess: number;
 
-  public testAria2cConnectionError: string = null;
-  public testAria2cConnectionSuccess: string = null;
-
   public canRegisterMagnetHandler = false;
 
   constructor(private settingsService: SettingsService) {}
@@ -118,30 +115,6 @@ export class SettingsComponent implements OnInit {
       },
       error: (err) => {
         this.testWriteSpeedError = err.error;
-        this.saving = false;
-      },
-    });
-  }
-
-  public testAria2cConnection(): void {
-    const settingAria2cUrl = this.tabs
-      .find((m) => m.key === 'DownloadClient')
-      .settings.find((m) => m.key === 'DownloadClient:Aria2cUrl').value as string;
-    const settingAria2cSecret = this.tabs
-      .find((m) => m.key === 'DownloadClient')
-      .settings.find((m) => m.key === 'DownloadClient:Aria2cSecret').value as string;
-
-    this.saving = true;
-    this.testAria2cConnectionError = null;
-    this.testAria2cConnectionSuccess = null;
-
-    this.settingsService.testAria2cConnection(settingAria2cUrl, settingAria2cSecret).subscribe({
-      next: (result) => {
-        this.saving = false;
-        this.testAria2cConnectionSuccess = result.version;
-      },
-      error: (err) => {
-        this.testAria2cConnectionError = err.error;
         this.saving = false;
       },
     });

@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
-using Aria2NET;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RdtClient.Data.Data;
@@ -8,7 +7,6 @@ using RdtClient.Data.Models.Data;
 using RdtClient.Data.Models.Internal;
 using RdtClient.Service.Helpers;
 using RdtClient.Service.Services;
-using RdtClient.Service.Services.Downloaders;
 
 namespace RdtClient.Web.Controllers;
 
@@ -103,7 +101,7 @@ public class SettingsController(Settings settings, Torrents torrents) : Controll
             Link = "https://34.download.real-debrid.com/speedtest/testDefault.rar",
             Torrent = new()
             {
-                DownloadClient = Settings.Get.DownloadClient.Client == Data.Enums.DownloadClient.Symlink ? Data.Enums.DownloadClient.Internal : Settings.Get.DownloadClient.Client,
+                DownloadClient = Settings.Get.DownloadClient.Client,
                 RdName = "testDefault.rar"
             }
         };
@@ -111,11 +109,6 @@ public class SettingsController(Settings settings, Torrents torrents) : Controll
         var downloadClient = new DownloadClient(download, download.Torrent, downloadPath, null);
 
         await downloadClient.Start();
-
-        var httpClient = new HttpClient
-        {
-            Timeout = TimeSpan.FromSeconds(10)
-        };
 
         while (!downloadClient.Finished)
         {
@@ -126,15 +119,6 @@ public class SettingsController(Settings settings, Torrents torrents) : Controll
                 await downloadClient.Cancel();
             }
 
-            if (downloadClient.Downloader is Aria2cDownloader aria2Downloader)
-            {
-                var aria2NetClient = new Aria2NetClient(Settings.Get.DownloadClient.Aria2cUrl, Settings.Get.DownloadClient.Aria2cSecret, httpClient, 1);
-
-                var allDownloads = await aria2NetClient.TellAllAsync(cancellationToken);
-
-                await aria2Downloader.Update(allDownloads);
-            }
-            
             if (downloadClient.BytesDone > 1024 * 1024 * 50)
             {
                 await downloadClient.Cancel();
@@ -188,35 +172,9 @@ public class SettingsController(Settings settings, Torrents torrents) : Controll
         return Ok(writeSpeed);
     }
 
-    [HttpPost]
-    [Route("TestAria2cConnection")]
-    public async Task<ActionResult<String>> TestAria2cConnection([FromBody] SettingsControllerTestAria2cConnectionRequest? request)
-    {
-        if (request == null)
-        {
-            return BadRequest();
-        }
-
-        if (String.IsNullOrEmpty(request.Url))
-        {
-            return BadRequest("Invalid Url");
-        }
-
-        var client = new Aria2NetClient(request.Url, request.Secret);
-
-        var version = await client.GetVersionAsync();
-
-        return Ok(version);
-    }
 }
 
 public class SettingsControllerTestPathRequest
 {
     public String? Path { get; set; }
-}
-
-public class SettingsControllerTestAria2cConnectionRequest
-{
-    public String? Url { get; set; }
-    public String? Secret { get; set; }
 }
