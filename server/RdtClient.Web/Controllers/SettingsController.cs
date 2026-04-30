@@ -101,7 +101,7 @@ public class SettingsController(Settings settings, Torrents torrents) : Controll
             Link = "https://34.download.real-debrid.com/speedtest/testDefault.rar",
             Torrent = new()
             {
-                DownloadClient = Settings.Get.DownloadClient.Client,
+                DownloadClient = RdtClient.Data.Enums.DownloadClient.Internal,
                 RdName = "testDefault.rar"
             }
         };

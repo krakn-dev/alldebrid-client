@@ -565,7 +565,7 @@ public class Torrents(
                     var newTorrent = new Torrent
                     {
                         Category = Settings.Get.Provider.Default.Category,
-                        DownloadClient = Settings.Get.DownloadClient.Client,
+                        DownloadClient = DownloadClient.Internal,
                         DownloadAction = Settings.Get.Provider.Default.OnlyDownloadAvailableFiles ? TorrentDownloadAction.DownloadAvailableFiles : TorrentDownloadAction.DownloadAll,
                         HostDownloadAction = Settings.Get.Provider.Default.HostDownloadAction,
                         FinishedActionDelay = Settings.Get.Provider.Default.FinishedActionDelay,
@@ -586,7 +586,7 @@ public class Torrents(
                         continue;
                     }
 
-                    torrent = await torrentData.Add(rdTorrent.Id, rdTorrent.Hash, null, false, Settings.Get.DownloadClient.Client, newTorrent);
+                    torrent = await torrentData.Add(rdTorrent.Id, rdTorrent.Hash, null, false, DownloadClient.Internal, newTorrent);
 
                     await UpdateTorrentClientData(torrent, rdTorrent);
                 }
