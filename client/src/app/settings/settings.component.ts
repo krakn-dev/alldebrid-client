@@ -9,7 +9,6 @@ import { FileSizePipe } from '../filesize.pipe';
 @Component({
   selector: 'app-settings',
   templateUrl: './settings.component.html',
-  styleUrls: ['./settings.component.scss'],
   imports: [NgClass, FormsModule, KeyValuePipe, Nl2BrPipe, FileSizePipe],
   standalone: true,
 })

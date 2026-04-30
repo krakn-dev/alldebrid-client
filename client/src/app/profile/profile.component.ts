@@ -6,7 +6,6 @@ import { NgClass } from '@angular/common';
 @Component({
   selector: 'app-profile',
   templateUrl: './profile.component.html',
-  styleUrls: ['./profile.component.scss'],
   imports: [FormsModule, NgClass],
   standalone: true,
 })

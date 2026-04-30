@@ -81,7 +81,7 @@ export class TorrentTableComponent implements OnInit {
     this.selectedTorrents = [];
 
     if (event.target.checked) {
-      this.torrents.map((torrent) => {
+      this.torrents.forEach((torrent) => {
         this.selectedTorrents.push(torrent.torrentId);
       });
     }

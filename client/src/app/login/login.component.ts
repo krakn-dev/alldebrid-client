@@ -7,7 +7,6 @@ import { NgClass } from '@angular/common';
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss'],
   imports: [FormsModule, NgClass],
   standalone: true,
 })
