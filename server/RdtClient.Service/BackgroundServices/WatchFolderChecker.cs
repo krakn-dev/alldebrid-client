@@ -30,22 +30,22 @@ public class WatchFolderChecker(ILogger<WatchFolderChecker> logger, IServiceProv
             {
                 await Task.Delay(1000, stoppingToken);
 
-                if (String.IsNullOrWhiteSpace(Settings.Get.Watch.Path))
+                if (String.IsNullOrWhiteSpace(Settings.Get.Paths.WatchPath))
                 {
                     continue;
                 }
 
-                var processedStorePath = Path.Combine(Settings.Get.Watch.Path, "processed");
-                var errorStorePath = Path.Combine(Settings.Get.Watch.Path, "error");
+                var processedStorePath = Path.Combine(Settings.Get.Paths.WatchPath, "processed");
+                var errorStorePath = Path.Combine(Settings.Get.Paths.WatchPath, "error");
 
-                if (!String.IsNullOrWhiteSpace(Settings.Get.Watch.ProcessedPath))
+                if (!String.IsNullOrWhiteSpace(Settings.Get.Paths.WatchProcessedPath))
                 {
-                    processedStorePath = Settings.Get.Watch.ProcessedPath;
+                    processedStorePath = Settings.Get.Paths.WatchProcessedPath;
                 }
 
-                if (!String.IsNullOrWhiteSpace(Settings.Get.Watch.ErrorPath))
+                if (!String.IsNullOrWhiteSpace(Settings.Get.Paths.WatchErrorPath))
                 {
-                    errorStorePath = Settings.Get.Watch.ErrorPath;
+                    errorStorePath = Settings.Get.Paths.WatchErrorPath;
                 }
 
                 var nextCheck = _prevCheck.AddSeconds(Settings.Get.Watch.Interval);
@@ -57,7 +57,7 @@ public class WatchFolderChecker(ILogger<WatchFolderChecker> logger, IServiceProv
 
                 _prevCheck = DateTime.UtcNow;
 
-                var torrentFiles = Directory.GetFiles(Settings.Get.Watch.Path, "*.*", SearchOption.TopDirectoryOnly);
+                var torrentFiles = Directory.GetFiles(Settings.Get.Paths.WatchPath, "*.*", SearchOption.TopDirectoryOnly);
 
                 foreach (var torrentFile in torrentFiles)
                 {
@@ -80,21 +80,21 @@ public class WatchFolderChecker(ILogger<WatchFolderChecker> logger, IServiceProv
                         var torrent = new Torrent
                         {
                             DownloadClient = Data.Enums.DownloadClient.Internal,
-                            Category = Settings.Get.Watch.Default.Category,
-                            HostDownloadAction = Settings.Get.Watch.Default.HostDownloadAction,
-                            FinishedActionDelay = Settings.Get.Watch.Default.FinishedActionDelay,
-                            DownloadAction = Settings.Get.Watch.Default.OnlyDownloadAvailableFiles
+                            Category = Settings.Get.DownloadClient.Default.Category,
+                            HostDownloadAction = Settings.Get.DownloadClient.Default.HostDownloadAction,
+                            FinishedActionDelay = Settings.Get.DownloadClient.Default.FinishedActionDelay,
+                            DownloadAction = Settings.Get.DownloadClient.Default.OnlyDownloadAvailableFiles
                                 ? TorrentDownloadAction.DownloadAvailableFiles
                                 : TorrentDownloadAction.DownloadAll,
-                            FinishedAction = Settings.Get.Watch.Default.FinishedAction,
-                            DownloadMinSize = Settings.Get.Watch.Default.MinFileSize,
-                            IncludeRegex = Settings.Get.Watch.Default.IncludeRegex,
-                            ExcludeRegex = Settings.Get.Watch.Default.ExcludeRegex,
-                            TorrentRetryAttempts = Settings.Get.Watch.Default.TorrentRetryAttempts,
-                            DownloadRetryAttempts = Settings.Get.Watch.Default.DownloadRetryAttempts,
-                            DeleteOnError = Settings.Get.Watch.Default.DeleteOnError,
-                            Lifetime = Settings.Get.Watch.Default.TorrentLifetime,
-                            Priority = Settings.Get.Watch.Default.Priority > 0 ? Settings.Get.Watch.Default.Priority : null
+                            FinishedAction = Settings.Get.DownloadClient.Default.FinishedAction,
+                            DownloadMinSize = Settings.Get.DownloadClient.Default.MinFileSize,
+                            IncludeRegex = Settings.Get.DownloadClient.Default.IncludeRegex,
+                            ExcludeRegex = Settings.Get.DownloadClient.Default.ExcludeRegex,
+                            TorrentRetryAttempts = Settings.Get.DownloadClient.Default.TorrentRetryAttempts,
+                            DownloadRetryAttempts = Settings.Get.DownloadClient.Default.DownloadRetryAttempts,
+                            DeleteOnError = Settings.Get.DownloadClient.Default.DeleteOnError,
+                            Lifetime = Settings.Get.DownloadClient.Default.TorrentLifetime,
+                            Priority = Settings.Get.DownloadClient.Default.Priority > 0 ? Settings.Get.DownloadClient.Default.Priority : null
                         };
 
                         if (fileInfo.Extension == ".torrent")

@@ -1,4 +1,4 @@
-﻿using RdtClient.Data.Enums;
+using RdtClient.Data.Enums;
 using System.ComponentModel;
 
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
@@ -15,13 +15,13 @@ public class DbSettings
     [Description("")]
     public DbSettingsDownloadClient DownloadClient { get; set; } = new();
 
+    [DisplayName("Paths")]
+    [Description("")]
+    public DbSettingsPaths Paths { get; set; } = new();
+
     [DisplayName("AllDebrid")]
     [Description("")]
     public DbSettingsProvider Provider { get; set; } = new();
-
-    [DisplayName("GUI Defaults")]
-    [Description("Settings used when adding a torrent through the web interface.")]
-    public DbSettingsGui Gui { get; set; } = new();
 
     [DisplayName("Watch")]
     [Description("The following settings only apply when a torrent gets through the watch folder.")]
@@ -67,10 +67,6 @@ Supports the following parameters:
     [Description("How to authenticate with the client. WARNING: when set to None anyone with access to the URL can use the client without any credentials.")]
     public AuthenticationType AuthenticationType { get; set; } = AuthenticationType.None;
 
-    [DisplayName("Copy added torrent files")]
-    [Description("When a torrent file or magnet is added, create a copy in this directory.")]
-    public String? CopyAddedTorrents { get; set; } = null;
-
     [DisplayName("Tracker enrichment list")]
     [Description("Optional. Specify the URL of a tracker list file to be appended to magnet links and torrent files.")]
     public String? TrackerEnrichmentList { get; set; } = null;
@@ -90,14 +86,6 @@ Supports the following parameters:
 
 public class DbSettingsDownloadClient
 {
-    [DisplayName("Download path")]
-    [Description(@"Path to download files to (e.g. C:\Downloads).")]
-    public String DownloadPath { get; set; } = @"C:\Downloads";
-
-    [DisplayName("Mapped path")]
-    [Description("Path where files are downloaded to on your host (i.e. D:\\Downloads). This path is used for *arr to find your downloads.")]
-    public String MappedPath { get; set; } = @"C:\Downloads";
-
     [DisplayName("Download speed (in MB/s) (only used for the Internal Downloader)")]
     [Description("Maximum download speed in Megabytes per second. When set to 0 unlimited speed is used.")]
     public Int32 MaxSpeed { get; set; } = 0;
@@ -117,14 +105,6 @@ public class DbSettingsDownloadClient
     [DisplayName("Log level")]
     [Description("Only set when trying to debug a download client, can generate a lot of logs.")]
     public DownloadClientLogLevel LogLevel { get; set; } = DownloadClientLogLevel.None;
-}
-
-public class DbSettingsProvider
-{
-    [DisplayName("API Key")]
-    [Description(@"You can find your AllDebrid API key here:
-<a href=""https://alldebrid.com/apikeys/"" target=""_blank"" rel=""noopener"">https://alldebrid.com/apikeys/</a>")]
-    public String ApiKey { get; set; } = "";
 
     [DisplayName("Automatically import and process torrents added to provider")]
     [Description("When selected, import downloads that are not added through RealDebridClient but have been directly added to your debrid provider.")]
@@ -134,6 +114,48 @@ public class DbSettingsProvider
     [Description("When selected, cancel and delete downloads that have been removed from your debrid provider.")]
     public Boolean AutoDelete { get; set; } = false;
 
+    [DisplayName("Max parallel downloads")]
+    [Description("Limits the number of torrents that will be sent for downloading on the debrid provider at the same time. If set to 0, all downloads will be sent immediately without queuing.")]
+    public Int32 MaxParallelDownloads { get; set; } = 0;
+
+    [DisplayName("Defaults")]
+    public DbSettingsDefaultsWithCategory Default { get; set; } = new();
+}
+
+public class DbSettingsPaths
+{
+    [DisplayName("Download path")]
+    [Description(@"Path to download files to (e.g. C:\Downloads).")]
+    public String DownloadPath { get; set; } = @"C:\Downloads";
+
+    [DisplayName("Mapped path")]
+    [Description(@"Path where files are downloaded to on your host (e.g. D:\Downloads). This path is used for *arr to find your downloads.")]
+    public String MappedPath { get; set; } = @"C:\Downloads";
+
+    [DisplayName("Copy added torrent files")]
+    [Description("When a torrent file or magnet is added, create a copy in this directory.")]
+    public String? CopyAddedTorrents { get; set; } = null;
+
+    [DisplayName("Watch Path")]
+    [Description("Watch this path for .torrent or .magnet files. When a file is found it will be automatically imported.")]
+    public String? WatchPath { get; set; } = null;
+
+    [DisplayName("Watch Error Path")]
+    [Description(@"When an error occurs the torrent file is moved to this directory. When unset it will be moved to \error in the watch path.")]
+    public String? WatchErrorPath { get; set; } = null;
+
+    [DisplayName("Watch Processed Path")]
+    [Description(@"When a torrent file is added successfully it will be moved to this directory. When unset it will be moved to \processed in the watch path.")]
+    public String? WatchProcessedPath { get; set; } = null;
+}
+
+public class DbSettingsProvider
+{
+    [DisplayName("API Key")]
+    [Description(@"You can find your AllDebrid API key here:
+<a href=""https://alldebrid.com/apikeys/"" target=""_blank"" rel=""noopener"">https://alldebrid.com/apikeys/</a>")]
+    public String ApiKey { get; set; } = "";
+
     [DisplayName("Connection Timeout")]
     [Description("Timeout in seconds to make a connection to the provider. Increase if you experience timeouts in the logs.")]
     public Int32 Timeout { get; set; } = 10;
@@ -141,40 +163,13 @@ public class DbSettingsProvider
     [DisplayName("Check Interval")]
     [Description("The interval to check the torrents info on the providers API. Minumum is 3 seconds. When there are no active downloads this limit is increased * 3.")]
     public Int32 CheckInterval { get; set; } = 10;
-
-    [DisplayName("Max parallel downloads")]
-    [Description("Limits the number of torrents that will be sent for downloading on the debrid provider at the same time. If set to 0, all downloads will be sent immediately without queuing.")]
-    public Int32 MaxParallelDownloads { get; set; } = 0;
-
-    [DisplayName("Auto Import Defaults")]
-    public DbSettingsDefaultsWithCategory Default { get; set; } = new();
-}
-
-public class DbSettingsGui
-{
-    public DbSettingsDefaultsWithCategory Default { get; set; } = new();
 }
 
 public class DbSettingsWatch
 {
-    [DisplayName("Watch Path")]
-    [Description("Watch this path for .torrent or .magnet files. When a file is found it will be automatically imported.")]
-    public String? Path { get; set; } = null;
-
-    [DisplayName("Error Path")]
-    [Description("When an error occurs the torrent file is moved to this directory. When unset it will be moved to /error in the watchpath.")]
-    public String? ErrorPath { get; set; } = null;
-
-    [DisplayName("Processed Path")]
-    [Description("When a torrent file is added succesfully it will be moved to this directory. When unset it will be moved to /processed in the watchpath.")]
-    public String? ProcessedPath { get; set; } = null;
-
-    [DisplayName("Check  Interval")]
+    [DisplayName("Check Interval")]
     [Description("Time in seconds to check the folder for new files.")]
     public Int32 Interval { get; set; } = 60;
-
-    [DisplayName("Import Defaults")]
-    public DbSettingsDefaultsWithCategory Default { get; set; } = new();
 }
 
 public class DbSettingsDefaultsWithCategory : DbSettingsDefaults
@@ -190,7 +185,7 @@ public class DbSettingsDefaultsWithCategory : DbSettingsDefaults
     [DisplayName("Post Download Action")]
     [Description("When all files are downloaded from the provider to the host, perform this action. Does not apply when using the symlink downloader.")]
     public TorrentFinishedAction FinishedAction { get; set; } = TorrentFinishedAction.RemoveAllTorrents;
-    
+
     [DisplayName("Finished Action Delay")]
     [Description("When all files are downloaded from the provider to the host, wait this many minutes before performing the action above.")]
     public Int32 FinishedActionDelay { get; set; } = 0;

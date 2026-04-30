@@ -63,21 +63,21 @@ export class AddNewTorrentComponent implements OnInit {
       }
     });
     this.settingsService.get().subscribe((settings) => {
-      this.category = settings.find((m) => m.key === 'Gui:Default:Category')?.value as string;
-      this.hostDownloadAction = this.downloadAction = settings.find((m) => m.key === 'Gui:Default:HostDownloadAction')
+      this.category = settings.find((m) => m.key === 'DownloadClient:Default:Category')?.value as string;
+      this.hostDownloadAction = this.downloadAction = settings.find((m) => m.key === 'DownloadClient:Default:HostDownloadAction')
         ?.value as number;
       this.downloadAction =
-        settings.find((m) => m.key === 'Gui:Default:OnlyDownloadAvailableFiles')?.value === true ? 1 : 0;
-      this.finishedAction = settings.find((m) => m.key === 'Gui:Default:FinishedAction')?.value as number;
-      this.finishedActionDelay = settings.find((m) => m.key == 'Gui:Default:FinishedActionDelay')?.value as number;
-      this.downloadMinSize = settings.find((m) => m.key === 'Gui:Default:MinFileSize')?.value as number;
-      this.includeRegex = settings.find((m) => m.key === 'Gui:Default:IncludeRegex')?.value as string;
-      this.excludeRegex = settings.find((m) => m.key === 'Gui:Default:ExcludeRegex')?.value as string;
-      this.torrentRetryAttempts = settings.find((m) => m.key === 'Gui:Default:TorrentRetryAttempts')?.value as number;
-      this.downloadRetryAttempts = settings.find((m) => m.key === 'Gui:Default:DownloadRetryAttempts')?.value as number;
-      this.torrentDeleteOnError = settings.find((m) => m.key === 'Gui:Default:DeleteOnError')?.value as number;
-      this.torrentLifetime = settings.find((m) => m.key === 'Gui:Default:TorrentLifetime')?.value as number;
-      this.priority = settings.find((m) => m.key === 'Gui:Default:Priority')?.value as number;
+        settings.find((m) => m.key === 'DownloadClient:Default:OnlyDownloadAvailableFiles')?.value === true ? 1 : 0;
+      this.finishedAction = settings.find((m) => m.key === 'DownloadClient:Default:FinishedAction')?.value as number;
+      this.finishedActionDelay = settings.find((m) => m.key == 'DownloadClient:Default:FinishedActionDelay')?.value as number;
+      this.downloadMinSize = settings.find((m) => m.key === 'DownloadClient:Default:MinFileSize')?.value as number;
+      this.includeRegex = settings.find((m) => m.key === 'DownloadClient:Default:IncludeRegex')?.value as string;
+      this.excludeRegex = settings.find((m) => m.key === 'DownloadClient:Default:ExcludeRegex')?.value as string;
+      this.torrentRetryAttempts = settings.find((m) => m.key === 'DownloadClient:Default:TorrentRetryAttempts')?.value as number;
+      this.downloadRetryAttempts = settings.find((m) => m.key === 'DownloadClient:Default:DownloadRetryAttempts')?.value as number;
+      this.torrentDeleteOnError = settings.find((m) => m.key === 'DownloadClient:Default:DeleteOnError')?.value as number;
+      this.torrentLifetime = settings.find((m) => m.key === 'DownloadClient:Default:TorrentLifetime')?.value as number;
+      this.priority = settings.find((m) => m.key === 'DownloadClient:Default:Priority')?.value as number;
     });
   }
 

@@ -78,7 +78,7 @@ public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Dow
             settingUnpackLimit = 0;
         }
 
-        var settingDownloadPath = Settings.Get.DownloadClient.DownloadPath;
+        var settingDownloadPath = Settings.Get.Paths.DownloadPath;
         if (String.IsNullOrWhiteSpace(settingDownloadPath))
         {
             logger.LogError("No DownloadPath set in settings");
@@ -281,7 +281,7 @@ public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Dow
         {
             var downloadingTorrentsCount = allTorrents.Count(m => m.RdStatus is not (TorrentStatus.Queued or TorrentStatus.Finished or TorrentStatus.Error));
 
-            var maxParallelDownloads = Settings.Get.Provider.MaxParallelDownloads;
+            var maxParallelDownloads = Settings.Get.DownloadClient.MaxParallelDownloads;
 
             logger.LogDebug("Currently downloading {downloadingTorrentCount}/{maxParallelDownloads} torrents, {queuedCount} queued.",
                             downloadingTorrentsCount,

@@ -16,7 +16,7 @@ public class Settings(SettingData settingData)
     {
         get
         {
-            var downloadPath = Get.DownloadClient.MappedPath;
+            var downloadPath = Get.Paths.MappedPath;
 
             downloadPath = downloadPath.TrimEnd('\\')
                                        .TrimEnd('/');

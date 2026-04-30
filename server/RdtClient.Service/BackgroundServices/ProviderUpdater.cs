@@ -28,7 +28,7 @@ public class ProviderUpdater(ILogger<ProviderUpdater> logger, IServiceProvider s
             {
                 var torrents = await torrentService.Get();
 
-                if (_nextUpdate < DateTime.UtcNow && (Settings.Get.Provider.AutoImport || torrents.Any(t => t.RdStatus != TorrentStatus.Finished)))
+                if (_nextUpdate < DateTime.UtcNow && (Settings.Get.DownloadClient.AutoImport || torrents.Any(t => t.RdStatus != TorrentStatus.Finished)))
                 {
                     logger.LogDebug($"Updating torrent info from debrid provider");
                     

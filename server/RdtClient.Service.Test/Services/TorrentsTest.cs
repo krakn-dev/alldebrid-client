@@ -88,7 +88,7 @@ public class TorrentsTest
         mocks.TorrentDataMock.Setup(t => t.GetById(torrent.TorrentId)).Returns(Task.FromResult<Torrent?>(torrent));
         mocks.DownloadsMock.Setup(d => d.GetForTorrent(torrent.TorrentId)).ReturnsAsync(downloads);
 
-        var downloadPath = $"{settings.DownloadClient.DownloadPath}/{torrent.Category}";
+        var downloadPath = $"{settings.Paths.DownloadPath}/{torrent.Category}";
         var torrentPath = $"{downloadPath}/{torrent.RdName}";
         var filePath = $"{torrentPath}/{downloads[0].FileName}";
 
@@ -150,7 +150,7 @@ public class TorrentsTest
         mocks.TorrentDataMock.Setup(t => t.GetById(torrent.TorrentId)).Returns(Task.FromResult<Torrent?>(torrent));
         mocks.DownloadsMock.Setup(d => d.GetForTorrent(torrent.TorrentId)).ReturnsAsync(downloads);
 
-        var downloadPath = $"{settings.DownloadClient.DownloadPath}/{torrent.Category}";
+        var downloadPath = $"{settings.Paths.DownloadPath}/{torrent.Category}";
         var torrentPath = $"{downloadPath}/{torrent.RdName}";
         var filePath = $"{torrentPath}/{downloads[0].FileName}";
 
@@ -194,7 +194,7 @@ public class TorrentsTest
         mocks.TorrentDataMock.Setup(t => t.GetById(torrent.TorrentId)).Returns(Task.FromResult<Torrent?>(torrent));
         mocks.DownloadsMock.Setup(d => d.GetForTorrent(torrent.TorrentId)).ReturnsAsync(downloads);
 
-        var downloadPath = $"{settings.DownloadClient.DownloadPath}/{torrent.Category}";
+        var downloadPath = $"{settings.Paths.DownloadPath}/{torrent.Category}";
         var torrentPath = $"{downloadPath}/{torrent.RdName}";
         var filePath = $"{torrentPath}/{downloads[0].FileName}";
 
@@ -257,7 +257,7 @@ public class TorrentsTest
         mocks.TorrentDataMock.Setup(t => t.GetById(torrent.TorrentId)).Returns(Task.FromResult<Torrent?>(torrent));
         mocks.DownloadsMock.Setup(d => d.GetForTorrent(torrent.TorrentId)).ReturnsAsync(downloads);
 
-        var downloadPath = $"{settings.DownloadClient.DownloadPath}/{torrent.Category}";
+        var downloadPath = $"{settings.Paths.DownloadPath}/{torrent.Category}";
         var torrentPath = $"{downloadPath}/{torrent.RdName}";
         var filePath = $"{torrentPath}/{downloads[0].FileName}";
 
