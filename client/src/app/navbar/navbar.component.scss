@@ -1,5 +1,15 @@
-.no-premium {
-  color: var(--bulma-danger);
+.premium-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--bulma-danger);
+  margin-right: 6px;
+  flex-shrink: 0;
+
+  &.active {
+    background-color: var(--bulma-success);
+  }
 }
 
 .notification {
