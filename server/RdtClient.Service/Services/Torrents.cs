@@ -64,7 +64,7 @@ public class Torrents(
         return torrents;
     }
 
-    public async Task<Torrent?> GetByHash(String hash)
+    public async Task<Torrent?> GetByHash(string hash)
     {
         var torrent = await torrentData.GetByHash(hash);
 
@@ -76,7 +76,7 @@ public class Torrents(
         return torrent;
     }
 
-    public async Task UpdateCategory(String hash, String? category)
+    public async Task UpdateCategory(string hash, string? category)
     {
         var torrent = await torrentData.GetByHash(hash);
 
@@ -90,7 +90,7 @@ public class Torrents(
         await torrentData.UpdateCategory(torrent.TorrentId, category);
     }
 
-    public async Task<Torrent> AddMagnetToDebridQueue(String magnetLink, Torrent torrent)
+    public async Task<Torrent> AddMagnetToDebridQueue(string magnetLink, Torrent torrent)
     {
         var enriched = await enricher.EnrichMagnetLink(magnetLink);
         MagnetLink magnet;
@@ -104,7 +104,7 @@ public class Torrents(
             throw new($"{ex.Message}, trying to parse {magnetLink}");
         }
 
-        if (!String.IsNullOrWhiteSpace(Settings.Get.General.BannedTrackers))
+        if (!string.IsNullOrWhiteSpace(Settings.Get.General.BannedTrackers))
         {
             var bannedTrackers = Settings.Get.General.BannedTrackers.Split(',');
 
@@ -112,7 +112,7 @@ public class Torrents(
             {
                 var bannedTrackerCompare = bannedTracker.Trim().ToLower();
 
-                if (String.IsNullOrWhiteSpace(bannedTrackerCompare))
+                if (string.IsNullOrWhiteSpace(bannedTrackerCompare))
                 {
                     continue;
                 }
@@ -123,7 +123,7 @@ public class Torrents(
 
                     if (bannedUrls.Count > 0)
                     {
-                        var bannedUrlsString = String.Join(", ", bannedUrls);
+                        var bannedUrlsString = string.Join(", ", bannedUrls);
                         throw new($"Cannot add torrent, the torrent contains banned trackers: {bannedUrlsString}.");
                     }
                 }
@@ -148,7 +148,7 @@ public class Torrents(
 
         var enriched = await enricher.EnrichTorrentBytes(bytes);
 
-        String fileAsBase64;
+        string fileAsBase64;
 
         if (enriched.SequenceEqual(bytes))
         {
@@ -170,7 +170,7 @@ public class Torrents(
             throw new($"{ex.Message}, trying to parse {fileAsBase64}");
         }
 
-        if (!String.IsNullOrWhiteSpace(Settings.Get.General.BannedTrackers))
+        if (!string.IsNullOrWhiteSpace(Settings.Get.General.BannedTrackers))
         {
             var bannedTrackers = Settings.Get.General.BannedTrackers.Split(',');
 
@@ -178,12 +178,12 @@ public class Torrents(
             {
                 var bannedTrackerCompare = bannedTracker.Trim().ToLower();
 
-                if (String.IsNullOrWhiteSpace(bannedTrackerCompare))
+                if (string.IsNullOrWhiteSpace(bannedTrackerCompare))
                 {
                     continue;
                 }
 
-                if (!String.IsNullOrWhiteSpace(monoTorrent.Source) && monoTorrent.Source.Contains(bannedTracker))
+                if (!string.IsNullOrWhiteSpace(monoTorrent.Source) && monoTorrent.Source.Contains(bannedTracker))
                 {
                     throw new($"Cannot add torrent, the torrent source '{monoTorrent.Source}' is a banned tracker.");
                 }
@@ -194,7 +194,7 @@ public class Torrents(
 
                     if (bannedUrls.Count > 0)
                     {
-                        var bannedUrlsString = String.Join(", ", bannedUrls);
+                        var bannedUrlsString = string.Join(", ", bannedUrls);
                         throw new($"Cannot add torrent, the torrent contains banned trackers: {bannedUrlsString}.");
                     }
                 }
@@ -215,9 +215,9 @@ public class Torrents(
         return newTorrent;
     }
 
-    private async Task CopyAddedTorrent(String torrentName, Object fileOrMagnet)
+    private async Task CopyAddedTorrent(string torrentName, Object fileOrMagnet)
     {
-        if (!String.IsNullOrWhiteSpace(Settings.Get.Paths.CopyAddedTorrents))
+        if (!string.IsNullOrWhiteSpace(Settings.Get.Paths.CopyAddedTorrents))
         {
             try
             {
@@ -230,7 +230,7 @@ public class Torrents(
 
                 copyFileName = fileOrMagnet switch
                 {
-                    String => $"{copyFileName}.magnet",
+                    string => $"{copyFileName}.magnet",
                     Byte[] => $"{copyFileName}.torrent",
                     _ => throw new ArgumentException("Unexpected type for fileOrMagnet")
                 };
@@ -242,7 +242,7 @@ public class Torrents(
 
                 switch (fileOrMagnet)
                 {
-                    case String magnetLink:
+                    case string magnetLink:
                         await File.WriteAllTextAsync(copyFileName, magnetLink);
                         break;
                     case Byte[] torrentFile:
@@ -295,7 +295,7 @@ public class Torrents(
         }
     }
 
-    public async Task<IList<TorrentClientAvailableFile>> GetAvailableFiles(String hash)
+    public async Task<IList<TorrentClientAvailableFile>> GetAvailableFiles(string hash)
     {
         var result = await TorrentClient.GetAvailableFiles(hash);
 
@@ -347,7 +347,7 @@ public class Torrents(
             // Make sure downloads don't get added multiple times
             var downloadExists = await downloads.Get(torrent.TorrentId, downloadInfo.RestrictedLink);
 
-            if (downloadExists == null && !String.IsNullOrWhiteSpace(downloadInfo.RestrictedLink))
+            if (downloadExists == null && !string.IsNullOrWhiteSpace(downloadInfo.RestrictedLink))
             {
                 await downloads.Add(torrent.TorrentId, downloadInfo);
             }
@@ -370,7 +370,7 @@ public class Torrents(
         await torrentData.UpdateComplete(torrent.TorrentId, "All files excluded", DateTimeOffset.Now, false);
     }
 
-    public async Task Delete(Guid torrentId, Boolean deleteData, Boolean deleteRdTorrent, Boolean deleteLocalFiles)
+    public async Task Delete(Guid torrentId, bool deleteData, bool deleteRdTorrent, bool deleteLocalFiles)
     {
         var torrent = await GetById(torrentId);
 
@@ -444,7 +444,7 @@ public class Torrents(
             }
         }
 
-        if (deleteLocalFiles && !String.IsNullOrWhiteSpace(torrent.RdName))
+        if (deleteLocalFiles && !string.IsNullOrWhiteSpace(torrent.RdName))
         {
             var downloadPath = DownloadPath(torrent);
             downloadPath = Path.Combine(downloadPath, torrent.RdName);
@@ -479,7 +479,7 @@ public class Torrents(
         }
     }
 
-    public async Task<String> UnrestrictLink(Guid downloadId)
+    public async Task<string> UnrestrictLink(Guid downloadId)
     {
         var download = await downloads.GetById(downloadId) ?? throw new($"Download with ID {downloadId} not found");
 
@@ -496,7 +496,7 @@ public class Torrents(
     /// To be called only when <see cref="Data.Models.Data.Download" />.<see cref="Data.Models.Data.Download.FileName" /> is not set by
     /// <see cref="ITorrentClient.GetDownloadInfos" />
     /// </summary>
-    public async Task<String> RetrieveFileName(Guid downloadId)
+    public async Task<string> RetrieveFileName(Guid downloadId)
     {
         var download = await downloads.GetById(downloadId) ?? throw new($"Download with ID {downloadId} not found");
 
@@ -594,7 +594,7 @@ public class Torrents(
         }
     }
 
-    public async Task RetryTorrent(Guid torrentId, Int32 retryCount)
+    public async Task RetryTorrent(Guid torrentId, int retryCount)
     {
         await TorrentResetLock.WaitAsync();
 
@@ -637,7 +637,7 @@ public class Torrents(
 
             await Delete(torrentId, true, true, true);
 
-            if (String.IsNullOrWhiteSpace(torrent.FileOrMagnet))
+            if (string.IsNullOrWhiteSpace(torrent.FileOrMagnet))
             {
                 throw new($"Cannot re-add this torrent, original magnet or file not found");
             }
@@ -706,7 +706,7 @@ public class Torrents(
         await torrentData.UpdateComplete(download.TorrentId, null, null, false);
     }
 
-    public async Task UpdateComplete(Guid torrentId, String? error, DateTimeOffset datetime, Boolean retry)
+    public async Task UpdateComplete(Guid torrentId, string? error, DateTimeOffset datetime, bool retry)
     {
         await torrentData.UpdateComplete(torrentId, error, datetime, retry);
     }
@@ -716,7 +716,7 @@ public class Torrents(
         await torrentData.UpdateFilesSelected(torrentId, datetime);
     }
 
-    public async Task UpdatePriority(String hash, Int32 priority)
+    public async Task UpdatePriority(string hash, int priority)
     {
         var torrent = await torrentData.GetByHash(hash);
 
@@ -728,12 +728,12 @@ public class Torrents(
         await torrentData.UpdatePriority(torrent.TorrentId, priority);
     }
 
-    public async Task UpdateRetry(Guid torrentId, DateTimeOffset? datetime, Int32 retry)
+    public async Task UpdateRetry(Guid torrentId, DateTimeOffset? datetime, int retry)
     {
         await torrentData.UpdateRetry(torrentId, datetime, retry);
     }
 
-    public async Task UpdateError(Guid torrentId, String error)
+    public async Task UpdateError(Guid torrentId, string error)
     {
         await torrentData.UpdateError(torrentId, error);
     }
@@ -768,11 +768,11 @@ public class Torrents(
         return torrent;
     }
 
-    private static String DownloadPath(Torrent torrent)
+    private static string DownloadPath(Torrent torrent)
     {
         var settingDownloadPath = Settings.Get.Paths.DownloadPath;
 
-        if (!String.IsNullOrWhiteSpace(torrent.Category))
+        if (!string.IsNullOrWhiteSpace(torrent.Category))
         {
             settingDownloadPath = Path.Combine(settingDownloadPath, torrent.Category);
         }
@@ -780,9 +780,9 @@ public class Torrents(
         return settingDownloadPath;
     }
 
-    private async Task<Torrent> AddQueued(String infoHash,
-                                          String fileOrMagnetContents,
-                                          Boolean isFile,
+    private async Task<Torrent> AddQueued(string infoHash,
+                                          string fileOrMagnetContents,
+                                          bool isFile,
                                           Torrent torrent)
     {
         var existingTorrent = await torrentData.GetByHash(infoHash);
@@ -811,7 +811,7 @@ public class Torrents(
     {
         settings ??= Settings.Get;
 
-        if (String.IsNullOrWhiteSpace(settings.General.RunOnTorrentCompleteFileName))
+        if (string.IsNullOrWhiteSpace(settings.General.RunOnTorrentCompleteFileName))
         {
             return;
         }
@@ -925,7 +925,7 @@ public class Torrents(
         }
     }
 
-    private void Log(String message, Download? download, Torrent? torrent)
+    private void Log(string message, Download? download, Torrent? torrent)
     {
         if (download != null)
         {
@@ -940,7 +940,7 @@ public class Torrents(
         logger.LogDebug(message);
     }
 
-    private void Log(String message, Torrent? torrent = null)
+    private void Log(string message, Torrent? torrent = null)
     {
         if (torrent != null)
         {

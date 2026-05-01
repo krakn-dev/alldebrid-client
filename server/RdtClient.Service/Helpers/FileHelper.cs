@@ -4,9 +4,9 @@ namespace RdtClient.Service.Helpers;
 
 public static class FileHelper
 {
-    public static async Task Delete(String path)
+    public static async Task Delete(string path)
     {
-        if (String.IsNullOrWhiteSpace(path))
+        if (string.IsNullOrWhiteSpace(path))
         {
             return;
         }
@@ -40,9 +40,9 @@ public static class FileHelper
         }
     }
 
-    public static async Task DeleteDirectory(String path)
+    public static async Task DeleteDirectory(string path)
     {
-        if (String.IsNullOrWhiteSpace(path))
+        if (string.IsNullOrWhiteSpace(path))
         {
             return;
         }
@@ -76,19 +76,19 @@ public static class FileHelper
         }
     }
 
-    public static String RemoveInvalidFileNameChars(String filename)
+    public static string RemoveInvalidFileNameChars(string filename)
     {
-        return String.Concat(filename.Split(Path.GetInvalidFileNameChars()));
+        return string.Concat(filename.Split(Path.GetInvalidFileNameChars()));
     }
     
-    public static String GetDirectoryContents(String path)
+    public static string GetDirectoryContents(string path)
     {
         var stringBuilder = new StringBuilder();
         GetDirectoryContents(path, stringBuilder, "");
         return stringBuilder.ToString();
     }
 
-    private static void GetDirectoryContents(String path, StringBuilder stringBuilder, String indent)
+    private static void GetDirectoryContents(string path, StringBuilder stringBuilder, string indent)
     {
         var directoryInfo = new DirectoryInfo(path);
 

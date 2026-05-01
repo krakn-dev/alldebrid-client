@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using System.Web;
 using Microsoft.Extensions.Logging;
 using MonoTorrent.BEncoding;
@@ -7,7 +7,7 @@ namespace RdtClient.Service.Services;
 
 public interface IEnricher
 {
-    Task<String> EnrichMagnetLink(String magnetLink);
+    Task<string> EnrichMagnetLink(string magnetLink);
     Task<Byte[]> EnrichTorrentBytes(Byte[] torrentBytes);
 }
 
@@ -21,7 +21,7 @@ public sealed class Enricher(ILogger<Enricher> logger, ITrackerListGrabber track
     /// </summary>
     /// <param name="magnetLink">Magnet link to add trackers to. Is not modified</param>
     /// <returns>Magnet link with additional trackers</returns>
-    public async Task<String> EnrichMagnetLink(String magnetLink)
+    public async Task<string> EnrichMagnetLink(string magnetLink)
     {
         var newTrackers = await trackerListGrabber.GetTrackers().ConfigureAwait(false);
 
@@ -65,9 +65,9 @@ public sealed class Enricher(ILogger<Enricher> logger, ITrackerListGrabber track
 
         var queryKVs = HttpUtility.ParseQueryString(queryPart);
 
-        var paramDict = new Dictionary<String, List<String>>(StringComparer.OrdinalIgnoreCase);
+        var paramDict = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (String key in queryKVs)
+        foreach (string key in queryKVs)
         {
             if (key == null)
             {
@@ -84,7 +84,7 @@ public sealed class Enricher(ILogger<Enricher> logger, ITrackerListGrabber track
 
         var existingTrackers = paramDict.TryGetValue("tr", out var value)
             ? new(value, StringComparer.OrdinalIgnoreCase)
-            : new HashSet<String>(StringComparer.OrdinalIgnoreCase);
+            : new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         paramDict.Remove("tr");
 
@@ -95,7 +95,7 @@ public sealed class Enricher(ILogger<Enricher> logger, ITrackerListGrabber track
             existingTrackers.Add(tr);
         }
 
-        var outParams = new List<String>();
+        var outParams = new List<string>();
 
         foreach (var kv in paramDict)
         {
@@ -117,7 +117,7 @@ public sealed class Enricher(ILogger<Enricher> logger, ITrackerListGrabber track
             outParams.Add($"tr={Uri.EscapeDataString(tr)}");
         }
 
-        var finalMagnet = schemePart + "?" + String.Join("&", outParams);
+        var finalMagnet = schemePart + "?" + string.Join("&", outParams);
 
         logger.LogInformation("Added {NewTrackersCount} new trackers to the magnet link. Total trackers: {TotalTrackersCount}.",
                               newUniqueTrackers.Count,
@@ -160,8 +160,8 @@ public sealed class Enricher(ILogger<Enricher> logger, ITrackerListGrabber track
             return torrentBytes;
         }
 
-        var seenTrackers = new HashSet<String>(StringComparer.OrdinalIgnoreCase);
-        var allTrackers = new List<String>();
+        var seenTrackers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var allTrackers = new List<string>();
 
         if (torrentDict.TryGetValue("announce-list", out var alc) && alc is BEncodedList alList)
         {

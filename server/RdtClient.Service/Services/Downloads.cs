@@ -16,7 +16,7 @@ public class Downloads(DownloadData downloadData) : IDownloads
         return await downloadData.GetById(downloadId);
     }
 
-    public async Task<Download?> Get(Guid torrentId, String path)
+    public async Task<Download?> Get(Guid torrentId, string path)
     {
         return await downloadData.Get(torrentId, path);
     }
@@ -26,12 +26,12 @@ public class Downloads(DownloadData downloadData) : IDownloads
         return await downloadData.Add(torrentId, downloadInfo);
     }
 
-    public async Task UpdateUnrestrictedLink(Guid downloadId, String unrestrictedLink)
+    public async Task UpdateUnrestrictedLink(Guid downloadId, string unrestrictedLink)
     {
         await downloadData.UpdateUnrestrictedLink(downloadId, unrestrictedLink);
     }
 
-    public async Task UpdateFileName(Guid downloadId, String fileName)
+    public async Task UpdateFileName(Guid downloadId, string fileName)
     {
         await downloadData.UpdateFileName(downloadId, fileName);
     }
@@ -66,17 +66,17 @@ public class Downloads(DownloadData downloadData) : IDownloads
         await downloadData.UpdateCompleted(downloadId, dateTime);
     }
 
-    public async Task UpdateError(Guid downloadId, String? error)
+    public async Task UpdateError(Guid downloadId, string? error)
     {
         await downloadData.UpdateError(downloadId, error);
     }
     
-    public async Task UpdateRetryCount(Guid downloadId, Int32 retryCount)
+    public async Task UpdateRetryCount(Guid downloadId, int retryCount)
     {
         await downloadData.UpdateRetryCount(downloadId, retryCount);
     }
 
-    public async Task UpdateRemoteId(Guid downloadId, String remoteId)
+    public async Task UpdateRemoteId(Guid downloadId, string remoteId)
     {
         await downloadData.UpdateRemoteId(downloadId, remoteId);
     }

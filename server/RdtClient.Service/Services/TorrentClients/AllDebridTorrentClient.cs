@@ -24,7 +24,7 @@ public class AllDebridNetClientFactory(ILogger<AllDebridNetClientFactory> logger
         {
             var apiKey = Settings.Get.Provider.ApiKey;
 
-            if (String.IsNullOrWhiteSpace(apiKey))
+            if (string.IsNullOrWhiteSpace(apiKey))
             {
                 throw new("All-Debrid API Key not set in the settings");
             }
@@ -53,9 +53,9 @@ public class AllDebridNetClientFactory(ILogger<AllDebridNetClientFactory> logger
 
 public class AllDebridTorrentClient(ILogger<AllDebridTorrentClient> logger, IAllDebridNetClientFactory allDebridNetClientFactory, IDownloadableFileFilter fileFilter) : ITorrentClient
 {
-    private static readonly Int64 SessionId = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+    private static readonly long SessionId = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
     private static List<TorrentClientTorrent> _cache = [];
-    private static Int64 _sessionCounter = 0;
+    private static long _sessionCounter = 0;
 
     private static TorrentClientTorrent Map(Magnet torrent)
     {
@@ -70,7 +70,7 @@ public class AllDebridTorrentClient(ILogger<AllDebridTorrentClient> logger, IAll
             OriginalBytes = torrent.Size ?? 0,
             Host = null,
             Split = 0,
-            Progress = (Int64)Math.Round((torrent.Downloaded ?? 0) * 100.0 / (torrent.Size ?? 1)),
+            Progress = (long)Math.Round((torrent.Downloaded ?? 0) * 100.0 / (torrent.Size ?? 1)),
             Status = torrent.Status,
             StatusCode = torrent.StatusCode ?? 0,
             Added = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(torrent.UploadDate ?? 0),
@@ -122,7 +122,7 @@ public class AllDebridTorrentClient(ILogger<AllDebridTorrentClient> logger, IAll
         };
     }
 
-    public async Task<String> AddMagnet(String magnetLink)
+    public async Task<string> AddMagnet(string magnetLink)
     {
         var result = await allDebridNetClientFactory.GetClient().Magnet.UploadMagnetAsync(magnetLink);
 
@@ -136,7 +136,7 @@ public class AllDebridTorrentClient(ILogger<AllDebridTorrentClient> logger, IAll
         return resultId;
     }
 
-    public async Task<String> AddFile(Byte[] bytes)
+    public async Task<string> AddFile(Byte[] bytes)
     {
         var result = await allDebridNetClientFactory.GetClient().Magnet.UploadFileAsync(bytes);
 
@@ -150,23 +150,23 @@ public class AllDebridTorrentClient(ILogger<AllDebridTorrentClient> logger, IAll
         return resultId;
     }
 
-    public Task<IList<TorrentClientAvailableFile>> GetAvailableFiles(String hash)
+    public Task<IList<TorrentClientAvailableFile>> GetAvailableFiles(string hash)
     {
         return Task.FromResult<IList<TorrentClientAvailableFile>>([]);
     }
 
     /// <inheritdoc />
-    public Task<Int32?> SelectFiles(Torrent torrent)
+    public Task<int?> SelectFiles(Torrent torrent)
     {
-        return Task.FromResult<Int32?>(torrent.Files.Count);
+        return Task.FromResult<int?>(torrent.Files.Count);
     }
 
-    public async Task Delete(String torrentId)
+    public async Task Delete(string torrentId)
     {
         await allDebridNetClientFactory.GetClient().Magnet.DeleteAsync(torrentId);
     }
 
-    public async Task<String> Unrestrict(String link)
+    public async Task<string> Unrestrict(string link)
     {
         var result = await allDebridNetClientFactory.GetClient().Links.DownloadLinkAsync(link);
 
@@ -189,7 +189,7 @@ public class AllDebridTorrentClient(ILogger<AllDebridTorrentClient> logger, IAll
 
             torrentClientTorrent ??= await GetInfo(torrent.RdId);
 
-            if (!String.IsNullOrWhiteSpace(torrentClientTorrent.Filename))
+            if (!string.IsNullOrWhiteSpace(torrentClientTorrent.Filename))
             {
                 torrent.RdName = torrentClientTorrent.Filename;
             }
@@ -255,7 +255,7 @@ public class AllDebridTorrentClient(ILogger<AllDebridTorrentClient> logger, IAll
         
         Log($"Getting download links", torrent);
         
-        var allFiles = await allDebridNetClientFactory.GetClient().Magnet.FilesAsync(Int64.Parse(torrent.RdId));
+        var allFiles = await allDebridNetClientFactory.GetClient().Magnet.FilesAsync(long.Parse(torrent.RdId));
 
         var files = GetFiles(allFiles);
         
@@ -267,7 +267,7 @@ public class AllDebridTorrentClient(ILogger<AllDebridTorrentClient> logger, IAll
     }
 
     /// <inheritdoc />
-    public Task<String> GetFileName(Download download)
+    public Task<string> GetFileName(Download download)
     {
         // FileName is set in GetDownlaadInfos
         Debug.Assert(download.FileName != null);
@@ -275,14 +275,14 @@ public class AllDebridTorrentClient(ILogger<AllDebridTorrentClient> logger, IAll
         return Task.FromResult(download.FileName);
     }
 
-    private async Task<TorrentClientTorrent> GetInfo(String torrentId)
+    private async Task<TorrentClientTorrent> GetInfo(string torrentId)
     {
         var result = await allDebridNetClientFactory.GetClient().Magnet.StatusAsync(torrentId) ?? throw new($"Unable to find magnet with ID {torrentId}");
 
         return Map(result);
     }
     
-    private static List<TorrentClientFile> GetFiles(List<File>? files, String parentPath = "")
+    private static List<TorrentClientFile> GetFiles(List<File>? files, string parentPath = "")
     {
         if (files == null)
         {
@@ -291,7 +291,7 @@ public class AllDebridTorrentClient(ILogger<AllDebridTorrentClient> logger, IAll
 
         return files.SelectMany(file =>
         {
-            var currentPath = String.IsNullOrEmpty(parentPath) 
+            var currentPath = string.IsNullOrEmpty(parentPath) 
                 ? file.FolderOrFileName 
                 : Path.Combine(parentPath, file.FolderOrFileName);
 
@@ -318,7 +318,7 @@ public class AllDebridTorrentClient(ILogger<AllDebridTorrentClient> logger, IAll
         }).ToList();
     }
 
-    private void Log(String message, Torrent? torrent = null)
+    private void Log(string message, Torrent? torrent = null)
     {
         if (torrent != null)
         {
@@ -328,7 +328,7 @@ public class AllDebridTorrentClient(ILogger<AllDebridTorrentClient> logger, IAll
         logger.LogDebug(message);
     }
 
-    public static String? GetSymlinkPath(Torrent torrent, Download download)
+    public static string? GetSymlinkPath(Torrent torrent, Download download)
     {
         var fileName = DownloadHelper.GetFileName(download);
 
@@ -339,7 +339,7 @@ public class AllDebridTorrentClient(ILogger<AllDebridTorrentClient> logger, IAll
         
         var directory = DownloadHelper.RemoveInvalidPathChars(torrent.RdName);
 
-        var matchingTorrentFiles = torrent.Files.Where(m => m.Path.EndsWith(fileName)).Where(m => !String.IsNullOrWhiteSpace(m.Path)).ToList();
+        var matchingTorrentFiles = torrent.Files.Where(m => m.Path.EndsWith(fileName)).Where(m => !string.IsNullOrWhiteSpace(m.Path)).ToList();
 
         if (matchingTorrentFiles.Count == 0)
         {

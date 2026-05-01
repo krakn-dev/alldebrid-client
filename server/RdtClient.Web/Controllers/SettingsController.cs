@@ -7,6 +7,7 @@ using RdtClient.Data.Models.Data;
 using RdtClient.Data.Models.Internal;
 using RdtClient.Service.Helpers;
 using RdtClient.Service.Services;
+using RdtClient.Web.Models.Requests;
 
 namespace RdtClient.Web.Controllers;
 
@@ -65,7 +66,7 @@ public class SettingsController(Settings settings, Torrents torrents) : Controll
             return BadRequest();
         }
 
-        if (String.IsNullOrEmpty(request.Path))
+        if (string.IsNullOrEmpty(request.Path))
         {
             return BadRequest("Invalid path");
         }
@@ -142,7 +143,7 @@ public class SettingsController(Settings settings, Torrents torrents) : Controll
 
         await FileHelper.Delete(testFilePath);
 
-        const Int32 testFileSize = 64 * 1024 * 1024;
+        const int testFileSize = 64 * 1024 * 1024;
 
         var watch = new Stopwatch();
 
@@ -152,7 +153,7 @@ public class SettingsController(Settings settings, Torrents torrents) : Controll
 
         await using var fileStream = new FileStream(testFilePath, FileMode.Create, FileAccess.Write, FileShare.Write);
 
-        var buffer = new Byte[64 * 1024];
+        var buffer = new byte[64 * 1024];
 
         while (fileStream.Length < testFileSize)
         {
@@ -172,9 +173,4 @@ public class SettingsController(Settings settings, Torrents torrents) : Controll
         return Ok(writeSpeed);
     }
 
-}
-
-public class SettingsControllerTestPathRequest
-{
-    public String? Path { get; set; }
 }

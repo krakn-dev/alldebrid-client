@@ -6,11 +6,11 @@ namespace RdtClient.Service.Helpers;
 
 public static class DownloadHelper
 {
-    public static String? GetDownloadPath(String downloadPath, Torrent torrent, Download download, IFileSystem? fileSystem = null)
+    public static string? GetDownloadPath(string downloadPath, Torrent torrent, Download download, IFileSystem? fileSystem = null)
     {
         var fileUrl = download.Link;
 
-        if (String.IsNullOrWhiteSpace(fileUrl) || torrent.RdName == null)
+        if (string.IsNullOrWhiteSpace(fileUrl) || torrent.RdName == null)
         {
             return null;
         }
@@ -26,7 +26,7 @@ public static class DownloadHelper
             return null;
         }
 
-        var matchingTorrentFiles = torrent.Files.Where(m => m.Path.EndsWith(fileName)).Where(m => !String.IsNullOrWhiteSpace(m.Path)).ToList();
+        var matchingTorrentFiles = torrent.Files.Where(m => m.Path.EndsWith(fileName)).Where(m => !string.IsNullOrWhiteSpace(m.Path)).ToList();
 
         if (matchingTorrentFiles.Count > 0)
         {
@@ -34,7 +34,7 @@ public static class DownloadHelper
 
             var subPath = Path.GetDirectoryName(matchingTorrentFile.Path);
 
-            if (!String.IsNullOrWhiteSpace(subPath))
+            if (!string.IsNullOrWhiteSpace(subPath))
             {
                 subPath = subPath.Trim('/').Trim('\\');
 
@@ -54,11 +54,11 @@ public static class DownloadHelper
         return filePath;
     }
 
-    public static String? GetDownloadPath(Torrent torrent, Download download)
+    public static string? GetDownloadPath(Torrent torrent, Download download)
     {
         var fileUrl = download.Link;
 
-        if (String.IsNullOrWhiteSpace(fileUrl) || torrent.RdName == null)
+        if (string.IsNullOrWhiteSpace(fileUrl) || torrent.RdName == null)
         {
             return null;
         }
@@ -68,14 +68,14 @@ public static class DownloadHelper
 
         var fileName = download.FileName;
 
-        if (String.IsNullOrWhiteSpace(fileName))
+        if (string.IsNullOrWhiteSpace(fileName))
         {
             fileName = uri.Segments.Last();
 
             fileName = HttpUtility.UrlDecode(fileName);
         }
 
-        var matchingTorrentFiles = torrent.Files.Where(m => m.Path.EndsWith(fileName)).Where(m => !String.IsNullOrWhiteSpace(m.Path)).ToList();
+        var matchingTorrentFiles = torrent.Files.Where(m => m.Path.EndsWith(fileName)).Where(m => !string.IsNullOrWhiteSpace(m.Path)).ToList();
 
         if (matchingTorrentFiles.Count > 0)
         {
@@ -83,7 +83,7 @@ public static class DownloadHelper
 
             var subPath = Path.GetDirectoryName(matchingTorrentFile.Path);
 
-            if (!String.IsNullOrWhiteSpace(subPath))
+            if (!string.IsNullOrWhiteSpace(subPath))
             {
                 subPath = subPath.Trim('/').Trim('\\');
 
@@ -96,16 +96,16 @@ public static class DownloadHelper
         return filePath;
     }
 
-    public static String? GetFileName(Download download)
+    public static string? GetFileName(Download download)
     {
-        if (String.IsNullOrWhiteSpace(download.Link))
+        if (string.IsNullOrWhiteSpace(download.Link))
         {
             return null;
         }
 
         var fileName = download.FileName;
 
-        if (String.IsNullOrWhiteSpace(fileName))
+        if (string.IsNullOrWhiteSpace(fileName))
         {
             fileName = HttpUtility.UrlDecode(new Uri(download.Link).Segments.Last());
         }
@@ -113,8 +113,8 @@ public static class DownloadHelper
         return FileHelper.RemoveInvalidFileNameChars(fileName);
     }
 
-    public static String RemoveInvalidPathChars(String path)
+    public static string RemoveInvalidPathChars(string path)
     {
-        return String.Concat(path.Split(Path.GetInvalidPathChars()));
+        return string.Concat(path.Split(Path.GetInvalidPathChars()));
     }
 }

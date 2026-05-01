@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace RdtClient.Service.Wrappers;
 
@@ -12,8 +12,8 @@ public class Process : IProcess
         set => _process.StartInfo = value;
     }
 
-    public event EventHandler<String?>? OutputDataReceived;
-    public event EventHandler<String?>? ErrorDataReceived;
+    public event EventHandler<string?>? OutputDataReceived;
+    public event EventHandler<string?>? ErrorDataReceived;
 
     public void Dispose()
     {
@@ -33,7 +33,7 @@ public class Process : IProcess
         _process.BeginErrorReadLine();
     }
 
-    public Boolean WaitForExit(Int32 milliseconds)
+    public bool WaitForExit(int milliseconds)
     {
         return _process.WaitForExit(milliseconds);
     }

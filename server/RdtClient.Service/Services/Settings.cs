@@ -12,7 +12,7 @@ public class Settings(SettingData settingData)
 
     public static DbSettings Get => SettingData.Get;
 
-    public static String AppDefaultSavePath
+    public static string AppDefaultSavePath
     {
         get
         {
@@ -32,7 +32,7 @@ public class Settings(SettingData settingData)
         await settingData.Update(settings);
     }
 
-    public async Task Update(String settingId, Object? value)
+    public async Task Update(string settingId, Object? value)
     {
         await settingData.Update(settingId, value);
     }

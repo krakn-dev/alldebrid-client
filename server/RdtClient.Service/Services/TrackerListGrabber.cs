@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Caching.Memory;
+﻿using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
 
@@ -6,17 +6,17 @@ namespace RdtClient.Service.Services;
 
 public class TrackerListGrabber(IHttpClientFactory httpClientFactory, IMemoryCache memoryCache, ILogger<TrackerListGrabber> logger) : ITrackerListGrabber
 {
-    private const String CacheKey = "TrackerList";
+    private const string CacheKey = "TrackerList";
 
-    private Int32? _lastExpirationMinutes;
+    private int? _lastExpirationMinutes;
 
     private static readonly SemaphoreSlim Semaphore = new(1, 1);
 
-    public async Task<String[]> GetTrackers()
+    public async Task<string[]> GetTrackers()
     {
         var trackerUrlList = Settings.Get.General.TrackerEnrichmentList;
 
-        if (String.IsNullOrWhiteSpace(trackerUrlList))
+        if (string.IsNullOrWhiteSpace(trackerUrlList))
         {
             return [];
         }
@@ -47,7 +47,7 @@ public class TrackerListGrabber(IHttpClientFactory httpClientFactory, IMemoryCac
 
             _lastExpirationMinutes = currentExpiration;
 
-            if (memoryCache.TryGetValue(CacheKey, out String[]? cachedTrackers) && cachedTrackers is { Length: > 0 })
+            if (memoryCache.TryGetValue(CacheKey, out string[]? cachedTrackers) && cachedTrackers is { Length: > 0 })
             {
                 logger.LogDebug("Using cached tracker list.");
 
@@ -61,7 +61,7 @@ public class TrackerListGrabber(IHttpClientFactory httpClientFactory, IMemoryCac
         {
             if (useCache)
             {
-                if (memoryCache.TryGetValue(CacheKey, out String[]? cachedTrackers) && cachedTrackers is { Length: > 0 })
+                if (memoryCache.TryGetValue(CacheKey, out string[]? cachedTrackers) && cachedTrackers is { Length: > 0 })
                 {
                     logger.LogDebug("Using cached tracker list (after lock).");
 
@@ -103,7 +103,7 @@ public class TrackerListGrabber(IHttpClientFactory httpClientFactory, IMemoryCac
         }
     }
 
-    private async Task<String[]> FetchAndParseTrackersAsync(Uri trackerUri)
+    private async Task<string[]> FetchAndParseTrackersAsync(Uri trackerUri)
     {
         logger.LogDebug("Fetching tracker list from URL: {TrackerUrl}", trackerUri);
 
@@ -128,7 +128,7 @@ public class TrackerListGrabber(IHttpClientFactory httpClientFactory, IMemoryCac
             using var reader = new StreamReader(contentStream);
             var result = await reader.ReadToEndAsync(token).ConfigureAwait(false);
 
-            String[] trackers;
+            string[] trackers;
 
             try
             {
@@ -139,7 +139,7 @@ public class TrackerListGrabber(IHttpClientFactory httpClientFactory, IMemoryCac
                                       "\r\n", "\n"
                                   ],
                                   StringSplitOptions.RemoveEmptyEntries)
-                           .Where(line => !String.IsNullOrWhiteSpace(line) && !line.TrimStart().StartsWith('#'))
+                           .Where(line => !string.IsNullOrWhiteSpace(line) && !line.TrimStart().StartsWith('#'))
                            .Select(t => t.EndsWith("/") ? t.TrimEnd('/') : t)
                            .Select(t => t.Trim())
                            .Where(t =>

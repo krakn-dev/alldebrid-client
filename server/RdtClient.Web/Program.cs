@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Hosting.WindowsServices;
@@ -159,7 +159,7 @@ try
         }
     });
 
-    var basePath = !String.IsNullOrWhiteSpace(appSettings.BasePath) ? appSettings.BasePath : !String.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("BASE_PATH")) ? Environment.GetEnvironmentVariable("BASE_PATH") : null;
+    var basePath = !string.IsNullOrWhiteSpace(appSettings.BasePath) ? appSettings.BasePath : !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("BASE_PATH")) ? Environment.GetEnvironmentVariable("BASE_PATH") : null;
 
     if (basePath != null)
     {

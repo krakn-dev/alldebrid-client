@@ -26,7 +26,7 @@ public class RequestLoggingMiddleware(RequestDelegate next, ILoggerFactory logge
 
         if (context.Request.HasFormContentType && context.Request.Form.Count > 0)
         {
-            requestLog += $", Form: {String.Join(", ", context.Request.Form.Select(f => $"{f.Key}: {f.Value}"))}";
+            requestLog += $", Form: {string.Join(", ", context.Request.Form.Select(f => $"{f.Key}: {f.Value}"))}";
         }
         else if (context.Request.ContentType?.Contains("application/json", StringComparison.CurrentCultureIgnoreCase) == true)
         {
@@ -39,7 +39,7 @@ public class RequestLoggingMiddleware(RequestDelegate next, ILoggerFactory logge
         await next(context);
     }
 
-    private static async Task<String> ReadRequestBodyAsync(HttpRequest request)
+    private static async Task<string> ReadRequestBodyAsync(HttpRequest request)
     {
         request.EnableBuffering();
 

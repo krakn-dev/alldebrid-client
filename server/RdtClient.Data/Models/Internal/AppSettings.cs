@@ -2,12 +2,12 @@
 
 public class AppSettings
 {
-    public String DataPath { get; set; } = "./data";
+    public string DataPath { get; set; } = "./data";
     public AppSettingsLogging? Logging { get; set; }
     public AppSettingsDatabase? Database { get; set; }
 
-    public Int32 Port { get; set; }
-    public String? BasePath { get; set; }
+    public int Port { get; set; }
+    public string? BasePath { get; set; }
 }
 
 public class AppSettingsLogging
@@ -17,12 +17,12 @@ public class AppSettingsLogging
     
 public class AppSettingsLoggingFile
 {
-    public String? Path { get; set; }
-    public Int64 FileSizeLimitBytes { get; set; }
-    public Int32 MaxRollingFiles { get; set; }
+    public string? Path { get; set; }
+    public long FileSizeLimitBytes { get; set; }
+    public int MaxRollingFiles { get; set; }
 }
 
 public class AppSettingsDatabase
 {
-    public String? Path { get; set; }
+    public string? Path { get; set; }
 }

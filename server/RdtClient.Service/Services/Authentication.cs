@@ -5,7 +5,7 @@ namespace RdtClient.Service.Services;
 
 public class Authentication(SignInManager<IdentityUser> signInManager, UserManager<IdentityUser> userManager, UserData userData)
 {
-    public async Task<IdentityResult> Register(String userName, String password)
+    public async Task<IdentityResult> Register(string userName, string password)
     {
         var user = new IdentityUser(userName);
 
@@ -14,9 +14,9 @@ public class Authentication(SignInManager<IdentityUser> signInManager, UserManag
         return result;
     }
 
-    public async Task<SignInResult> Login(String userName, String password)
+    public async Task<SignInResult> Login(string userName, string password)
     {
-        if (String.IsNullOrWhiteSpace(userName) || String.IsNullOrWhiteSpace(password))
+        if (string.IsNullOrWhiteSpace(userName) || string.IsNullOrWhiteSpace(password))
         {
             return SignInResult.Failed;
         }
@@ -36,18 +36,18 @@ public class Authentication(SignInManager<IdentityUser> signInManager, UserManag
         await signInManager.SignOutAsync();
     }
 
-    public async Task<IdentityResult> Update(String newUserName, String newPassword)
+    public async Task<IdentityResult> Update(string newUserName, string newPassword)
     {
         var user = await GetUser() ?? throw new("No logged in user found");
 
-        if (!String.IsNullOrWhiteSpace(newUserName))
+        if (!string.IsNullOrWhiteSpace(newUserName))
         {
             user.UserName = newUserName;
         }
 
         await userManager.UpdateAsync(user);
 
-        if (!String.IsNullOrWhiteSpace(newPassword))
+        if (!string.IsNullOrWhiteSpace(newPassword))
         {
             var token = await userManager.GeneratePasswordResetTokenAsync(user);
             var result = await userManager.ResetPasswordAsync(user, token, newPassword);

@@ -11,7 +11,7 @@ namespace RdtClient.Service.BackgroundServices;
 
 public class Startup(IServiceProvider serviceProvider) : IHostedService
 {
-    public static Boolean Ready { get; private set; }
+    public static bool Ready { get; private set; }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {

@@ -5,9 +5,9 @@ namespace RdtClient.Service.Services;
 
 public class RdtHub : Hub
 {
-    private static readonly ConcurrentDictionary<String, String> Users = new();
+    private static readonly ConcurrentDictionary<string, string> Users = new();
 
-    public static Boolean HasConnections => !Users.IsEmpty;
+    public static bool HasConnections => !Users.IsEmpty;
 
     public override async Task OnConnectedAsync()
     {

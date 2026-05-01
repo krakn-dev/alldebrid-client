@@ -10,16 +10,16 @@ public class InternalDownloader : IDownloader
     private readonly DownloaderNET.Downloader _downloadService;
     private readonly DownloaderNET.Settings _downloadConfiguration;
 
-    private readonly String _filePath;
-    private readonly String _uri;
+    private readonly string _filePath;
+    private readonly string _uri;
 
     private readonly ILogger _logger;
 
     private readonly CancellationTokenSource _cancellationToken = new();
 
-    private Boolean _finished;
+    private bool _finished;
 
-    public InternalDownloader(String uri, String filePath)
+    public InternalDownloader(string uri, string filePath)
     {
         _logger = Log.ForContext<InternalDownloader>();
         _logger.Debug($"Instantiated new Internal Downloader for URI {uri} to filePath {filePath}");
@@ -67,7 +67,7 @@ public class InternalDownloader : IDownloader
             DownloadProgress.Invoke(this,
                                      new()
                                      {
-                                         Speed = (Int64)chunks.Where(m => m.IsActive).Sum(m => m.Speed),
+                                         Speed = (long)chunks.Where(m => m.IsActive).Sum(m => m.Speed),
                                          BytesDone = chunks.Sum(m => m.DownloadBytes),
                                          BytesTotal = chunks.Sum(m => m.LengthBytes)
                                      });
@@ -87,7 +87,7 @@ public class InternalDownloader : IDownloader
         };
     }
 
-    public async Task<String> Download()
+    public async Task<string> Download()
     {
         _logger.Debug($"Starting download of {_uri}, writing to path: {_filePath}");
 
@@ -142,7 +142,7 @@ public class InternalDownloader : IDownloader
         settingDownloadMaxSpeed = settingDownloadMaxSpeed * 1024 * 1024;
 
         _downloadConfiguration.BufferSize = settingBufferSize;
-        _downloadConfiguration.LogLevel = (Int32)Settings.Get.DownloadClient.LogLevel;
+        _downloadConfiguration.LogLevel = (int)Settings.Get.DownloadClient.LogLevel;
         _downloadConfiguration.Parallel = settingDownloadParallelCount;
         _downloadConfiguration.MaximumBytesPerSecond = settingDownloadMaxSpeed;
         _downloadConfiguration.Timeout = 5000;

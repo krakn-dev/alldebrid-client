@@ -2,6 +2,6 @@
 
 public class TorrentClientUser
 {
-    public String? Username { get; set; }
+    public string? Username { get; set; }
     public DateTimeOffset? Expiration { get; set; }
 }

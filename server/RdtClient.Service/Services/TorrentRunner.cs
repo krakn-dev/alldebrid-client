@@ -60,7 +60,7 @@ public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Dow
 
     public async Task Tick()
     {
-        if (String.IsNullOrWhiteSpace(Settings.Get.Provider.ApiKey))
+        if (string.IsNullOrWhiteSpace(Settings.Get.Provider.ApiKey))
         {
             Log($"No RealDebridApiKey set in settings");
             return;
@@ -79,7 +79,7 @@ public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Dow
         }
 
         var settingDownloadPath = Settings.Get.Paths.DownloadPath;
-        if (String.IsNullOrWhiteSpace(settingDownloadPath))
+        if (string.IsNullOrWhiteSpace(settingDownloadPath))
         {
             logger.LogError("No DownloadPath set in settings");
             return;
@@ -115,7 +115,7 @@ public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Dow
 
                 Log("Processing download", download, download.Torrent);
 
-                if (!String.IsNullOrWhiteSpace(downloadClient.Error))
+                if (!string.IsNullOrWhiteSpace(downloadClient.Error))
                 {
                     // Retry the download if an error is encountered.
                     LogError($"Download reported an error: {downloadClient.Error}", download, download.Torrent);
@@ -411,7 +411,7 @@ public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Dow
 
                     var downloadPath = settingDownloadPath;
 
-                    if (!String.IsNullOrWhiteSpace(torrent.Category))
+                    if (!string.IsNullOrWhiteSpace(torrent.Category))
                     {
                         downloadPath = Path.Combine(downloadPath, torrent.Category);
                     }
@@ -429,7 +429,7 @@ public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Dow
                         {
                             var remoteId = await downloadClient.Start();
 
-                            if (String.IsNullOrWhiteSpace(remoteId))
+                            if (string.IsNullOrWhiteSpace(remoteId))
                             {
                                 throw new($"No remote ID received from download client");
                             }
@@ -511,7 +511,7 @@ public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Dow
 
                     var downloadPath = settingDownloadPath;
 
-                    if (!String.IsNullOrWhiteSpace(torrent.Category))
+                    if (!string.IsNullOrWhiteSpace(torrent.Category))
                     {
                         downloadPath = Path.Combine(downloadPath, torrent.Category);
                     }
@@ -584,7 +584,7 @@ public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Dow
 
                     if (totalDownloadBytes > 0)
                     {
-                        completePerc = (Int32)((Double)totalDoneBytes / totalDownloadBytes * 100);
+                        completePerc = (int)((Double)totalDoneBytes / totalDownloadBytes * 100);
                     }
 
                     if (completeCount == torrent.Downloads.Count)
@@ -623,7 +623,7 @@ public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Dow
         }
     }
 
-    private void Log(String message, Download? download, Torrent? torrent)
+    private void Log(string message, Download? download, Torrent? torrent)
     {
         if (download != null)
         {
@@ -638,7 +638,7 @@ public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Dow
         logger.LogDebug(message);
     }
 
-    private void Log(String message, Torrent? torrent = null)
+    private void Log(string message, Torrent? torrent = null)
     {
         if (torrent != null)
         {
@@ -648,7 +648,7 @@ public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Dow
         logger.LogDebug(message);
     }
 
-    private void LogError(String message, Download? download, Torrent? torrent)
+    private void LogError(string message, Download? download, Torrent? torrent)
     {
         if (download != null)
         {

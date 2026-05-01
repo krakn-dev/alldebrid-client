@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using RdtClient.Data.Enums;
 using RdtClient.Service.Services;
+using RdtClient.Web.Models.Requests;
 
 namespace RdtClient.Web.Controllers;
 
@@ -50,7 +51,7 @@ public class AuthController(Authentication authentication, Settings settings) : 
             return StatusCode(401);
         }
         
-        if (String.IsNullOrEmpty(request.UserName) || String.IsNullOrEmpty(request.Password))
+        if (string.IsNullOrEmpty(request.UserName) || string.IsNullOrEmpty(request.Password))
         {
             return BadRequest("Invalid UserName or Password");
         }
@@ -77,7 +78,7 @@ public class AuthController(Authentication authentication, Settings settings) : 
             return BadRequest();
         }
 
-        if (!String.IsNullOrEmpty(Settings.Get.Provider.ApiKey))
+        if (!string.IsNullOrEmpty(Settings.Get.Provider.ApiKey))
         {
             return StatusCode(401);
         }
@@ -105,7 +106,7 @@ public class AuthController(Authentication authentication, Settings settings) : 
             return StatusCode(402);
         }
 
-        if (String.IsNullOrEmpty(request.UserName) || String.IsNullOrEmpty(request.Password))
+        if (string.IsNullOrEmpty(request.UserName) || string.IsNullOrEmpty(request.Password))
         {
             return BadRequest("Invalid credentials");
         }
@@ -138,7 +139,7 @@ public class AuthController(Authentication authentication, Settings settings) : 
             return BadRequest();
         }
 
-        if (String.IsNullOrEmpty(request.UserName) || String.IsNullOrEmpty(request.Password))
+        if (string.IsNullOrEmpty(request.UserName) || string.IsNullOrEmpty(request.Password))
         {
             return BadRequest("Invalid UserName or Password");
         }
@@ -152,22 +153,4 @@ public class AuthController(Authentication authentication, Settings settings) : 
 
         return Ok();
     }
-}
-
-public class AuthControllerLoginRequest
-{
-    public String? UserName { get; set; }
-    public String? Password { get; set; }
-}
-
-public class AuthControllerSetupProviderRequest
-{
-    public Int32 Provider { get; set; }
-    public String? Token { get; set; }
-}
-
-public class AuthControllerUpdateRequest
-{
-    public String? UserName { get; set; }
-    public String? Password { get; set; }
 }

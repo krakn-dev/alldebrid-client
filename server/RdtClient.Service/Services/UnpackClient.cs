@@ -7,13 +7,13 @@ using SharpCompress.Archives.Zip;
 
 namespace RdtClient.Service.Services;
 
-public class UnpackClient(Download download, String destinationPath)
+public class UnpackClient(Download download, string destinationPath)
 {
-    public Boolean Finished { get; private set; }
+    public bool Finished { get; private set; }
 
-    public String? Error { get; private set; }
+    public string? Error { get; private set; }
 
-    public Int32 Progess { get; private set; }
+    public int Progess { get; private set; }
 
     private readonly Torrent _torrent = download.Torrent ?? throw new($"Torrent is null");
 
@@ -47,7 +47,7 @@ public class UnpackClient(Download download, String destinationPath)
         _cancellationTokenSource.Cancel();
     }
 
-    private async Task Unpack(String filePath, CancellationToken cancellationToken)
+    private async Task Unpack(string filePath, CancellationToken cancellationToken)
     {
         try
         {
@@ -57,7 +57,7 @@ public class UnpackClient(Download download, String destinationPath)
             }
 
             var extractPath = destinationPath;
-            String? extractPathTemp = null;
+            string? extractPathTemp = null;
 
             var archiveEntries = await GetArchiveFiles(filePath);
 
@@ -116,7 +116,7 @@ public class UnpackClient(Download download, String destinationPath)
     }
 
 
-    private static async Task<IList<String>> GetArchiveFiles(String filePath)
+    private static async Task<IList<string>> GetArchiveFiles(string filePath)
     {
         await using Stream stream = File.OpenRead(filePath);
 
@@ -142,7 +142,7 @@ public class UnpackClient(Download download, String destinationPath)
         return entries;
     }
 
-    private void Extract(String filePath, String extractPath, CancellationToken cancellationToken)
+    private void Extract(string filePath, string extractPath, CancellationToken cancellationToken)
     {
         var parts = ArchiveFactory.GetFileParts(filePath);
 
@@ -164,7 +164,7 @@ public class UnpackClient(Download download, String destinationPath)
                                    d =>
                                    {
                                        Debug.WriteLine(d);
-                                       Progess = (Int32)Math.Round(d);
+                                       Progess = (int)Math.Round(d);
                                    },
                                    cancellationToken: cancellationToken);
 

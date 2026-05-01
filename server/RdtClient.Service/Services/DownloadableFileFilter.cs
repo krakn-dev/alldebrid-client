@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using RdtClient.Data.Models.Data;
 
@@ -6,12 +6,12 @@ namespace RdtClient.Service.Services;
 
 public interface IDownloadableFileFilter
 {
-    public Boolean IsDownloadable(Torrent torrent, String filePath, Int64 fileSize);
+    public bool IsDownloadable(Torrent torrent, string filePath, long fileSize);
 }
 
 public class DownloadableFileFilter(ILogger<DownloadableFileFilter> logger) : IDownloadableFileFilter
 {
-    public Boolean IsDownloadable(Torrent torrent, String filePath, Int64 fileSize)
+    public bool IsDownloadable(Torrent torrent, string filePath, long fileSize)
     {
         var isDownloadable = PassesSizeFilter(torrent, filePath, fileSize) &&
                              PassesFilePathFilter(torrent, filePath);
@@ -24,7 +24,7 @@ public class DownloadableFileFilter(ILogger<DownloadableFileFilter> logger) : ID
         return isDownloadable;
     }
 
-    private Boolean PassesSizeFilter(Torrent torrent, String filePath, Int64 fileSize)
+    private bool PassesSizeFilter(Torrent torrent, string filePath, long fileSize)
     {
         if (torrent.DownloadMinSize <= 0 || fileSize > torrent.DownloadMinSize * 1024 * 1024)
         {
@@ -36,14 +36,14 @@ public class DownloadableFileFilter(ILogger<DownloadableFileFilter> logger) : ID
         return false;
     }
 
-    private Boolean PassesFilePathFilter(Torrent torrent, String filePath)
+    private bool PassesFilePathFilter(Torrent torrent, string filePath)
     {
         return PassesIncludeRegexFilter(torrent, filePath) && PassesExcludeRegexFilter(torrent, filePath);
     }
 
-    private Boolean PassesIncludeRegexFilter(Torrent torrent, String filePath)
+    private bool PassesIncludeRegexFilter(Torrent torrent, string filePath)
     {
-        if (String.IsNullOrWhiteSpace(torrent.IncludeRegex) || Regex.IsMatch(filePath, torrent.IncludeRegex))
+        if (string.IsNullOrWhiteSpace(torrent.IncludeRegex) || Regex.IsMatch(filePath, torrent.IncludeRegex))
         {
             return true;
         }
@@ -53,15 +53,15 @@ public class DownloadableFileFilter(ILogger<DownloadableFileFilter> logger) : ID
         return false;
     }
 
-    private Boolean PassesExcludeRegexFilter(Torrent torrent, String filePath)
+    private bool PassesExcludeRegexFilter(Torrent torrent, string filePath)
     {
         // If the IncludeRegex is set, ignore the ExcludeRegex 
-        if (!String.IsNullOrWhiteSpace(torrent.IncludeRegex))
+        if (!string.IsNullOrWhiteSpace(torrent.IncludeRegex))
         {
             return true;
         }
 
-        if (String.IsNullOrWhiteSpace(torrent.ExcludeRegex) || !Regex.IsMatch(filePath, torrent.ExcludeRegex))
+        if (string.IsNullOrWhiteSpace(torrent.ExcludeRegex) || !Regex.IsMatch(filePath, torrent.ExcludeRegex))
         {
             return true;
         }

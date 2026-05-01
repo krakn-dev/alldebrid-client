@@ -15,8 +15,8 @@ namespace RdtClient.Service;
 
 public static class DiConfig
 {
-    public const String RD_CLIENT = "RdClient";
-    public static readonly String UserAgent = $"rdt-client {Assembly.GetEntryAssembly()?.GetName().Version}";
+    public const string RD_CLIENT = "RdClient";
+    public static readonly string UserAgent = $"rdt-client {Assembly.GetEntryAssembly()?.GetName().Version}";
 
     public static void RegisterRdtServices(this IServiceCollection services)
     {
@@ -30,7 +30,6 @@ public static class DiConfig
 
         services.AddScoped<Authentication>();
         services.AddScoped<IDownloads, Downloads>();
-        services.AddScoped<Downloads>();
         services.AddScoped<RemoteService>();
         services.AddScoped<Settings>();
         services.AddScoped<Torrents>();

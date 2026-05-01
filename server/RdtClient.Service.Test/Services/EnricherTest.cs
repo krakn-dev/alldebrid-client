@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Moq;
 using RdtClient.Service.Services;
 using MonoTorrent.BEncoding;
@@ -23,11 +23,11 @@ public class EnricherTest : IDisposable
         _mockRepository.VerifyAll();
     }
 
-    private const String TestMagnetLink =
+    private const string TestMagnetLink =
         "magnet:?xt=urn:btih:0123456789abcdef0123456789abcdef01234567&dn=TestFile&tr=http%3A%2F%2Ftracker1.com%2Fannounce&tr=http%3A%2F%2Ftracker2.com%2Fannounce";
 
     // Helper methods for creating BEncodedDictionary objects for torrents
-    private static BEncodedDictionary CreateStandardTorrentDict(String announceUrl, List<String>? announceListTier = null)
+    private static BEncodedDictionary CreateStandardTorrentDict(string announceUrl, List<string>? announceListTier = null)
     {
         var torrentDict = new BEncodedDictionary
         {
@@ -65,7 +65,7 @@ public class EnricherTest : IDisposable
         return torrentDict;
     }
 
-    private static BEncodedDictionary CreateTorrentDictWithOnlyAnnounce(String announceUrl)
+    private static BEncodedDictionary CreateTorrentDictWithOnlyAnnounce(string announceUrl)
     {
         return new()
         {
@@ -82,7 +82,7 @@ public class EnricherTest : IDisposable
         };
     }
 
-    private static BEncodedDictionary CreateTorrentDictWithComplexAnnounceList(String primaryAnnounceUrl, List<List<String>> announceListTiers)
+    private static BEncodedDictionary CreateTorrentDictWithComplexAnnounceList(string primaryAnnounceUrl, List<List<string>> announceListTiers)
     {
         var torrentDict = new BEncodedDictionary
         {
@@ -113,7 +113,7 @@ public class EnricherTest : IDisposable
         return torrentDict;
     }
 
-    private void SetupTrackerListGrabber(String[] trackerList)
+    private void SetupTrackerListGrabber(string[] trackerList)
     {
         _trackerListGrabberMock
             .Setup(t => t.GetTrackers())
@@ -156,7 +156,7 @@ public class EnricherTest : IDisposable
                    "udp://tracker2")]
     [InlineData("magnet:?",
                    "magnet:?")]
-    public async Task EnrichMagnetLink_WhenTrackersProvided_AddsTrackers(String magnetLink, String expectedResult, params String[] newTrackers)
+    public async Task EnrichMagnetLink_WhenTrackersProvided_AddsTrackers(string magnetLink, string expectedResult, params string[] newTrackers)
     {
         // Arrange
         SetupTrackerListGrabber(newTrackers);
@@ -240,7 +240,7 @@ public class EnricherTest : IDisposable
 
         // Assert
         var queryParams = System.Web.HttpUtility.ParseQueryString(new Uri(result).Query);
-        var trValues = queryParams.GetValues("tr")?.ToList() ?? new List<String>();
+        var trValues = queryParams.GetValues("tr")?.ToList() ?? new List<string>();
 
         Assert.Contains("udp://existing", trValues);
         Assert.Contains("udp://new1", trValues);
@@ -579,7 +579,7 @@ public class EnricherTest : IDisposable
         // Arrange
         var primaryAnnounceUrl = "http://existing.com/announce";
 
-        var announceListTiers = new List<List<String>>
+        var announceListTiers = new List<List<string>>
         {
             new()
             {

@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Moq;
 using RdtClient.Data.Models.Data;
 using RdtClient.Service.Services;
@@ -32,7 +32,7 @@ public class DownloadableFileFilterTest
     [InlineData(100, 20 * 1024 * 1024)]
     [InlineData(2,   2 * 1024 * 1024)]
     [InlineData(2,   2 * (1000 * 1000 + 1))] // mostly to show we use 1024 not 1000 for conversion
-    public void IsDownloadable_WhenDownloadMinSizeSpecified_AndDownloadBelowSize_ReturnsFalse(Int32 downloadMinSize, Int64 fileSize)
+    public void IsDownloadable_WhenDownloadMinSizeSpecified_AndDownloadBelowSize_ReturnsFalse(int downloadMinSize, long fileSize)
     {
         // Arrange
         var mocks = new Mocks();
@@ -55,7 +55,7 @@ public class DownloadableFileFilterTest
     [Theory]
     [InlineData(100, 110 * 1024 * 1024)]
     [InlineData(2,   2 * 1024 * 1024 + 1)]
-    public void IsDownloadable_WhenDownloadMinSizeSpecified_AndDownloadAboveSize_ReturnsTrue(Int32 downloadMinSize, Int64 fileSize)
+    public void IsDownloadable_WhenDownloadMinSizeSpecified_AndDownloadAboveSize_ReturnsTrue(int downloadMinSize, long fileSize)
     {
         // Arrange
         var mocks = new Mocks();
@@ -80,7 +80,7 @@ public class DownloadableFileFilterTest
     [InlineData("file", "even/in/a/subdirectory.txt")]
     [InlineData("ch[aA]racter c[lL]asses", "nope.txt")]
     [InlineData("digits\\d+", "123 not matching.txt")]
-    public void IsDownloadable_WhenIncludeRegexSpecified_AndPathDoesNotMatchRegex_ReturnsFalse(String includeRegex, String filePath)
+    public void IsDownloadable_WhenIncludeRegexSpecified_AndPathDoesNotMatchRegex_ReturnsFalse(string includeRegex, string filePath)
     {
         // Arrange
         var mocks = new Mocks();
@@ -94,7 +94,7 @@ public class DownloadableFileFilterTest
         var fileFilter = new DownloadableFileFilter(mocks.LoggerMock.Object);
 
         // Act
-        var result = fileFilter.IsDownloadable(torrent, filePath, Int64.MaxValue);
+        var result = fileFilter.IsDownloadable(torrent, filePath, long.MaxValue);
 
         // Assert
         Assert.False(result);
@@ -105,7 +105,7 @@ public class DownloadableFileFilterTest
     [InlineData("file", "file/in/a/subdirectory.txt")]
     [InlineData("ch[aA]racter c[lL]asses", "character cLasses")]
     [InlineData("digits\\d+", "digits123456.txt")]
-    public void IsDownloadable_WhenIncludeRegexSpecified_AndPathMatchesRegex_ReturnsTrue(String includeRegex, String filePath)
+    public void IsDownloadable_WhenIncludeRegexSpecified_AndPathMatchesRegex_ReturnsTrue(string includeRegex, string filePath)
     {
         // Arrange
         var mocks = new Mocks();
@@ -119,7 +119,7 @@ public class DownloadableFileFilterTest
         var fileFilter = new DownloadableFileFilter(mocks.LoggerMock.Object);
 
         // Act
-        var result = fileFilter.IsDownloadable(torrent, filePath, Int64.MaxValue);
+        var result = fileFilter.IsDownloadable(torrent, filePath, long.MaxValue);
 
         // Assert
         Assert.True(result);
@@ -130,7 +130,7 @@ public class DownloadableFileFilterTest
     [InlineData("file", "even/in/a/subdirectory.txt")]
     [InlineData("ch[aA]racter c[lL]asses", "nope.txt")]
     [InlineData("digits\\d+", "123 not matching.txt")]
-    public void IsDownloadable_WhenExcludeRegexSpecified_AndPathDoesNotMatchRegex_ReturnsTrue(String excludeRegex, String filePath)
+    public void IsDownloadable_WhenExcludeRegexSpecified_AndPathDoesNotMatchRegex_ReturnsTrue(string excludeRegex, string filePath)
     {
         // Arrange
         var mocks = new Mocks();
@@ -144,7 +144,7 @@ public class DownloadableFileFilterTest
         var fileFilter = new DownloadableFileFilter(mocks.LoggerMock.Object);
 
         // Act
-        var result = fileFilter.IsDownloadable(torrent, filePath, Int64.MaxValue);
+        var result = fileFilter.IsDownloadable(torrent, filePath, long.MaxValue);
 
         // Assert
         Assert.True(result);
@@ -155,7 +155,7 @@ public class DownloadableFileFilterTest
     [InlineData("file", "file/in/a/subdirectory.txt")]
     [InlineData("ch[aA]racter c[lL]asses", "character cLasses")]
     [InlineData("digits\\d+", "digits123456.txt")]
-    public void IsDownloadable_WhenExcludeRegexSpecified_AndPathMatchesRegex_ReturnsFalse(String excludeRegex, String filePath)
+    public void IsDownloadable_WhenExcludeRegexSpecified_AndPathMatchesRegex_ReturnsFalse(string excludeRegex, string filePath)
     {
         // Arrange
         var mocks = new Mocks();
@@ -169,7 +169,7 @@ public class DownloadableFileFilterTest
         var fileFilter = new DownloadableFileFilter(mocks.LoggerMock.Object);
 
         // Act
-        var result = fileFilter.IsDownloadable(torrent, filePath, Int64.MaxValue);
+        var result = fileFilter.IsDownloadable(torrent, filePath, long.MaxValue);
 
         // Assert
         Assert.False(result);
@@ -180,7 +180,7 @@ public class DownloadableFileFilterTest
     [InlineData("file", "in/a", "file/in/a/subdirectory.txt")]
     [InlineData("ch[aA]racter c[lL]asses", "character", "character cLasses")]
     [InlineData("digits\\d+", "123456", "digits123456.txt")]
-    public void IsDownloadable_WhenBothIncludeAndExcludeRegexSpecified_AndPathMatchesIncludeAndExcludeRegex_ReturnsTrue(String includeRegex, String excludeRegex, String filePath)
+    public void IsDownloadable_WhenBothIncludeAndExcludeRegexSpecified_AndPathMatchesIncludeAndExcludeRegex_ReturnsTrue(string includeRegex, string excludeRegex, string filePath)
     {
         // Arrange
         var mocks = new Mocks();
@@ -195,7 +195,7 @@ public class DownloadableFileFilterTest
         var fileFilter = new DownloadableFileFilter(mocks.LoggerMock.Object);
 
         // Act
-        var result = fileFilter.IsDownloadable(torrent, filePath, Int64.MaxValue);
+        var result = fileFilter.IsDownloadable(torrent, filePath, long.MaxValue);
 
         // Assert
         Assert.True(result);
@@ -204,10 +204,10 @@ public class DownloadableFileFilterTest
     [Theory]
     [InlineData(10, "file", 10 * 1024 * 1024 + 1, "no-match.txt")]
     public void IsDownloadable_WhenBothDownloadMinSizeAndIncludeRegexSpecified_AndDownloadAboveSizeAndDoesNotMatchRegex_ReturnsFalse(
-        Int32 minSize,
-        String includeRegex,
-        Int64 fileSize,
-        String filePath)
+        int minSize,
+        string includeRegex,
+        long fileSize,
+        string filePath)
     {
         // Arrange
         var mocks = new Mocks();
@@ -231,10 +231,10 @@ public class DownloadableFileFilterTest
     [Theory]
     [InlineData(10, "file", 10 * 1024 * 1024 - 1, "file.txt")]
     public void IsDownloadable_WhenBothDownloadMinSizeAndIncludeRegexSpecified_AndDownloadBelowSizeAndMatchesRegex_ReturnsFalse(
-        Int32 minSize,
-        String includeRegex,
-        Int64 fileSize,
-        String filePath)
+        int minSize,
+        string includeRegex,
+        long fileSize,
+        string filePath)
     {
         // Arrange
         var mocks = new Mocks();

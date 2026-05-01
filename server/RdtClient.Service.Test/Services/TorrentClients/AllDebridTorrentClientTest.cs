@@ -1,4 +1,4 @@
-using AllDebridNET;
+﻿using AllDebridNET;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
@@ -76,7 +76,7 @@ public class AllDebridTorrentClientTest
         // Arrange
         var mocks = new Mocks();
 
-        mocks.AllDebridClientMock.SetupSequence(c => c.Magnet.StatusLiveAsync(It.IsAny<Int64>(), It.IsAny<Int64>(), It.IsAny<CancellationToken>()))
+        mocks.AllDebridClientMock.SetupSequence(c => c.Magnet.StatusLiveAsync(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))
              .ReturnsAsync(new MagnetStatusLiveResponse
              {
                  Counter = 1,
@@ -100,7 +100,7 @@ public class AllDebridTorrentClientTest
         // Arrange
         var mocks = new Mocks();
 
-        mocks.AllDebridClientMock.SetupSequence(c => c.Magnet.StatusLiveAsync(It.IsAny<Int64>(), It.IsAny<Int64>(), It.IsAny<CancellationToken>()))
+        mocks.AllDebridClientMock.SetupSequence(c => c.Magnet.StatusLiveAsync(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))
              .ReturnsAsync(new MagnetStatusLiveResponse
              {
                  Counter = 1,
@@ -130,7 +130,7 @@ public class AllDebridTorrentClientTest
         // Arrange
         var mocks = new Mocks();
 
-        mocks.AllDebridClientMock.SetupSequence(c => c.Magnet.StatusLiveAsync(It.IsAny<Int64>(), It.IsAny<Int64>(), It.IsAny<CancellationToken>()))
+        mocks.AllDebridClientMock.SetupSequence(c => c.Magnet.StatusLiveAsync(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))
              .ReturnsAsync(new MagnetStatusLiveResponse
              {
                  Counter = 1,
@@ -166,7 +166,7 @@ public class AllDebridTorrentClientTest
     {
         var mocks = new Mocks();
 
-        mocks.AllDebridClientMock.SetupSequence(c => c.Magnet.StatusLiveAsync(It.IsAny<Int64>(), It.IsAny<Int64>(), It.IsAny<CancellationToken>()))
+        mocks.AllDebridClientMock.SetupSequence(c => c.Magnet.StatusLiveAsync(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))
              .ReturnsAsync(new MagnetStatusLiveResponse
              {
                  Counter = 1,
@@ -208,7 +208,7 @@ public class AllDebridTorrentClientTest
         // Arrange
         var mocks = new Mocks();
 
-        mocks.AllDebridClientMock.SetupSequence(c => c.Magnet.StatusLiveAsync(It.IsAny<Int64>(), It.IsAny<Int64>(), It.IsAny<CancellationToken>()))
+        mocks.AllDebridClientMock.SetupSequence(c => c.Magnet.StatusLiveAsync(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))
              .ReturnsAsync(new MagnetStatusLiveResponse
              {
                  Counter = 1,
@@ -241,7 +241,7 @@ public class AllDebridTorrentClientTest
         Assert.Contains(secondResult, t => t.Id == Magnet2Finished.Id.ToString());
     }
 
-    public static TheoryData<Magnet, Int64> DownloadingMagnetsWithProgress()
+    public static TheoryData<Magnet, long> DownloadingMagnetsWithProgress()
     {
         return new()
         {
@@ -256,12 +256,12 @@ public class AllDebridTorrentClientTest
 
     [Theory]
     [MemberData(nameof(DownloadingMagnetsWithProgress))]
-    public async Task Map_WhenTorrentDownloading_ComputesProgress(Magnet magnet, Int64 expectedProgress)
+    public async Task Map_WhenTorrentDownloading_ComputesProgress(Magnet magnet, long expectedProgress)
     {
         // Arrange
         var mocks = new Mocks();
 
-        mocks.AllDebridClientMock.SetupSequence(c => c.Magnet.StatusLiveAsync(It.IsAny<Int64>(), It.IsAny<Int64>(), It.IsAny<CancellationToken>()))
+        mocks.AllDebridClientMock.SetupSequence(c => c.Magnet.StatusLiveAsync(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))
              .ReturnsAsync(new MagnetStatusLiveResponse
              {
                  Counter = 1,
@@ -380,7 +380,7 @@ public class AllDebridTorrentClientTest
             RdId = Magnet1Finished.Id.ToString()
         };
 
-        mocks.AllDebridClientMock.SetupSequence(c => c.Magnet.StatusLiveAsync(It.IsAny<Int64>(), It.IsAny<Int64>(), It.IsAny<CancellationToken>()))
+        mocks.AllDebridClientMock.SetupSequence(c => c.Magnet.StatusLiveAsync(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<CancellationToken>()))
              .ReturnsAsync(new MagnetStatusLiveResponse
              {
                  Counter = 1,
@@ -460,7 +460,7 @@ public class AllDebridTorrentClientTest
             }
         ];
 
-        mocks.AllDebridClientMock.Setup(c => c.Magnet.FilesAsync(Int64.Parse(torrent.RdId), It.IsAny<CancellationToken>())).ReturnsAsync(files);
+        mocks.AllDebridClientMock.Setup(c => c.Magnet.FilesAsync(long.Parse(torrent.RdId), It.IsAny<CancellationToken>())).ReturnsAsync(files);
         mocks.FileFilterMock.Setup(f => f.IsDownloadable(torrent, "file1.txt", 123)).Returns(true);
         mocks.FileFilterMock.Setup(f => f.IsDownloadable(torrent, "folder/file2.txt", 180)).Returns(false);
 
@@ -502,8 +502,8 @@ public class AllDebridTorrentClientTest
             }
         ];
 
-        mocks.AllDebridClientMock.Setup(c => c.Magnet.FilesAsync(Int64.Parse(torrent.RdId), It.IsAny<CancellationToken>())).ReturnsAsync(files);
-        mocks.FileFilterMock.Setup(f => f.IsDownloadable(torrent, It.IsAny<String>(), It.IsAny<Int64>())).Returns(false);
+        mocks.AllDebridClientMock.Setup(c => c.Magnet.FilesAsync(long.Parse(torrent.RdId), It.IsAny<CancellationToken>())).ReturnsAsync(files);
+        mocks.FileFilterMock.Setup(f => f.IsDownloadable(torrent, It.IsAny<string>(), It.IsAny<long>())).Returns(false);
 
         var allDebridTorrentClient = new AllDebridTorrentClient(mocks.LoggerMock.Object, mocks.AllDebridClientFactoryMock.Object, mocks.FileFilterMock.Object);
 

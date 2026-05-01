@@ -5,26 +5,26 @@ using RdtClient.Service.Services.Downloaders;
 
 namespace RdtClient.Service.Services;
 
-public class DownloadClient(Download download, Torrent torrent, String destinationPath)
+public class DownloadClient(Download download, Torrent torrent, string destinationPath)
 {
-    private static Int64 _totalBytesDownloadedThisSession;
+    private static long _totalBytesDownloadedThisSession;
     private static readonly Lock TotalBytesDownloadedLock = new();
 
     public IDownloader? Downloader;
 
     public Data.Enums.DownloadClient Type { get; private set; }
 
-    public Boolean Finished { get; private set; }
+    public bool Finished { get; private set; }
 
-    public String? Error { get; private set; }
+    public string? Error { get; private set; }
 
-    public Int64 Speed { get; private set; }
-    public Int64 BytesTotal { get; private set; }
-    public Int64 BytesDone { get; private set; }
+    public long Speed { get; private set; }
+    public long BytesTotal { get; private set; }
+    public long BytesDone { get; private set; }
 
-    private Int64 LastBytesDone { get; set; }
+    private long LastBytesDone { get; set; }
 
-    public async Task<String> Start()
+    public async Task<string> Start()
     {
         BytesDone = 0;
         BytesTotal = 0;
@@ -121,7 +121,7 @@ public class DownloadClient(Download download, Torrent torrent, String destinati
         await Downloader.Resume();
     }
 
-    public static Int64 GetTotalBytesDownloadedThisSession()
+    public static long GetTotalBytesDownloadedThisSession()
     {
         lock (TotalBytesDownloadedLock)
         {
@@ -129,7 +129,7 @@ public class DownloadClient(Download download, Torrent torrent, String destinati
         }
     }
 
-    private static void AddToTotalBytesDownloadedThisSession(Int64 bytes)
+    private static void AddToTotalBytesDownloadedThisSession(long bytes)
     {
         lock (TotalBytesDownloadedLock)
         {

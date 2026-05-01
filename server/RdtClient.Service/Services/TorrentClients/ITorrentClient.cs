@@ -7,9 +7,9 @@ public interface ITorrentClient
 {
     Task<IList<TorrentClientTorrent>> GetTorrents();
     Task<TorrentClientUser> GetUser();
-    Task<String> AddMagnet(String magnetLink);
-    Task<String> AddFile(Byte[] bytes);
-    Task<IList<TorrentClientAvailableFile>> GetAvailableFiles(String hash);
+    Task<string> AddMagnet(string magnetLink);
+    Task<string> AddFile(Byte[] bytes);
+    Task<IList<TorrentClientAvailableFile>> GetAvailableFiles(string hash);
     /// <summary>
     /// Tell the debrid provider which files to download.
     /// </summary>
@@ -18,9 +18,9 @@ public interface ITorrentClient
     /// </remark>
     /// <param name="torrent">The torrent to select files for</param>
     /// <returns>Number of files selected</returns>
-    Task<Int32?> SelectFiles(Torrent torrent);
-    Task Delete(String torrentId);
-    Task<String> Unrestrict(String link);
+    Task<int?> SelectFiles(Torrent torrent);
+    Task Delete(string torrentId);
+    Task<string> Unrestrict(string link);
     Task<Torrent> UpdateData(Torrent torrent, TorrentClientTorrent? torrentClientTorrent);
     Task<IList<DownloadInfo>?> GetDownloadInfos(Torrent torrent);
     /// <summary>
@@ -29,5 +29,5 @@ public interface ITorrentClient
     /// </summary>
     /// <param name="download">The download to get the filename of</param>
     /// <returns>The filename of the download</returns>
-    Task<String> GetFileName(Download download);
+    Task<string> GetFileName(Download download);
 }

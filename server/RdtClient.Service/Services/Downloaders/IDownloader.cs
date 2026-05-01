@@ -2,21 +2,21 @@
 
 public class DownloadCompleteEventArgs
 {
-    public String? Error { get; set; }
+    public string? Error { get; set; }
 }
 
 public class DownloadProgressEventArgs
 {
-    public Int64 Speed { get; set; }
-    public Int64 BytesDone { get; set; }
-    public Int64 BytesTotal { get; set; }
+    public long Speed { get; set; }
+    public long BytesDone { get; set; }
+    public long BytesTotal { get; set; }
 }
 
 public interface IDownloader
 {
     event EventHandler<DownloadCompleteEventArgs>? DownloadComplete;
     event EventHandler<DownloadProgressEventArgs>? DownloadProgress;
-    Task<String> Download();
+    Task<string> Download();
     Task Cancel();
     Task Pause();
     Task Resume();

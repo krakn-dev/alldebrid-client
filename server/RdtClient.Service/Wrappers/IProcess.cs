@@ -1,16 +1,16 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace RdtClient.Service.Wrappers;
 
 public interface IProcess : IDisposable
 {
-    event EventHandler<String?>? OutputDataReceived;
-    event EventHandler<String?>? ErrorDataReceived;
+    event EventHandler<string?>? OutputDataReceived;
+    event EventHandler<string?>? ErrorDataReceived;
 
     public ProcessStartInfo StartInfo { get; set; }
 
     void BeginOutputReadLine();
     void BeginErrorReadLine();
-    Boolean WaitForExit(Int32 milliseconds);
+    bool WaitForExit(int milliseconds);
     void Start();
 }

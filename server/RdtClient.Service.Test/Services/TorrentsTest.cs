@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO.Abstractions.TestingHelpers;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -92,7 +92,7 @@ public class TorrentsTest
         var torrentPath = $"{downloadPath}/{torrent.RdName}";
         var filePath = $"{torrentPath}/{downloads[0].FileName}";
 
-        var fileSystemMock = new MockFileSystem(new Dictionary<String, MockFileData>
+        var fileSystemMock = new MockFileSystem(new Dictionary<string, MockFileData>
         {
             {
                 filePath, new("Test file")
@@ -107,7 +107,7 @@ public class TorrentsTest
                                            mocks.EnricherMock.Object,
                                            null!); // AllDebridTorrentClient not used by RunTorrentComplete
 
-        mocks.ProcessMock.Setup(p => p.WaitForExit(It.IsAny<Int32>())).Returns(true);
+        mocks.ProcessMock.Setup(p => p.WaitForExit(It.IsAny<int>())).Returns(true);
 
         // Act
         await torrents.RunTorrentComplete(torrent.TorrentId, settings);
@@ -154,7 +154,7 @@ public class TorrentsTest
         var torrentPath = $"{downloadPath}/{torrent.RdName}";
         var filePath = $"{torrentPath}/{downloads[0].FileName}";
 
-        var fileSystemMock = new MockFileSystem(new Dictionary<String, MockFileData>
+        var fileSystemMock = new MockFileSystem(new Dictionary<string, MockFileData>
         {
             {
                 filePath, new("Test file")
@@ -198,7 +198,7 @@ public class TorrentsTest
         var torrentPath = $"{downloadPath}/{torrent.RdName}";
         var filePath = $"{torrentPath}/{downloads[0].FileName}";
 
-        var fileSystemMock = new MockFileSystem(new Dictionary<String, MockFileData>
+        var fileSystemMock = new MockFileSystem(new Dictionary<string, MockFileData>
         {
             {
                 filePath, new("Test file")
@@ -213,7 +213,7 @@ public class TorrentsTest
                                            mocks.EnricherMock.Object,
                                            null!); // AllDebridTorrentClient not used by RunTorrentComplete
 
-        mocks.ProcessMock.Setup(p => p.WaitForExit(It.IsAny<Int32>()))
+        mocks.ProcessMock.Setup(p => p.WaitForExit(It.IsAny<int>()))
              .Callback(() =>
              {
                  mocks.ProcessMock.Raise(m => m.OutputDataReceived += null, this, "output-line 1");
@@ -261,7 +261,7 @@ public class TorrentsTest
         var torrentPath = $"{downloadPath}/{torrent.RdName}";
         var filePath = $"{torrentPath}/{downloads[0].FileName}";
 
-        var fileSystemMock = new MockFileSystem(new Dictionary<String, MockFileData>
+        var fileSystemMock = new MockFileSystem(new Dictionary<string, MockFileData>
         {
             {
                 filePath, new("Test file")
@@ -276,7 +276,7 @@ public class TorrentsTest
                                            mocks.EnricherMock.Object,
                                            null!); // AllDebridTorrentClient not used by RunTorrentComplete
 
-        mocks.ProcessMock.Setup(p => p.WaitForExit(It.IsAny<Int32>()))
+        mocks.ProcessMock.Setup(p => p.WaitForExit(It.IsAny<int>()))
              .Callback(() =>
              {
                  mocks.ProcessMock.Raise(m => m.ErrorDataReceived += null, this, "error-line 1");

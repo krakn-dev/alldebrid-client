@@ -7,12 +7,12 @@ namespace RdtClient.Service.BackgroundServices;
 
 public class UpdateChecker(ILogger<UpdateChecker> logger) : BackgroundService
 {
-    public static String? CurrentVersion { get; private set; }
-    public static String? LatestVersion { get; private set; }
+    public static string? CurrentVersion { get; private set; }
+    public static string? LatestVersion { get; private set; }
     
-    public static Boolean? IsInsecure { get; private set; }
+    public static bool? IsInsecure { get; private set; }
 
-    private static readonly List<String> KnownGhsaIds = [];
+    private static readonly List<string> KnownGhsaIds = [];
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -23,7 +23,7 @@ public class UpdateChecker(ILogger<UpdateChecker> logger) : BackgroundService
 
         var version = Assembly.GetEntryAssembly()?.GetName().Version?.ToString();
 
-        if (String.IsNullOrWhiteSpace(version))
+        if (string.IsNullOrWhiteSpace(version))
         {
             CurrentVersion = "";
 
@@ -78,7 +78,7 @@ public class UpdateChecker(ILogger<UpdateChecker> logger) : BackgroundService
         logger.LogInformation("UpdateChecker stopped.");
     }
 
-    private static async Task<T?> GitHubRequest<T>(String endpoint, CancellationToken cancellationToken)
+    private static async Task<T?> GitHubRequest<T>(string endpoint, CancellationToken cancellationToken)
     {
             var httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.UserAgent.Add(new("RdtClient", CurrentVersion));
@@ -91,11 +91,11 @@ public class UpdateChecker(ILogger<UpdateChecker> logger) : BackgroundService
 public class GitHubReleasesResponse 
 {
     [JsonProperty("name")]
-    public String? Name { get; set; }
+    public string? Name { get; set; }
 }
 
 public class GitHubSecurityAdvisoriesResponse
 {
     [JsonProperty("ghsa_id")]
-    public required String GhsaId { get; set; } 
+    public required string GhsaId { get; set; } 
 }

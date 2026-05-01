@@ -30,7 +30,7 @@ public class WatchFolderChecker(ILogger<WatchFolderChecker> logger, IServiceProv
             {
                 await Task.Delay(1000, stoppingToken);
 
-                if (String.IsNullOrWhiteSpace(Settings.Get.Paths.WatchPath))
+                if (string.IsNullOrWhiteSpace(Settings.Get.Paths.WatchPath))
                 {
                     continue;
                 }
@@ -38,12 +38,12 @@ public class WatchFolderChecker(ILogger<WatchFolderChecker> logger, IServiceProv
                 var processedStorePath = Path.Combine(Settings.Get.Paths.WatchPath, "processed");
                 var errorStorePath = Path.Combine(Settings.Get.Paths.WatchPath, "error");
 
-                if (!String.IsNullOrWhiteSpace(Settings.Get.Paths.WatchProcessedPath))
+                if (!string.IsNullOrWhiteSpace(Settings.Get.Paths.WatchProcessedPath))
                 {
                     processedStorePath = Settings.Get.Paths.WatchProcessedPath;
                 }
 
-                if (!String.IsNullOrWhiteSpace(Settings.Get.Paths.WatchErrorPath))
+                if (!string.IsNullOrWhiteSpace(Settings.Get.Paths.WatchErrorPath))
                 {
                     errorStorePath = Settings.Get.Paths.WatchErrorPath;
                 }
@@ -158,7 +158,7 @@ public class WatchFolderChecker(ILogger<WatchFolderChecker> logger, IServiceProv
         }
     }
 
-    private static Boolean IsFileLocked(FileInfo file)
+    private static bool IsFileLocked(FileInfo file)
     {
         try
         {

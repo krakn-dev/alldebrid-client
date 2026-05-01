@@ -1,6 +1,6 @@
-namespace RdtClient.Service.Services;
+﻿namespace RdtClient.Service.Services;
 
 public interface ITrackerListGrabber
 {
-    Task<String[]> GetTrackers();
+    Task<string[]> GetTrackers();
 }

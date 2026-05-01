@@ -5,6 +5,7 @@ using MonoTorrent;
 using RdtClient.Data.Models.TorrentClient;
 using RdtClient.Service.Helpers;
 using RdtClient.Service.Services;
+using RdtClient.Web.Models.Requests;
 using Torrent = RdtClient.Data.Models.Data.Torrent;
 
 namespace RdtClient.Web.Controllers;
@@ -98,7 +99,7 @@ public class TorrentsController(ILogger<TorrentsController> logger, Torrents tor
             return BadRequest();
         }
         
-        if (String.IsNullOrEmpty(request.MagnetLink))
+        if (string.IsNullOrEmpty(request.MagnetLink))
         {
             return BadRequest("Invalid magnet link");
         }
@@ -148,7 +149,7 @@ public class TorrentsController(ILogger<TorrentsController> logger, Torrents tor
             return BadRequest();
         }
 
-        if (String.IsNullOrEmpty(request.MagnetLink))
+        if (string.IsNullOrEmpty(request.MagnetLink))
         {
             return BadRequest("MagnetLink cannot be null or empty");
         }
@@ -227,7 +228,7 @@ public class TorrentsController(ILogger<TorrentsController> logger, Torrents tor
 
         IList<TorrentClientAvailableFile> availableFiles;
 
-        if (!String.IsNullOrWhiteSpace(request.MagnetLink))
+        if (!string.IsNullOrWhiteSpace(request.MagnetLink))
         {
             var magnet = MagnetLink.Parse(request.MagnetLink);
 
@@ -254,7 +255,7 @@ public class TorrentsController(ILogger<TorrentsController> logger, Torrents tor
 
         var selectedFiles = new List<TorrentClientAvailableFile>();
 
-        if (!String.IsNullOrWhiteSpace(request.IncludeRegex))
+        if (!string.IsNullOrWhiteSpace(request.IncludeRegex))
         {
             foreach (var availableFile in availableFiles)
             {
@@ -271,7 +272,7 @@ public class TorrentsController(ILogger<TorrentsController> logger, Torrents tor
                 }
             }
         } 
-        else if (!String.IsNullOrWhiteSpace(request.ExcludeRegex))
+        else if (!string.IsNullOrWhiteSpace(request.ExcludeRegex))
         {
             foreach (var availableFile in availableFiles)
             {
@@ -300,34 +301,4 @@ public class TorrentsController(ILogger<TorrentsController> logger, Torrents tor
             selectedFiles
         });
     }
-}
-
-public class TorrentControllerUploadFileRequest
-{
-    public Torrent? Torrent { get; set; }
-}
-
-public class TorrentControllerUploadMagnetRequest
-{
-    public String? MagnetLink { get; set; }
-    public Torrent? Torrent { get; set; }
-}
-
-public class TorrentControllerDeleteRequest
-{
-    public Boolean DeleteData { get; set; }
-    public Boolean DeleteRdTorrent { get; set; }
-    public Boolean DeleteLocalFiles { get; set; }
-}
-
-public class TorrentControllerCheckFilesRequest
-{
-    public String? MagnetLink { get; set; }
-}
-
-public class TorrentControllerVerifyRegexRequest
-{
-    public String? IncludeRegex { get; set; }
-    public String? ExcludeRegex { get; set; }
-    public String? MagnetLink { get; set;}
 }

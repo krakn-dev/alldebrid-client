@@ -11,7 +11,7 @@ public static class DiConfig
     {
         var dbPath = appSettings.Database?.Path ?? Path.Combine(appSettings.DataPath, "rdtclient.db");
 
-        if (String.IsNullOrWhiteSpace(dbPath))
+        if (string.IsNullOrWhiteSpace(dbPath))
         {
             throw new("No database path configured. Set DataPath in appsettings.json (e.g. C:\\ProgramData\\RdtClient).");
         }

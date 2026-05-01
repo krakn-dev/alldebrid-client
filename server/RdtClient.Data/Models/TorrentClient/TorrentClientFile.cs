@@ -2,9 +2,9 @@
 
 public class TorrentClientFile
 {
-    public Int64 Id { get; set; }
-    public String Path { get; set; } = default!;
-    public Int64 Bytes { get; set; }
-    public Boolean Selected { get; set; }
-    public String? DownloadLink { get; set; }
+    public long Id { get; set; }
+    public string Path { get; set; } = default!;
+    public long Bytes { get; set; }
+    public bool Selected { get; set; }
+    public string? DownloadLink { get; set; }
 }
