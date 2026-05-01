@@ -13,54 +13,60 @@
 
 @for (tab of tabs; track tab.key; let i = $index) {
   <div [hidden]="activeTab !== i">
-    <h3>{{ tab.description }}</h3>
-    @for (setting of tab.settings; track setting.key) {
-      @if (setting.type === "Object") {
-        <h3 class="title is-3" style="margin-top: 1.2rem">{{ setting.displayName }}</h3>
-      }
-      <div class="field">
-        @if (setting.type !== "Boolean" && setting.type !== "Object") {
-          <label class="label">{{ setting.displayName }}</label>
-        }
-        @switch (setting.type) {
-          @case ("String") {
-            <div class="control">
-              <input class="input" type="text" [(ngModel)]="setting.value" />
-            </div>
-          }
-          @case ("Int32") {
-            <div class="control">
-              <input class="input" type="number" [(ngModel)]="setting.value" />
-            </div>
-          }
-          @case ("Boolean") {
-            <label class="checkbox">
-              <input type="checkbox" [(ngModel)]="setting.value" />
-              {{ setting.displayName }}
-            </label>
-          }
-          @case ("Enum") {
-            <div class="control select is-fullwidth">
-              <select [(ngModel)]="setting.value">
-                @for (kvp of setting.enumValues | keyvalue; track kvp) {
-                  <option [value]="kvp.key">{{ kvp.value }}</option>
-                }
-              </select>
-            </div>
-          }
-          @case ("Object") {}
-          @default {
-            <div class="control">Invalid setting type {{ setting.type }}</div>
-          }
-        }
-        <p class="help" [innerHtml]="setting.description | nl2br"></p>
-      </div>
+    @if (tab.description) {
+      <p class="has-text-grey mb-3">{{ tab.description }}</p>
     }
+    <div class="settings-grid">
+      @for (setting of tab.settings; track setting.key) {
+        @if (setting.type === 'Object') {
+          <h3 class="settings-section">{{ setting.displayName }}</h3>
+        } @else {
+          <div class="field" [class.field-compact]="setting.type === 'Int32' || setting.type === 'Boolean'">
+            @if (setting.type !== 'Boolean') {
+              <label class="label">{{ setting.displayName }}</label>
+            }
+            @switch (setting.type) {
+              @case ('String') {
+                <div class="control">
+                  <input class="input" type="text" [(ngModel)]="setting.value" />
+                </div>
+              }
+              @case ('Int32') {
+                <div class="control">
+                  <input class="input" type="number" [(ngModel)]="setting.value" />
+                </div>
+              }
+              @case ('Boolean') {
+                <label class="checkbox">
+                  <input type="checkbox" [(ngModel)]="setting.value" />
+                  {{ setting.displayName }}
+                </label>
+              }
+              @case ('Enum') {
+                <div class="control select is-fullwidth">
+                  <select [(ngModel)]="setting.value">
+                    @for (kvp of setting.enumValues | keyvalue; track kvp) {
+                      <option [value]="kvp.key">{{ kvp.value }}</option>
+                    }
+                  </select>
+                </div>
+              }
+              @default {
+                <div class="control">Invalid setting type {{ setting.type }}</div>
+              }
+            }
+            @if (setting.description) {
+              <p class="help" [innerHtml]="setting.description | nl2br"></p>
+            }
+          </div>
+        }
+      }
+    </div>
   </div>
 }
 
 @if (activeTab === 99) {
-  <div>
+  <div class="settings-grid">
     <div class="field">
       <label class="label">Test download path permissions</label>
       <div class="control">
@@ -75,27 +81,21 @@
           </button>
         }
         @if (testPathError) {
-          <div class="notification is-danger is-light">
-            Could not test your download path<br />
-            {{ testPathError }}
-          </div>
+          <div class="notification is-danger is-light">{{ testPathError }}</div>
         }
         @if (testPathSuccess) {
-          <div class="notification is-success is-light">Your download path looks good!</div>
+          <div class="notification is-success is-light">Download path is writable.</div>
         }
       </div>
-      <div class="help">This will check if the download folder has write permissions.</div>
+      <p class="help">Checks whether the download folder has write permissions.</p>
     </div>
     <div class="field">
-      <label class="label">Test Real-Debrid download speed</label>
+      <label class="label">Test AllDebrid download speed</label>
       <div class="control">
         @if (testDownloadSpeedError) {
-          <div class="notification is-danger is-light">
-            Could not test your download speed<br />
-            {{ testDownloadSpeedError }}
-          </div>
+          <div class="notification is-danger is-light">{{ testDownloadSpeedError }}</div>
         } @else if (testDownloadSpeedSuccess) {
-          <div class="notification is-success is-light">Download speed {{ testDownloadSpeedSuccess | filesize }}/s</div>
+          <div class="notification is-success is-light">Download speed: {{ testDownloadSpeedSuccess | filesize }}/s</div>
         } @else {
           <button
             class="button is-warning"
@@ -107,20 +107,15 @@
           </button>
         }
       </div>
-      <div class="help">
-        This will attempt to download a 10GB file from Real-Debrid. When 50MB has been downloaded the test will stop.
-      </div>
+      <p class="help">Downloads up to 50 MB from AllDebrid to measure throughput.</p>
     </div>
     <div class="field">
-      <label class="label">Test download folder write speed</label>
+      <label class="label">Test write speed</label>
       <div class="control">
         @if (testWriteSpeedError) {
-          <div class="notification is-danger is-light">
-            Could not test your download speed<br />
-            {{ testWriteSpeedError }}
-          </div>
+          <div class="notification is-danger is-light">{{ testWriteSpeedError }}</div>
         } @else if (testWriteSpeedSuccess) {
-          <div class="notification is-success is-light">Write speed {{ testWriteSpeedSuccess | filesize }}/s</div>
+          <div class="notification is-success is-light">Write speed: {{ testWriteSpeedSuccess | filesize }}/s</div>
         } @else {
           <button
             class="button is-warning"
@@ -132,7 +127,7 @@
           </button>
         }
       </div>
-      <div class="help">This will write a small file to your download folder to see how fast it can write to it.</div>
+      <p class="help">Writes a small file to the download folder to measure disk write speed.</p>
     </div>
   </div>
 }
@@ -155,33 +150,17 @@
         (click)="registerMagnetHandler()"
         [disabled]="!canRegisterMagnetHandler"
       >
-        <span>
-          {{ canRegisterMagnetHandler ? "Register Handler" : "Unavailable in This Browser" }}
-        </span>
+        {{ canRegisterMagnetHandler ? 'Register Handler' : 'Unavailable in This Browser' }}
       </button>
     </div>
     <p class="help">
       @if (canRegisterMagnetHandler) {
-        This will attempt to register the client as your browser's default handler for magnet links and automatically
-        open them in the new torrent screen for downloading.
+        Registers this client as your browser's default handler for magnet links.
       } @else {
         Magnet link registration is unavailable. Your
-        <a
-          href="https://caniuse.com/mdn-api_navigator_registerprotocolhandler"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          browser may not support this feature
-        </a>
-        , or the client is not being served in a
-        <a
-          href="https://developer.mozilla.org/en-US/docs/Glossary/Secure_Context/"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          secure context
-        </a>
-        .
+        <a href="https://caniuse.com/mdn-api_navigator_registerprotocolhandler" target="_blank" rel="noopener noreferrer">browser may not support this feature</a>,
+        or the client is not served in a
+        <a href="https://developer.mozilla.org/en-US/docs/Glossary/Secure_Context/" target="_blank" rel="noopener noreferrer">secure context</a>.
       }
     </p>
   </div>

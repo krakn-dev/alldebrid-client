@@ -9,6 +9,7 @@ import { FileSizePipe } from '../filesize.pipe';
 @Component({
   selector: 'app-settings',
   templateUrl: './settings.component.html',
+  styleUrls: ['./settings.component.scss'],
   imports: [NgClass, FormsModule, KeyValuePipe, Nl2BrPipe, FileSizePipe],
   standalone: true,
 })
@@ -67,8 +68,8 @@ export class SettingsComponent implements OnInit {
 
   public testDownloadPath(): void {
     const settingDownloadPath = this.tabs
-      .find((m) => m.key === 'DownloadClient')
-      .settings.find((m) => m.key === 'DownloadClient:DownloadPath').value as string;
+      .find((m) => m.key === 'Paths')
+      .settings.find((m) => m.key === 'Paths:DownloadPath').value as string;
 
     this.saving = true;
     this.testPathError = null;
