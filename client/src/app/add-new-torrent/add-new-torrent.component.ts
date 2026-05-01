@@ -1,9 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { TorrentService } from 'src/app/torrent.service';
 import { Torrent, TorrentFileAvailability } from '../models/torrent.model';
 import { SettingsService } from '../settings.service';
-import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NgClass } from '@angular/common';
 

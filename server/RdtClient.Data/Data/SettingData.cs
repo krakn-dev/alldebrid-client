@@ -35,7 +35,7 @@ public class SettingData(DataContext dataContext, ILogger<SettingData> logger)
         await ResetCache();
     }
 
-    public async Task Update(String settingId, Object? value)
+    public async Task Update(string settingId, Object? value)
     {
         var dbSetting = await dataContext.Settings.FirstOrDefaultAsync(m => m.SettingId == settingId);
 
@@ -57,7 +57,7 @@ public class SettingData(DataContext dataContext, ILogger<SettingData> logger)
 
         if (settings.Count == 0)
         {
-            throw new("No settings found, please restart");
+            throw new Exception("No settings found, please restart");
         }
 
         SetSettings(settings, Get, null);
@@ -90,7 +90,7 @@ public class SettingData(DataContext dataContext, ILogger<SettingData> logger)
         }
     }
 
-    private static List<SettingProperty> GetSettings(Object defaultSetting, String? parent)
+    private static List<SettingProperty> GetSettings(Object defaultSetting, string? parent)
     {
         var result = new List<SettingProperty>();
 
@@ -117,7 +117,7 @@ public class SettingData(DataContext dataContext, ILogger<SettingData> logger)
 
             if (property.PropertyType.IsEnum ||
                 property.PropertyType.IsValueType ||
-                property.PropertyType == typeof(String))
+                property.PropertyType == typeof(string))
             {
                 settingProperty.Value = property.GetValue(defaultSetting);
 
@@ -131,7 +131,7 @@ public class SettingData(DataContext dataContext, ILogger<SettingData> logger)
                         var enumMember = property.PropertyType.GetMember(e.ToString()).First();
                         var enumDescriptionAttribute = enumMember.GetCustomAttribute<DescriptionAttribute>();
                         var enumName = enumDescriptionAttribute?.Description ?? Enum.GetName(property.PropertyType, e) ?? "Unknown value";
-                        settingProperty.EnumValues.Add((Int32)(Object)e, enumName);
+                        settingProperty.EnumValues.Add((int)(Object)e, enumName);
                     }
                 }
 
@@ -150,7 +150,7 @@ public class SettingData(DataContext dataContext, ILogger<SettingData> logger)
         return result;
     }
 
-    private void SetSettings(IList<Setting> settings, Object defaultSetting, String? parent)
+    private void SetSettings(IList<Setting> settings, Object defaultSetting, string? parent)
     {
         var properties = defaultSetting.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
@@ -165,7 +165,7 @@ public class SettingData(DataContext dataContext, ILogger<SettingData> logger)
 
             if (property.PropertyType.IsEnum ||
                 property.PropertyType.IsValueType ||
-                property.PropertyType == typeof(String))
+                property.PropertyType == typeof(string))
             {
                 var setting = settings.FirstOrDefault(m => m.SettingId == propertyName);
 

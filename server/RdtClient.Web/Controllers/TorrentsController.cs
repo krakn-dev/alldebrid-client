@@ -77,7 +77,7 @@ public class TorrentsController(ILogger<TorrentsController> logger, Torrents tor
 
         logger.LogDebug($"Add file");
 
-        var fileStream = file.OpenReadStream();
+        await using var fileStream = file.OpenReadStream();
 
         await using var memoryStream = new MemoryStream();
 
@@ -125,7 +125,7 @@ public class TorrentsController(ILogger<TorrentsController> logger, Torrents tor
             return BadRequest("Invalid torrent file");
         }
 
-        var fileStream = file.OpenReadStream();
+        await using var fileStream = file.OpenReadStream();
 
         await using var memoryStream = new MemoryStream();
 
@@ -236,7 +236,7 @@ public class TorrentsController(ILogger<TorrentsController> logger, Torrents tor
         }
         else if (file != null)
         {
-            var fileStream = file.OpenReadStream();
+            await using var fileStream = file.OpenReadStream();
 
             await using var memoryStream = new MemoryStream();
 

@@ -101,7 +101,7 @@ public class Torrents(
         catch (Exception ex)
         {
             logger.LogError(ex, "{ex.Message}, trying to parse {magnetLink}", ex.Message, magnetLink);
-            throw new($"{ex.Message}, trying to parse {magnetLink}");
+            throw new Exception($"{ex.Message}, trying to parse {magnetLink}");
         }
 
         if (!string.IsNullOrWhiteSpace(Settings.Get.General.BannedTrackers))
@@ -124,7 +124,7 @@ public class Torrents(
                     if (bannedUrls.Count > 0)
                     {
                         var bannedUrlsString = string.Join(", ", bannedUrls);
-                        throw new($"Cannot add torrent, the torrent contains banned trackers: {bannedUrlsString}.");
+                        throw new Exception($"Cannot add torrent, the torrent contains banned trackers: {bannedUrlsString}.");
                     }
                 }
             }
@@ -167,7 +167,7 @@ public class Torrents(
         }
         catch (Exception ex)
         {
-            throw new($"{ex.Message}, trying to parse {fileAsBase64}");
+            throw new Exception($"{ex.Message}, trying to parse {fileAsBase64}");
         }
 
         if (!string.IsNullOrWhiteSpace(Settings.Get.General.BannedTrackers))
@@ -185,7 +185,7 @@ public class Torrents(
 
                 if (!string.IsNullOrWhiteSpace(monoTorrent.Source) && monoTorrent.Source.Contains(bannedTracker))
                 {
-                    throw new($"Cannot add torrent, the torrent source '{monoTorrent.Source}' is a banned tracker.");
+                    throw new Exception($"Cannot add torrent, the torrent source '{monoTorrent.Source}' is a banned tracker.");
                 }
 
                 if (monoTorrent.AnnounceUrls != null)
@@ -195,7 +195,7 @@ public class Torrents(
                     if (bannedUrls.Count > 0)
                     {
                         var bannedUrlsString = string.Join(", ", bannedUrls);
-                        throw new($"Cannot add torrent, the torrent contains banned trackers: {bannedUrlsString}.");
+                        throw new Exception($"Cannot add torrent, the torrent contains banned trackers: {bannedUrlsString}.");
                     }
                 }
             }
@@ -267,12 +267,12 @@ public class Torrents(
     {
         if (torrent.RdId != null)
         {
-            throw new("Torrent already added to debrid provider, cannot dequeue");
+            throw new Exception("Torrent already added to debrid provider, cannot dequeue");
         }
 
         if (torrent.FileOrMagnet == null)
         {
-            throw new("Torrent has no torrent file or magnet link");
+            throw new Exception("Torrent has no torrent file or magnet link");
         }
 
         logger.LogDebug("Adding {hash} to debrid provider {torrentInfo}", torrent.Hash, torrent.ToLog());
@@ -481,7 +481,7 @@ public class Torrents(
 
     public async Task<string> UnrestrictLink(Guid downloadId)
     {
-        var download = await downloads.GetById(downloadId) ?? throw new($"Download with ID {downloadId} not found");
+        var download = await downloads.GetById(downloadId) ?? throw new Exception($"Download with ID {downloadId} not found");
 
         Log("Unrestricting link", download, download.Torrent);
 
@@ -498,7 +498,7 @@ public class Torrents(
     /// </summary>
     public async Task<string> RetrieveFileName(Guid downloadId)
     {
-        var download = await downloads.GetById(downloadId) ?? throw new($"Download with ID {downloadId} not found");
+        var download = await downloads.GetById(downloadId) ?? throw new Exception($"Download with ID {downloadId} not found");
 
         Log($"Retrieving filename for", download, download.Torrent);
 
@@ -639,7 +639,7 @@ public class Torrents(
 
             if (string.IsNullOrWhiteSpace(torrent.FileOrMagnet))
             {
-                throw new($"Cannot re-add this torrent, original magnet or file not found");
+                throw new Exception($"Cannot re-add this torrent, original magnet or file not found");
             }
 
             Torrent newTorrent;
@@ -816,7 +816,7 @@ public class Torrents(
             return;
         }
 
-        var torrent = await torrentData.GetById(torrentId) ?? throw new($"Cannot find Torrent with ID {torrentId}");
+        var torrent = await torrentData.GetById(torrentId) ?? throw new Exception($"Cannot find Torrent with ID {torrentId}");
 
         var downloadsForTorrent = await downloads.GetForTorrent(torrentId);
 

@@ -431,7 +431,7 @@ public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Dow
 
                             if (string.IsNullOrWhiteSpace(remoteId))
                             {
-                                throw new($"No remote ID received from download client");
+                                throw new Exception($"No remote ID received from download client");
                             }
 
                             Log($"Received ID {remoteId}", download, torrent);

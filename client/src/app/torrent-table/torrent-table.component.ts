@@ -77,10 +77,10 @@ export class TorrentTableComponent implements OnInit {
     this.router.navigate([`/torrent/${torrentId}`]);
   }
 
-  public toggleDeleteSelectAll(event: any) {
+  public toggleDeleteSelectAll(event: Event) {
     this.selectedTorrents = [];
 
-    if (event.target.checked) {
+    if ((event.target as HTMLInputElement).checked) {
       this.torrents.forEach((torrent) => {
         this.selectedTorrents.push(torrent.torrentId);
       });

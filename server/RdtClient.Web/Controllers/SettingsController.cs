@@ -75,7 +75,7 @@ public class SettingsController(Settings settings, Torrents torrents) : Controll
 
         if (!Directory.Exists(path))
         {
-            throw new($"Path {path} does not exist");
+            throw new Exception($"Path {path} does not exist");
         }
 
         var testFile = $"{path}/test.txt";

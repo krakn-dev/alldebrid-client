@@ -13,8 +13,8 @@ public class Download
     [ForeignKey("TorrentId")]
     public Torrent? Torrent { get; set; }
 
-    public String Path { get; set; } = null!;
-    public String? Link { get; set; }
+    public string Path { get; set; } = null!;
+    public string? Link { get; set; }
 
     public DateTimeOffset Added { get; set; }
     public DateTimeOffset? DownloadQueued { get; set; }
@@ -25,22 +25,22 @@ public class Download
     public DateTimeOffset? UnpackingFinished { get; set; }
     public DateTimeOffset? Completed { get; set; }
 
-    public Int32 RetryCount { get; set; }
+    public int RetryCount { get; set; }
 
-    public String? Error { get; set; }
+    public string? Error { get; set; }
 
-    public String? RemoteId { get; set; }
+    public string? RemoteId { get; set; }
 
-    public String? FileName { get; set; }
-
-    [NotMapped]
-    public Int64 BytesTotal { get; set; }
+    public string? FileName { get; set; }
 
     [NotMapped]
-    public Int64 BytesDone { get; set; }
+    public long BytesTotal { get; set; }
 
     [NotMapped]
-    public Int64 Speed { get; set; }
+    public long BytesDone { get; set; }
+
+    [NotMapped]
+    public long Speed { get; set; }
 }
 
 /// <summary>
@@ -52,9 +52,9 @@ public class DownloadInfo
     /// The name of the file. Should not include directory.
     /// If the filename is not known, set tn null and `GetFileName` will be called with the unrestricted link.
     /// </summary>
-    public required String? FileName;
+    public required string? FileName;
     /// <summary>
     /// The restricted link to download this download. If the debrid serice in question does not have restricted links, use either a fake or the unrestricted link
     /// </summary>
-    public required String RestrictedLink;
+    public required string RestrictedLink;
 }

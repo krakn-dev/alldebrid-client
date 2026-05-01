@@ -49,7 +49,7 @@ public class TorrentData(DataContext dataContext) : ITorrentData
         return dbTorrent;
     }
 
-    public async Task<Torrent?> GetByHash(String hash)
+    public async Task<Torrent?> GetByHash(string hash)
     {
         hash = hash.ToLower();
 
@@ -71,10 +71,10 @@ public class TorrentData(DataContext dataContext) : ITorrentData
         return dbTorrent;
     }
 
-    public async Task<Torrent> Add(String? rdId,
-                                   String hash,
-                                   String? fileOrMagnetContents,
-                                   Boolean isFile,
+    public async Task<Torrent> Add(string? rdId,
+                                   string hash,
+                                   string? fileOrMagnetContents,
+                                   bool isFile,
                                    DownloadClient downloadClient,
                                    Torrent torrent)
     {
@@ -141,7 +141,7 @@ public class TorrentData(DataContext dataContext) : ITorrentData
         await VoidCache();
     }
 
-    public async Task UpdateRdId(Torrent torrent, String rdId)
+    public async Task UpdateRdId(Torrent torrent, string rdId)
     {
         var dbTorrent = await dataContext.Torrents.FirstOrDefaultAsync(m => m.TorrentId == torrent.TorrentId);
 
@@ -180,7 +180,7 @@ public class TorrentData(DataContext dataContext) : ITorrentData
         await VoidCache();
     }
 
-    public async Task UpdateCategory(Guid torrentId, String? category)
+    public async Task UpdateCategory(Guid torrentId, string? category)
     {
         var dbTorrent = await dataContext.Torrents.FirstOrDefaultAsync(m => m.TorrentId == torrentId);
 
@@ -196,7 +196,7 @@ public class TorrentData(DataContext dataContext) : ITorrentData
         await VoidCache();
     }
 
-    public async Task UpdateComplete(Guid torrentId, String? error, DateTimeOffset? datetime, Boolean retry)
+    public async Task UpdateComplete(Guid torrentId, string? error, DateTimeOffset? datetime, bool retry)
     {
         var dbTorrent = await dataContext.Torrents.FirstOrDefaultAsync(m => m.TorrentId == torrentId);
 
@@ -205,10 +205,10 @@ public class TorrentData(DataContext dataContext) : ITorrentData
             return;
         }
 
-        if (String.IsNullOrWhiteSpace(error))
+        if (string.IsNullOrWhiteSpace(error))
         {
             var downloads = await dataContext.Downloads.AsNoTracking().Where(m => m.TorrentId == torrentId).ToListAsync();
-            var downloadWithErrors = downloads.Where(m => !String.IsNullOrWhiteSpace(m.Error)).ToList();
+            var downloadWithErrors = downloads.Where(m => !string.IsNullOrWhiteSpace(m.Error)).ToList();
 
             if (downloadWithErrors.Count > 0)
             {
@@ -216,7 +216,7 @@ public class TorrentData(DataContext dataContext) : ITorrentData
             }
         }
 
-        if (!String.IsNullOrWhiteSpace(error) && retry)
+        if (!string.IsNullOrWhiteSpace(error) && retry)
         {
             if (dbTorrent.RetryCount < dbTorrent.TorrentRetryAttempts)
             {
@@ -249,7 +249,7 @@ public class TorrentData(DataContext dataContext) : ITorrentData
         await VoidCache();
     }
 
-    public async Task UpdatePriority(Guid torrentId, Int32? priority)
+    public async Task UpdatePriority(Guid torrentId, int? priority)
     {
         var dbTorrent = await dataContext.Torrents.FirstOrDefaultAsync(m => m.TorrentId == torrentId);
 
@@ -265,7 +265,7 @@ public class TorrentData(DataContext dataContext) : ITorrentData
         await VoidCache();
     }
 
-    public async Task UpdateRetry(Guid torrentId, DateTimeOffset? dateTime, Int32 retryCount)
+    public async Task UpdateRetry(Guid torrentId, DateTimeOffset? dateTime, int retryCount)
     {
         var dbTorrent = await dataContext.Torrents.FirstOrDefaultAsync(m => m.TorrentId == torrentId);
 
@@ -282,7 +282,7 @@ public class TorrentData(DataContext dataContext) : ITorrentData
         await VoidCache();
     }
 
-    public async Task UpdateError(Guid torrentId, String error)
+    public async Task UpdateError(Guid torrentId, string error)
     {
         var dbTorrent = await dataContext.Torrents.FirstOrDefaultAsync(m => m.TorrentId == torrentId);
 

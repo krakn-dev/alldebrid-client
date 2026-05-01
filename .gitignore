@@ -5,6 +5,6 @@ publish/
 node_modules/
 RealDebridClient.zip
 server/RdtClient.Web/appsettings.Development.json
-data
+/data
 Dockerfile.dev
 test.bat

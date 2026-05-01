@@ -11,18 +11,18 @@ public class Torrent
     [Key]
     public Guid TorrentId { get; set; }
 
-    public String Hash { get; set; } = null!;
+    public string Hash { get; set; } = null!;
 
-    public String? Category { get; set; }
+    public string? Category { get; set; }
         
     public TorrentDownloadAction DownloadAction { get; set; }
     public TorrentFinishedAction FinishedAction { get; set; }
-    public Int32  FinishedActionDelay { get; set; }
+    public int  FinishedActionDelay { get; set; }
     public TorrentHostDownloadAction HostDownloadAction { get; set; }
-    public Int32 DownloadMinSize { get; set; }
-    public String? IncludeRegex { get; set; }
-    public String? ExcludeRegex { get; set; }
-    public String? DownloadManualFiles { get; set; }
+    public int DownloadMinSize { get; set; }
+    public string? IncludeRegex { get; set; }
+    public string? ExcludeRegex { get; set; }
+    public string? DownloadManualFiles { get; set; }
     public DownloadClient DownloadClient { get; set; }
 
     public DateTimeOffset Added { get; set; }
@@ -30,42 +30,42 @@ public class Torrent
     public DateTimeOffset? Completed { get; set; }
     public DateTimeOffset? Retry { get; set; }
 
-    public String? FileOrMagnet { get; set; }
-    public Boolean IsFile { get; set; }
+    public string? FileOrMagnet { get; set; }
+    public bool IsFile { get; set; }
 
-    public Int32? Priority { get; set; }
-    public Int32 RetryCount { get; set; }
-    public Int32 DownloadRetryAttempts { get; set; }
-    public Int32 TorrentRetryAttempts { get; set; }
-    public Int32 DeleteOnError { get; set; }
-    public Int32 Lifetime { get; set; }
+    public int? Priority { get; set; }
+    public int RetryCount { get; set; }
+    public int DownloadRetryAttempts { get; set; }
+    public int TorrentRetryAttempts { get; set; }
+    public int DeleteOnError { get; set; }
+    public int Lifetime { get; set; }
 
-    public String? Error { get; set; }
+    public string? Error { get; set; }
 
     [InverseProperty("Torrent")]
     public IList<Download> Downloads { get; set; } = [];
 
     public Provider? ClientKind { get; set; }
-    public String? RdId { get; set; }
-    public String? RdName { get; set; }
-    public Int64? RdSize { get; set; }
-    public String? RdHost { get; set; }
-    public Int64? RdSplit { get; set; }
-    public Int64? RdProgress { get; set; }
+    public string? RdId { get; set; }
+    public string? RdName { get; set; }
+    public long? RdSize { get; set; }
+    public string? RdHost { get; set; }
+    public long? RdSplit { get; set; }
+    public long? RdProgress { get; set; }
     public TorrentStatus? RdStatus { get; set; }
-    public String? RdStatusRaw { get; set; }
+    public string? RdStatusRaw { get; set; }
     public DateTimeOffset? RdAdded { get; set; }
     public DateTimeOffset? RdEnded { get; set; }
-    public Int64? RdSpeed { get; set; }
-    public Int64? RdSeeders { get; set; }
-    public String? RdFiles { get; set; }
+    public long? RdSpeed { get; set; }
+    public long? RdSeeders { get; set; }
+    public string? RdFiles { get; set; }
 
     [NotMapped]
     public IList<TorrentClientFile> Files
     {
         get
         {
-            if (String.IsNullOrWhiteSpace(RdFiles))
+            if (string.IsNullOrWhiteSpace(RdFiles))
             {
                 return [];
             }
@@ -82,11 +82,11 @@ public class Torrent
     }
 
     [NotMapped]
-    public IList<String> ManualFiles
+    public IList<string> ManualFiles
     {
         get
         {
-            if (String.IsNullOrWhiteSpace(DownloadManualFiles))
+            if (string.IsNullOrWhiteSpace(DownloadManualFiles))
             {
                 return [];
             }

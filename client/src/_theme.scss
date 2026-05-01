@@ -2,7 +2,7 @@
 // THEME CONFIG — edit these four colors, everything else derives.
 // ─────────────────────────────────────────────────────────────────────
 $bg:        #1a1a1a;  // page background
-$text:      #f9fcfd;  // primary text
+$text:      #fffdf2;  // primary text
 $primary:   #fac333;  // accent: links, headings, primary buttons, table headers
 $secondary: #8a6a14;  // secondary accent: link buttons, header underline
 // ─────────────────────────────────────────────────────────────────────
@@ -198,7 +198,7 @@ $btn-active-bg: #467513;
 // Headings + labels
 .label,
 h1, h2, h3, h4, h5, h6 {
-  color: $primary !important;
+  color: $text !important;
 }
 
 .label {

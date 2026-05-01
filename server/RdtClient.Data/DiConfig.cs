@@ -13,7 +13,7 @@ public static class DiConfig
 
         if (string.IsNullOrWhiteSpace(dbPath))
         {
-            throw new("No database path configured. Set DataPath in appsettings.json (e.g. C:\\ProgramData\\RdtClient).");
+            throw new Exception("No database path configured. Set DataPath in appsettings.json (e.g. C:\\ProgramData\\RdtClient).");
         }
 
         Directory.CreateDirectory(Path.GetDirectoryName(dbPath)!);

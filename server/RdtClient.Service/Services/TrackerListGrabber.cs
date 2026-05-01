@@ -95,7 +95,7 @@ public class TrackerListGrabber(IHttpClientFactory httpClientFactory, IMemoryCac
         {
             logger.LogError(ex, "Unable to fetch tracker list.");
 
-            throw new("Unable to fetch tracker list for enrichment.", ex);
+            throw new Exception("Unable to fetch tracker list for enrichment.", ex);
         }
         finally
         {

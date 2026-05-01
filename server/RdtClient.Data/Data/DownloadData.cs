@@ -22,7 +22,7 @@ public class DownloadData(DataContext dataContext)
                                  .FirstOrDefaultAsync(m => m.DownloadId == downloadId);
     }
 
-    public async Task<Download?> Get(Guid torrentId, String path)
+    public async Task<Download?> Get(Guid torrentId, string path)
     {
         return await dataContext.Downloads
                                  .Include(m => m.Torrent)
@@ -52,7 +52,7 @@ public class DownloadData(DataContext dataContext)
         return download;
     }
 
-    public async Task UpdateUnrestrictedLink(Guid downloadId, String unrestrictedLink)
+    public async Task UpdateUnrestrictedLink(Guid downloadId, string unrestrictedLink)
     {
         var dbDownload = await dataContext.Downloads
                                            .FirstOrDefaultAsync(m => m.DownloadId == downloadId);
@@ -69,7 +69,7 @@ public class DownloadData(DataContext dataContext)
         await TorrentData.VoidCache();
     }
 
-    public async Task UpdateFileName(Guid downloadId, String fileName)
+    public async Task UpdateFileName(Guid downloadId, string fileName)
     {
         var dbDownload = await dataContext.Downloads
                                            .FirstOrDefaultAsync(m => m.DownloadId == downloadId);
@@ -188,7 +188,7 @@ public class DownloadData(DataContext dataContext)
         await TorrentData.VoidCache();
     }
 
-    public async Task UpdateError(Guid downloadId, String? error)
+    public async Task UpdateError(Guid downloadId, string? error)
     {
         var dbDownload = await dataContext.Downloads
                                            .FirstOrDefaultAsync(m => m.DownloadId == downloadId);
@@ -205,7 +205,7 @@ public class DownloadData(DataContext dataContext)
         await TorrentData.VoidCache();
     }
     
-    public async Task UpdateRetryCount(Guid downloadId, Int32 retryCount)
+    public async Task UpdateRetryCount(Guid downloadId, int retryCount)
     {
         var dbDownload = await dataContext.Downloads
                                            .FirstOrDefaultAsync(m => m.DownloadId == downloadId);
@@ -222,7 +222,7 @@ public class DownloadData(DataContext dataContext)
         await TorrentData.VoidCache();
     }
 
-    public async Task UpdateRemoteId(Guid downloadId, String remoteId)
+    public async Task UpdateRemoteId(Guid downloadId, string remoteId)
     {
         var dbDownload = await dataContext.Downloads
                                            .FirstOrDefaultAsync(m => m.DownloadId == downloadId);
@@ -254,7 +254,7 @@ public class DownloadData(DataContext dataContext)
     {
         var dbDownload = await dataContext.Downloads
                                            .FirstOrDefaultAsync(m => m.DownloadId == downloadId) 
-                         ?? throw new($"Cannot find download with ID {downloadId}");
+                         ?? throw new Exception($"Cannot find download with ID {downloadId}");
 
         dbDownload.RetryCount = 0;
         dbDownload.Link = null;

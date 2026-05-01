@@ -1,4 +1,4 @@
-using RdtClient.Data.Enums;
+﻿using RdtClient.Data.Enums;
 using RdtClient.Data.Models.Data;
 
 namespace RdtClient.Data.Data;
@@ -7,23 +7,23 @@ public interface ITorrentData
 {
     Task<IList<Torrent>> Get();
     Task<Torrent?> GetById(Guid torrentId);
-    Task<Torrent?> GetByHash(String hash);
+    Task<Torrent?> GetByHash(string hash);
 
-    Task<Torrent> Add(String? rdId,
-                      String hash,
-                      String? fileOrMagnetContents,
-                      Boolean isFile,
+    Task<Torrent> Add(string? rdId,
+                      string hash,
+                      string? fileOrMagnetContents,
+                      bool isFile,
                       DownloadClient downloadClient,
                       Torrent torrent);
 
     Task UpdateRdData(Torrent torrent);
-    Task UpdateRdId(Torrent torrent, String rdId);
+    Task UpdateRdId(Torrent torrent, string rdId);
     Task Update(Torrent torrent);
-    Task UpdateCategory(Guid torrentId, String? category);
-    Task UpdateComplete(Guid torrentId, String? error, DateTimeOffset? datetime, Boolean retry);
+    Task UpdateCategory(Guid torrentId, string? category);
+    Task UpdateComplete(Guid torrentId, string? error, DateTimeOffset? datetime, bool retry);
     Task UpdateFilesSelected(Guid torrentId, DateTimeOffset datetime);
-    Task UpdatePriority(Guid torrentId, Int32? priority);
-    Task UpdateRetry(Guid torrentId, DateTimeOffset? dateTime, Int32 retryCount);
-    Task UpdateError(Guid torrentId, String error);
+    Task UpdatePriority(Guid torrentId, int? priority);
+    Task UpdateRetry(Guid torrentId, DateTimeOffset? dateTime, int retryCount);
+    Task UpdateError(Guid torrentId, string error);
     Task Delete(Guid torrentId);
 }
