@@ -4,6 +4,20 @@
     Please refresh the screen after fixing this error.
   </div>
 }
+<div class="field has-addons mb-4">
+  <div class="control has-icons-left is-expanded">
+    <input class="input" type="text" placeholder="Filter by name…" [(ngModel)]="filterText" />
+    <span class="icon is-left"><i class="fas fa-search"></i></span>
+  </div>
+  @if (filterText) {
+    <div class="control">
+      <button class="button" (click)="filterText = ''" title="Clear filter">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  }
+</div>
+
 <div class="table-container">
   <table class="table is-fullwidth is-hoverable">
     <thead>
@@ -15,19 +29,19 @@
             [checked]="selectedTorrents.length > 0 && selectedTorrents.length === torrents.length"
           />
         </th>
-        <th (click)="sort('rdName')">Name</th>
-        <th (click)="sort('category')">Category</th>
-        <th (click)="sort('priority')">Priority</th>
-        <th (click)="sort('rdSeeders')">Seeders</th>
-        <th (click)="sort('files.length')">Files</th>
-        <th (click)="sort('downloads.length')">Downloads</th>
-        <th (click)="sort('rdSize')">Size</th>
-        <th (click)="sort('added')">Requested</th>
-        <th (click)="sort('status')">Status</th>
+        <th (click)="sort('rdName')">Name <i class="fas" [ngClass]="sortIcon('rdName')"></i></th>
+        <th (click)="sort('category')">Category <i class="fas" [ngClass]="sortIcon('category')"></i></th>
+        <th (click)="sort('priority')">Priority <i class="fas" [ngClass]="sortIcon('priority')"></i></th>
+        <th (click)="sort('rdSeeders')">Seeders <i class="fas" [ngClass]="sortIcon('rdSeeders')"></i></th>
+        <th (click)="sort('files.length')">Files <i class="fas" [ngClass]="sortIcon('files.length')"></i></th>
+        <th (click)="sort('downloads.length')">Downloads <i class="fas" [ngClass]="sortIcon('downloads.length')"></i></th>
+        <th (click)="sort('rdSize')">Size <i class="fas" [ngClass]="sortIcon('rdSize')"></i></th>
+        <th (click)="sort('added')">Requested <i class="fas" [ngClass]="sortIcon('added')"></i></th>
+        <th (click)="sort('rdStatus')">Status <i class="fas" [ngClass]="sortIcon('rdStatus')"></i></th>
       </tr>
     </thead>
     <tbody>
-      @for (torrent of torrents | sort: sortProperty : sortDirection; track torrent.torrentId) {
+      @for (torrent of torrents | filter: filterText | sort: sortProperty : sortDirection; track torrent.torrentId) {
         <tr>
           <td>
             <input

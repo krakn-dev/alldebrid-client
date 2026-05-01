@@ -1,4 +1,15 @@
 table {
+  thead th i.fas {
+    font-size: 0.7em;
+    margin-left: 4px;
+    opacity: 0.3;
+    vertical-align: middle;
+
+    &.sort-active {
+      opacity: 1;
+    }
+  }
+
   tr {
     cursor: pointer;
     td.break-all {

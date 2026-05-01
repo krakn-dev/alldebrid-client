@@ -8,12 +8,13 @@ import { NgClass, DecimalPipe, DatePipe } from '@angular/common';
 import { TorrentStatusPipe } from '../torrent-status.pipe';
 import { SortPipe } from '../sort.pipe';
 import { FileSizePipe } from '../filesize.pipe';
+import { FilterPipe } from '../filter.pipe';
 
 @Component({
   selector: 'app-torrent-table',
   templateUrl: './torrent-table.component.html',
   styleUrls: ['./torrent-table.component.scss'],
-  imports: [FormsModule, NgClass, DecimalPipe, DatePipe, TorrentStatusPipe, SortPipe, FileSizePipe],
+  imports: [FormsModule, NgClass, DecimalPipe, DatePipe, TorrentStatusPipe, SortPipe, FileSizePipe, FilterPipe],
   standalone: true,
 })
 export class TorrentTableComponent implements OnInit {
@@ -22,6 +23,7 @@ export class TorrentTableComponent implements OnInit {
   public error: string;
   public sortProperty = 'rdName';
   public sortDirection: 'asc' | 'desc' = 'asc';
+  public filterText = '';
 
   public isDeleteModalActive: boolean;
   public deleteError: string;
@@ -71,6 +73,16 @@ export class TorrentTableComponent implements OnInit {
   public sort(property: string): void {
     this.sortProperty = property;
     this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+  }
+
+  public sortIcon(property: string): Record<string, boolean> {
+    const active = this.sortProperty === property;
+    return {
+      'fa-sort': !active,
+      'fa-sort-up': active && this.sortDirection === 'asc',
+      'fa-sort-down': active && this.sortDirection === 'desc',
+      'sort-active': active,
+    };
   }
 
   public openTorrent(torrentId: string): void {
