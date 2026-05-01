@@ -30,6 +30,7 @@ public static class DiConfig
 
         services.AddScoped<Authentication>();
         services.AddScoped<IDownloads, Downloads>();
+        services.AddScoped<Downloads>();
         services.AddScoped<RemoteService>();
         services.AddScoped<Settings>();
         services.AddScoped<Torrents>();
