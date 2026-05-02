@@ -120,6 +120,26 @@ export class SettingsComponent implements OnInit {
     });
   }
 
+  public getPlaceholder(setting: Setting): string {
+    const allSettings = this.tabs.flatMap((t) => t.settings);
+    const get = (key: string) => (allSettings.find((s) => s.key === key)?.value as string) || '';
+
+    switch (setting.key) {
+      case 'Paths:MappedPath':
+        return get('Paths:DownloadPath') || 'same as download path';
+      case 'Paths:WatchErrorPath': {
+        const wp = get('Paths:WatchPath');
+        return wp ? `${wp}\\error` : '';
+      }
+      case 'Paths:WatchProcessedPath': {
+        const wp = get('Paths:WatchPath');
+        return wp ? `${wp}\\processed` : '';
+      }
+      default:
+        return '';
+    }
+  }
+
   public registerMagnetHandler(): void {
     try {
       navigator.registerProtocolHandler('magnet', `${window.location.origin}/add?magnet=%s`);

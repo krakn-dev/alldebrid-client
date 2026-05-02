@@ -28,7 +28,7 @@
             @switch (setting.type) {
               @case ('String') {
                 <div class="control">
-                  <input class="input" type="text" [(ngModel)]="setting.value" />
+                  <input class="input" type="text" [(ngModel)]="setting.value" [placeholder]="getPlaceholder(setting)" />
                 </div>
               }
               @case ('Int32') {
