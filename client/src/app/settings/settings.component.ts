@@ -17,6 +17,7 @@ export class SettingsComponent implements OnInit {
   public activeTab = 0;
 
   public tabs: Setting[] = [];
+  private settingMap = new Map<string, Setting>();
 
   public saving = false;
   public error: string;
@@ -46,7 +47,13 @@ export class SettingsComponent implements OnInit {
       for (let tab of this.tabs) {
         tab.settings = settings.filter((m) => m.key.indexOf(`${tab.key}:`) > -1);
       }
+
+      this.settingMap = new Map(settings.map((s) => [s.key, s]));
     });
+  }
+
+  private getSetting(key: string): string {
+    return (this.settingMap.get(key)?.value as string) || '';
   }
 
   public ok(): void {
@@ -67,9 +74,7 @@ export class SettingsComponent implements OnInit {
   }
 
   public testDownloadPath(): void {
-    const settingDownloadPath = this.tabs
-      .find((m) => m.key === 'Paths')
-      .settings.find((m) => m.key === 'Paths:DownloadPath').value as string;
+    const settingDownloadPath = this.getSetting('Paths:DownloadPath');
 
     this.saving = true;
     this.testPathError = null;
@@ -121,19 +126,14 @@ export class SettingsComponent implements OnInit {
   }
 
   public getPlaceholder(setting: Setting): string {
-    const allSettings = this.tabs.flatMap((t) => t.settings);
-    const get = (key: string) => (allSettings.find((s) => s.key === key)?.value as string) || '';
-
     switch (setting.key) {
       case 'Paths:MappedPath':
-        return get('Paths:DownloadPath') || 'same as download path';
-      case 'Paths:WatchErrorPath': {
-        const wp = get('Paths:WatchPath');
-        return wp ? `${wp}\\error` : '';
-      }
+        return this.getSetting('Paths:DownloadPath') || 'same as download path';
+      case 'Paths:WatchErrorPath':
       case 'Paths:WatchProcessedPath': {
-        const wp = get('Paths:WatchPath');
-        return wp ? `${wp}\\processed` : '';
+        const wp = this.getSetting('Paths:WatchPath');
+        const sub = setting.key === 'Paths:WatchErrorPath' ? 'error' : 'processed';
+        return wp ? `${wp}\\${sub}` : '';
       }
       default:
         return '';
