@@ -1,11 +1,25 @@
-**/.DS_Store/
+**/.DS_Store
 
 build/
 publish/
 node_modules/
-RealDebridClient.zip
+
+# VS artifacts
+.vs/
+*.suo
+*.user
+*.userprefs
+
+# .NET build output
+server/**/bin/
+server/**/obj/
+
+# App config and data
 server/RdtClient.Web/appsettings.Development.json
 /data
+
+# Misc
 Dockerfile.dev
 test.bat
+aiprompt.md
 .*/
