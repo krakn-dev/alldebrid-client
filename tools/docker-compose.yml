@@ -1,9 +1,9 @@
 version: '3.3'
 
 services:
-    rdtclient:
-        image: rogerfar/rdtclient
-        container_name: rdtclient
+    alldebridclient:
+        image: lekrakin/alldebridclient
+        container_name: alldebridclient
         # build:
         #     context: .
         #     dockerfile: Dockerfile

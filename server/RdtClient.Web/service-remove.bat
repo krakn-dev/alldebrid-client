@@ -3,11 +3,11 @@ set installpath=%~dp0
 NET SESSION >nul 2>&1
 IF %ERRORLEVEL% EQU 0 (
     echo removing firewall rules...
-    netsh.exe advfirewall firewall remove rule name="RealDebridClient" > nul
+    netsh.exe advfirewall firewall remove rule name="AllDebridClient" > nul
     echo removing service...   
-    net stop RealDebridClient
+    net stop AllDebridClient
     timeout /t 5 /nobreak > NUL
-    sc delete RealDebridClient
+    sc delete AllDebridClient
 ) ELSE (
     echo ######## ########  ########   #######  ########  
     echo ##       ##     ## ##     ## ##     ## ##     ## 

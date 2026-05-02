@@ -3,11 +3,11 @@ set installpath=%~dp0
 NET SESSION >nul 2>&1
 IF %ERRORLEVEL% EQU 0 (
     echo adding firewall rules...
-    netsh.exe advfirewall firewall add rule name="RealDebridClient" dir=in action=allow program="%installpath%RdtClient.Web.exe" enable=yes > nul
+    netsh.exe advfirewall firewall add rule name="AllDebridClient" dir=in action=allow program="%installpath%Adb.Client.Web.exe" enable=yes > nul
     echo installing service...   
-    sc create RealDebridClient binPath="%installpath%RdtClient.Web.exe" start=auto
+    sc create AllDebridClient binPath="%installpath%Adb.Client.Web.exe" start=auto
     timeout /t 5 /nobreak > NUL
-    net start RealDebridClient
+    net start AllDebridClient
 ) ELSE (
     echo ######## ########  ########   #######  ########  
     echo ##       ##     ## ##     ## ##     ## ##     ## 

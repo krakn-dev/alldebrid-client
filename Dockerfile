@@ -54,7 +54,7 @@ LABEL maintainer="ravensorb"
 # set environment variables
 ARG DEBIAN_FRONTEND="noninteractive"
 ENV XDG_CONFIG_HOME="/config/xdg"
-ENV RDTCLIENT_BRANCH="main"
+ENV ALLDEBRIDCLIENT_BRANCH="main"
 
 RUN \
    mkdir -p /data/downloads /data/db || true && \

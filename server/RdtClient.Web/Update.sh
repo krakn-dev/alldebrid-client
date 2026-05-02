@@ -5,7 +5,7 @@ INSTALL_DIR="/opt/rdtc"
 INSTALLED_DIR="$INSTALL_DIR/.installed"
 INSTALLED_FILE="$INSTALLED_DIR/version.txt"
 BACKUP_DIR="$INSTALL_DIR/.backup"
-GITHUB_API_URL="https://api.github.com/repos/rogerfar/rdt-client/releases/latest"
+GITHUB_API_URL="https://api.github.com/repos/lekrakin/alldebrid-client/releases/latest"
 DOWNLOAD_URL=$(curl -s "$GITHUB_API_URL" | jq -r '.assets[0].browser_download_url')
 
 # Function to check if a newer version is available
@@ -46,23 +46,23 @@ check_for_update() {
 
 # Function to update the software
 update() {
-    echo "Updating RealDebridClient..."
+    echo "Updating AllDebridClient..."
     
     # Download the latest zip file
-	echo "Downloading Lastest RealDebridClient"
+	echo "Downloading Lastest AllDebridClient"
     curl -sLO "$DOWNLOAD_URL"
     
     # Stop the rdtc service
-	echo "Stopping RealDebridClient"
+	echo "Stopping AllDebridClient"
     sudo systemctl stop rdtc
     
-	echo "Backing up RealDebridClient"
+	echo "Backing up AllDebridClient"
 	cp $INSTALL_DIR/appsettings.json $BACKUP_DIR
 	cp -r $INSTALL_DIR/db $BACKUP_DIR
 	
     # Unzip the downloaded file
-	echo "Unzipping RealDebridClient.zip"
-    unzip -q -o RealDebridClient.zip -d "$INSTALL_DIR"
+	echo "Unzipping AllDebridClient.zip"
+    unzip -q -o AllDebridClient.zip -d "$INSTALL_DIR"
     
     # Store the new version in the installed file
 	echo "Updating Latest Version file"
@@ -73,7 +73,7 @@ update() {
 	cp -r $BACKUP_DIR/db $INSTALL_DIR
     
     # Start the rdtc service
-	echo "Starting RealDebridClient"
+	echo "Starting AllDebridClient"
     sudo systemctl start rdtc
     
     echo "Update complete."

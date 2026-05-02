@@ -13,6 +13,6 @@ chown -R abc:abc \
 echo "Changing to /app folder"
 cd /app || exit
 
-echo "Starting rtdclient"
+echo "Starting alldebridclient"
 exec \
-  s6-setuidgid abc dotnet RdtClient.Web.dll
+  s6-setuidgid abc dotnet Adb.Client.Web.dll

@@ -5,8 +5,8 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
-        <AssemblyName>RdtClient.Service.Test</AssemblyName>
-        <RootNamespace>RdtClient.Service.Test</RootNamespace>
+        <AssemblyName>Adb.Client.Service.Test</AssemblyName>
+        <RootNamespace>Adb.Client.Service.Test</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

@@ -9,13 +9,13 @@ If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     Break
 }
 
-Write-Host "Stopping ReadDebridClient..."
+Write-Host "Stopping AllDebridClient..."
 
-Stop-Service RealDebridClient
+Stop-Service AllDebridClient
 
-Write-Host "Stopped ReadDebridClient"
+Write-Host "Stopped AllDebridClient"
 
-$releasesUri = "https://api.github.com/repos/rogerfar/rdt-client/releases/latest"
+$releasesUri = "https://api.github.com/repos/lekrakin/alldebrid-client/releases/latest"
 $downloadUri = ((Invoke-RestMethod -Method GET -Uri $releasesUri).assets | Where-Object name -like "*.zip").browser_download_url
 
 Write-Host "Downloading $downloadUri"
@@ -44,8 +44,8 @@ Remove-Item -Path $tempExtract -Force -Recurse -ErrorAction SilentlyContinue
 
 Remove-Item $pathZip -Force
 
-Write-Host "Starting ReadDebridClient..."
+Write-Host "Starting AllDebridClient..."
 
-Start-Service RealDebridClient
+Start-Service AllDebridClient
 
-Write-Host "Started ReadDebridClient"
+Write-Host "Started AllDebridClient"

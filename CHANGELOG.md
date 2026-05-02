@@ -1,6 +1,13 @@
 # Changelog
 
+<!-- Versioning: UPSTREAM_MAJOR.UPSTREAM_MINOR.UPSTREAM_PATCH.FORK_REVISION
+     e.g. 2.0.116.1, 2.0.116.2 … reset fork revision to 1 on each upstream sync. -->
+
 ## [Unreleased]
+
+---
+
+## [2.0.116.1] - 2026-05-02
 
 ### Changed
 - Torrent table: filter by name, sortable columns with direction indicators
@@ -10,6 +17,7 @@
 - Server: controller DTOs extracted to `Models/Requests/`
 - Server: explicit `Exception` types on all throw statements
 - Server: `await using` on `IFormFile` streams
+- Rebranded as AllDebrid Client (`Adb.Client.*` assemblies)
 
 ---
 
