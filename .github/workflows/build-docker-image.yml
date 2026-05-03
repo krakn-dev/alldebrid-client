@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - v*
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to build (e.g. v1.0.0)'
+        required: true
+        default: 'v1.0.0'
 
 permissions:
   packages: write
@@ -34,10 +40,13 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
 
       - name: Extract version and patch .csproj
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
+          REF="${{ inputs.tag || github.ref_name }}"
+          VERSION="${REF#v}"
           sed -i "s|<Version>.*</Version>|<Version>$VERSION</Version>|" server/AdbClient.Web/AdbClient.Web.csproj
           sed -i "s|<AssemblyVersion>.*</AssemblyVersion>|<AssemblyVersion>$VERSION</AssemblyVersion>|" server/AdbClient.Web/AdbClient.Web.csproj
 
