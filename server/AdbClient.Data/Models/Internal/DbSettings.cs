@@ -1,9 +1,9 @@
-using RdtClient.Data.Enums;
+using AdbClient.Data.Enums;
 using System.ComponentModel;
 
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
 
-namespace RdtClient.Data.Models.Internal;
+namespace AdbClient.Data.Models.Internal;
 
 public class DbSettings
 {

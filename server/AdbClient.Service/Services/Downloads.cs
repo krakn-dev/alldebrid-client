@@ -1,8 +1,8 @@
-﻿using RdtClient.Data.Data;
-using RdtClient.Data.Models.Data;
-using Download = RdtClient.Data.Models.Data.Download;
+﻿using AdbClient.Data.Data;
+using AdbClient.Data.Models.Data;
+using Download = AdbClient.Data.Models.Data.Download;
 
-namespace RdtClient.Service.Services;
+namespace AdbClient.Service.Services;
 
 public class Downloads(DownloadData downloadData) : IDownloads
 {

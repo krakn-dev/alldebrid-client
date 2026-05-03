@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using RdtClient.Data.Models.Data;
+using AdbClient.Data.Models.Data;
 
-namespace RdtClient.Data.Data;
+namespace AdbClient.Data.Data;
 
 #nullable disable
 

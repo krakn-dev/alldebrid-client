@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace RdtClient.Service.Helpers;
+namespace AdbClient.Service.Helpers;
 
 public class JsonModelBinder : IModelBinder
 {

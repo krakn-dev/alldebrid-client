@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using Moq;
-using RdtClient.Service.Services;
+using AdbClient.Service.Services;
 using MonoTorrent.BEncoding;
 
-namespace RdtClient.Service.Test.Services;
+namespace AdbClient.Service.Test.Services;
 
 public class EnricherTest : IDisposable
 {

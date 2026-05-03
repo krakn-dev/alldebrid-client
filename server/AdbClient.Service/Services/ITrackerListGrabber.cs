@@ -1,4 +1,4 @@
-﻿namespace RdtClient.Service.Services;
+﻿namespace AdbClient.Service.Services;
 
 public interface ITrackerListGrabber
 {

@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace RdtClient.Data.Migrations
+namespace AdbClient.Data.Migrations
 {
     public partial class Settings_Migrate_InternalDownloader : Migration
     {

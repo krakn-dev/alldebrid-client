@@ -1,7 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 
-namespace RdtClient.Service.Middleware;
+namespace AdbClient.Service.Middleware;
 
 public partial class BaseHrefMiddleware(RequestDelegate next, string basePath)
 {

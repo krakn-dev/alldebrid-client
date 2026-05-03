@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace RdtClient.Data.Migrations
+namespace AdbClient.Data.Migrations
 {
     public partial class Torrents_Add_Lifetime : Migration
     {

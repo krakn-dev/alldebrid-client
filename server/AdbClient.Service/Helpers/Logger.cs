@@ -1,7 +1,7 @@
 ﻿using System.Web;
-using RdtClient.Data.Models.Data;
+using AdbClient.Data.Models.Data;
 
-namespace RdtClient.Service.Helpers;
+namespace AdbClient.Service.Helpers;
 
 public static class Logger
 {

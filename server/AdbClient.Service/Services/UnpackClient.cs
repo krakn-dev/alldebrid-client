@@ -1,11 +1,11 @@
 ﻿using System.Diagnostics;
-using RdtClient.Data.Models.Data;
-using RdtClient.Service.Helpers;
+using AdbClient.Data.Models.Data;
+using AdbClient.Service.Helpers;
 using SharpCompress.Archives;
 using SharpCompress.Archives.Rar;
 using SharpCompress.Archives.Zip;
 
-namespace RdtClient.Service.Services;
+namespace AdbClient.Service.Services;
 
 public class UnpackClient(Download download, string destinationPath)
 {

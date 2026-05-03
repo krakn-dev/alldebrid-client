@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace RdtClient.Data.Migrations
+namespace AdbClient.Data.Migrations
 {
     public partial class Nullables : Migration
     {

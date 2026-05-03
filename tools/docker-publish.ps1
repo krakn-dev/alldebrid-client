@@ -42,7 +42,7 @@ param(
     [string]$BuildProgress="auto"
 )
 
-$imageName = "$($DockerAccount)/rdtclient"
+$imageName = "$($DockerAccount)/alldebridclient"
 
 $dockerArgs = @( "buildx", "build", "--network=default", "--platform", $Platforms, "--progress=$BuildProgress", "--tag", "$($imageName):latest", "--file", $Dockerfile, "." )
 

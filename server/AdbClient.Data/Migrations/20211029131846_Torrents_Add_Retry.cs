@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace RdtClient.Data.Migrations
+namespace AdbClient.Data.Migrations
 {
     public partial class Torrents_Add_Retry : Migration
     {

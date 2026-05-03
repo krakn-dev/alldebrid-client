@@ -2,13 +2,13 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MonoTorrent;
-using RdtClient.Data.Models.TorrentClient;
-using RdtClient.Service.Helpers;
-using RdtClient.Service.Services;
-using RdtClient.Web.Models.Requests;
-using Torrent = RdtClient.Data.Models.Data.Torrent;
+using AdbClient.Data.Models.TorrentClient;
+using AdbClient.Service.Helpers;
+using AdbClient.Service.Services;
+using AdbClient.Web.Models.Requests;
+using Torrent = AdbClient.Data.Models.Data.Torrent;
 
-namespace RdtClient.Web.Controllers;
+namespace AdbClient.Web.Controllers;
 
 [Authorize(Policy = "AuthSetting")]
 [Route("Api/Torrents")]

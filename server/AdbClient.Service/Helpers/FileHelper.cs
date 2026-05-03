@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace RdtClient.Service.Helpers;
+namespace AdbClient.Service.Helpers;
 
 public static class FileHelper
 {

@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace RdtClient.Data.Migrations
+namespace AdbClient.Data.Migrations
 {
     /// <inheritdoc />
     public partial class Torrents_Add_DownloadClient : Migration

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define paths and URLs
-INSTALL_DIR="/opt/rdtc"
+INSTALL_DIR="/opt/adbc"
 INSTALLED_DIR="$INSTALL_DIR/.installed"
 INSTALLED_FILE="$INSTALLED_DIR/version.txt"
 BACKUP_DIR="$INSTALL_DIR/.backup"
@@ -52,9 +52,9 @@ update() {
 	echo "Downloading Lastest AllDebridClient"
     curl -sLO "$DOWNLOAD_URL"
     
-    # Stop the rdtc service
+    # Stop the adbc service
 	echo "Stopping AllDebridClient"
-    sudo systemctl stop rdtc
+    sudo systemctl stop adbc
     
 	echo "Backing up AllDebridClient"
 	cp $INSTALL_DIR/appsettings.json $BACKUP_DIR
@@ -72,9 +72,9 @@ update() {
 	cp $BACKUP_DIR/appsettings.json $INSTALL_DIR
 	cp -r $BACKUP_DIR/db $INSTALL_DIR
     
-    # Start the rdtc service
+    # Start the adbc service
 	echo "Starting AllDebridClient"
-    sudo systemctl start rdtc
+    sudo systemctl start adbc
     
     echo "Update complete."
 }

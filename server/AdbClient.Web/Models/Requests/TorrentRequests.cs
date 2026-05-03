@@ -1,6 +1,6 @@
-using Torrent = RdtClient.Data.Models.Data.Torrent;
+using Torrent = AdbClient.Data.Models.Data.Torrent;
 
-namespace RdtClient.Web.Models.Requests;
+namespace AdbClient.Web.Models.Requests;
 
 public class TorrentControllerUploadFileRequest
 {

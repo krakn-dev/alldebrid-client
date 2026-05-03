@@ -2,7 +2,7 @@ $utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
 
 $version = (Get-Content "package.json" | ConvertFrom-Json).version
 
-$csProj = "$pwd\server\RdtClient.Web\RdtClient.Web.csproj"
+$csProj = "$pwd\server\AdbClient.Web\AdbClient.Web.csproj"
 
 $newCsProj = (Get-Content $csProj) -replace '<Version>.*?<\/Version>', "<Version>$version</Version>" 
 [System.IO.File]::WriteAllLines($csProj, $newCsProj, $utf8NoBomEncoding)

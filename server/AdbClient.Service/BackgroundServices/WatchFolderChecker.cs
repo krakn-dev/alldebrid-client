@@ -1,12 +1,12 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using RdtClient.Data.Enums;
-using RdtClient.Data.Models.Data;
-using RdtClient.Service.Services;
+using AdbClient.Data.Enums;
+using AdbClient.Data.Models.Data;
+using AdbClient.Service.Services;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
-namespace RdtClient.Service.BackgroundServices;
+namespace AdbClient.Service.BackgroundServices;
 
 public class WatchFolderChecker(ILogger<WatchFolderChecker> logger, IServiceProvider serviceProvider) : BackgroundService
 {

@@ -1,4 +1,4 @@
-﻿namespace RdtClient.Data.Models.TorrentClient;
+﻿namespace AdbClient.Data.Models.TorrentClient;
 
 public class TorrentClientAvailableFile
 {

@@ -8,7 +8,7 @@
     }
   },
   "profiles": {
-    "RdtClient.Web": {
+    "AdbClient.Web": {
       "commandName": "Project",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",

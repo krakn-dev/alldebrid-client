@@ -2,10 +2,10 @@
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using RdtClient.Data.Models.Data;
-using RdtClient.Data.Models.Internal;
+using AdbClient.Data.Models.Data;
+using AdbClient.Data.Models.Internal;
 
-namespace RdtClient.Data.Data;
+namespace AdbClient.Data.Data;
 
 public class SettingData(DataContext dataContext, ILogger<SettingData> logger)
 {

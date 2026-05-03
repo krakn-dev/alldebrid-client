@@ -1,9 +1,9 @@
-﻿using RdtClient.Data.Enums;
-using RdtClient.Data.Models.Data;
-using RdtClient.Service.Helpers;
-using RdtClient.Service.Services.Downloaders;
+﻿using AdbClient.Data.Enums;
+using AdbClient.Data.Models.Data;
+using AdbClient.Service.Helpers;
+using AdbClient.Service.Services.Downloaders;
 
-namespace RdtClient.Service.Services;
+namespace AdbClient.Service.Services;
 
 public class DownloadClient(Download download, Torrent torrent, string destinationPath)
 {

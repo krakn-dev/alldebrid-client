@@ -3,7 +3,7 @@ using System.Web;
 using Microsoft.Extensions.Logging;
 using MonoTorrent.BEncoding;
 
-namespace RdtClient.Service.Services;
+namespace AdbClient.Service.Services;
 
 public interface IEnricher
 {

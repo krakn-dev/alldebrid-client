@@ -1,4 +1,4 @@
-namespace RdtClient.Web.Models.Requests;
+namespace AdbClient.Web.Models.Requests;
 
 public class AuthControllerLoginRequest
 {

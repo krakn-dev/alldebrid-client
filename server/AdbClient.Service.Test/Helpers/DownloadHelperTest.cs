@@ -1,10 +1,10 @@
 using System.IO.Abstractions.TestingHelpers;
 using System.Text.Json;
-using RdtClient.Data.Models.Data;
-using RdtClient.Data.Models.TorrentClient;
-using RdtClient.Service.Helpers;
+using AdbClient.Data.Models.Data;
+using AdbClient.Data.Models.TorrentClient;
+using AdbClient.Service.Helpers;
 
-namespace RdtClient.Service.Test.Helpers;
+namespace AdbClient.Service.Test.Helpers;
 
 public class DownloadHelperTest
 {

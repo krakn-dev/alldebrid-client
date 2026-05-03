@@ -2,14 +2,14 @@
 using AllDebridNET;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using RdtClient.Data.Enums;
-using RdtClient.Data.Models.TorrentClient;
-using RdtClient.Service.Helpers;
-using RdtClient.Data.Models.Data;
+using AdbClient.Data.Enums;
+using AdbClient.Data.Models.TorrentClient;
+using AdbClient.Service.Helpers;
+using AdbClient.Data.Models.Data;
 using File = AllDebridNET.File;
-using Torrent = RdtClient.Data.Models.Data.Torrent;
+using Torrent = AdbClient.Data.Models.Data.Torrent;
 
-namespace RdtClient.Service.Services.TorrentClients;
+namespace AdbClient.Service.Services.TorrentClients;
 
 public interface IAllDebridNetClientFactory
 {

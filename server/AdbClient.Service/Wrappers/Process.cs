@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace RdtClient.Service.Wrappers;
+namespace AdbClient.Service.Wrappers;
 
 public class Process : IProcess
 {

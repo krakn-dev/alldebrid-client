@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using RdtClient.Service.Services;
+using AdbClient.Service.Services;
 
-namespace RdtClient.Service.BackgroundServices;
+namespace AdbClient.Service.BackgroundServices;
 
 public class WebsocketsUpdater(ILogger<WebsocketsUpdater> logger, IServiceProvider serviceProvider) : BackgroundService
 {

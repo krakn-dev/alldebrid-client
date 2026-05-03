@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using RdtClient.Data.Models.Data;
-using Download = RdtClient.Data.Models.Data.Download;
+using AdbClient.Data.Models.Data;
+using Download = AdbClient.Data.Models.Data.Download;
 
-namespace RdtClient.Data.Data;
+namespace AdbClient.Data.Data;
 
 public class DownloadData(DataContext dataContext)
 {

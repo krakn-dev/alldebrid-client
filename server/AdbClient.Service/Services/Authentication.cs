@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using RdtClient.Data.Data;
+using AdbClient.Data.Data;
 
-namespace RdtClient.Service.Services;
+namespace AdbClient.Service.Services;
 
 public class Authentication(SignInManager<IdentityUser> signInManager, UserManager<IdentityUser> userManager, UserData userData)
 {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace RdtClient.Data.Migrations
+namespace AdbClient.Data.Migrations
 {
     public partial class Torrent_Add_RetryCount : Migration
     {

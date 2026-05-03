@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace RdtClient.Data.Models.Data;
+namespace AdbClient.Data.Models.Data;
 
 public class Setting
 {

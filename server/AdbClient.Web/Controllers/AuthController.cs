@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using RdtClient.Data.Enums;
-using RdtClient.Service.Services;
-using RdtClient.Web.Models.Requests;
+using AdbClient.Data.Enums;
+using AdbClient.Service.Services;
+using AdbClient.Web.Models.Requests;
 
-namespace RdtClient.Web.Controllers;
+namespace AdbClient.Web.Controllers;
 
 [Route("Api/Authentication")]
 public class AuthController(Authentication authentication, Settings settings) : Controller

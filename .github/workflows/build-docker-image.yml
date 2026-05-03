@@ -9,7 +9,7 @@ permissions:
   packages: write
 
 env:
-  APP_NAME: rdtclient
+  APP_NAME: alldebridclient
   DOCKER_FILE: ./Dockerfile
   ENABLE_DOCKERHUB: 1
   ENABLE_GHCR: 1
@@ -38,8 +38,8 @@ jobs:
       - name: Extract version and patch .csproj
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          sed -i "s|<Version>.*</Version>|<Version>$VERSION</Version>|" server/RdtClient.Web/RdtClient.Web.csproj
-          sed -i "s|<AssemblyVersion>.*</AssemblyVersion>|<AssemblyVersion>$VERSION</AssemblyVersion>|" server/RdtClient.Web/RdtClient.Web.csproj
+          sed -i "s|<Version>.*</Version>|<Version>$VERSION</Version>|" server/AdbClient.Web/AdbClient.Web.csproj
+          sed -i "s|<AssemblyVersion>.*</AssemblyVersion>|<AssemblyVersion>$VERSION</AssemblyVersion>|" server/AdbClient.Web/AdbClient.Web.csproj
 
       - name: Login to DockerHub
         if: ${{ env.ENABLE_DOCKERHUB == 1 }}

@@ -13,7 +13,7 @@ rdt-client is a web a web interface to manage your torrents on Real-Debrid. It s
 
 Our images support multiple architectures such as `x86-64`, `arm64` and `armhf`. We utilise the docker manifest for multi-platform awareness. More information is available from docker [here](https://github.com/docker/distribution/blob/master/docs/spec/manifest-v2-2.md#manifest-list) and our announcement [here](https://blog.linuxserver.io/2019/02/21/the-lsio-pipeline-project/).
 
-Simply pulling `rogerfar/rdtclient` should retrieve the correct image for your arch, but you can also pull specific arch images via tags.
+Simply pulling `lekrakin/alldebridclient` should retrieve the correct image for your arch, but you can also pull specific arch images via tags.
 
 The architectures supported by this image are:
 
@@ -43,9 +43,9 @@ Compatible with docker-compose v2 schemas.
 ---
 version: '3.3'
 services:
-  rdtclient:
-    image: rogerfar/rdtclient
-    container_name: rdtclient
+  alldebridclient:
+    image: lekrakin/alldebridclient
+    container_name: alldebridclient
     environment:
       - PUID=1000
       - PGID=1000
@@ -66,7 +66,7 @@ services:
 
 ```
 docker run -d \
-  --name=rdtclient \
+  --name=alldebridclient \
   -e PUID=1000 \
   -e PGID=1000 \
   -e TZ=Europe/London \
@@ -74,7 +74,7 @@ docker run -d \
   -v <path to data>:/data/db \
   -v <path/to/downloads>:/data/downloads \
   --restart unless-stopped \
-  rogerfar/rdtclient
+  lekrakin/alldebridclient
 ```
 
 ## Parameters
@@ -129,11 +129,11 @@ Webui can be found at  `<your-ip>:6500`
 ## Support Info
 
 * Shell access whilst the container is running: `docker exec -it rtdclient /bin/bash`
-* To monitor the logs of the container in realtime: `docker logs -f rdtclient`
+* To monitor the logs of the container in realtime: `docker logs -f alldebridclient`
 * container version number
-  * `docker inspect -f '{{ index .Config.Labels "build_version" }}' rdtclient`
+  * `docker inspect -f '{{ index .Config.Labels "build_version" }}' alldebridclient`
 * image version number
-  * `docker inspect -f '{{ index .Config.Labels "build_version" }}' rogerfar/rdtclient`
+  * `docker inspect -f '{{ index .Config.Labels "build_version" }}' lekrakin/alldebridclient`
 
 ## Updating Info
 
@@ -143,15 +143,15 @@ Below are the instructions for updating containers:
 
 ### Via Docker Compose
 * Update all images: `docker-compose pull`
-  * or update a single image: `docker-compose pull rdtclient`
+  * or update a single image: `docker-compose pull alldebridclient`
 * Let compose update all containers as necessary: `docker-compose up -d`
-  * or update a single container: `docker-compose up -d rdtclient`
+  * or update a single container: `docker-compose up -d alldebridclient`
 * You can also remove the old dangling images: `docker image prune`
 
 ### Via Docker Run
-* Update the image: `docker pull rogerfar/rdtclient`
-* Stop the running container: `docker stop rdtclient`
-* Delete the container: `docker rm rdtclient`
+* Update the image: `docker pull lekrakin/alldebridclient`
+* Stop the running container: `docker stop alldebridclient`
+* Delete the container: `docker rm alldebridclient`
 * Recreate a new container with the same docker run parameters as instructed above (if mapped correctly to a host folder, your `/data` folder and settings will be preserved)
 * You can also remove the old dangling images: `docker image prune`
 
@@ -161,7 +161,7 @@ Below are the instructions for updating containers:
   docker run --rm \
   -v /var/run/docker.sock:/var/run/docker.sock \
   containrrr/watchtower \
-  --run-once rtdclient
+  --run-once alldebridclient
   ```
 * You can also remove the old dangling images: `docker image prune`
 

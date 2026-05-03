@@ -1,9 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using Moq;
-using RdtClient.Data.Models.Data;
-using RdtClient.Service.Services;
+using AdbClient.Data.Models.Data;
+using AdbClient.Service.Services;
 
-namespace RdtClient.Service.Test.Services;
+namespace AdbClient.Service.Test.Services;
 
 public class DownloadableFileFilterTest
 {

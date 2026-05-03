@@ -1,6 +1,6 @@
 ﻿using Serilog;
 
-namespace RdtClient.Service.Services.Downloaders;
+namespace AdbClient.Service.Services.Downloaders;
 
 public class InternalDownloader : IDownloader
 {

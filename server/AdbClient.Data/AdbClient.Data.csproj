@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
-    <AssemblyName>Adb.Client.Data</AssemblyName>
-    <RootNamespace>Adb.Client.Data</RootNamespace>
+    <AssemblyName>AdbClient.Data</AssemblyName>
+    <RootNamespace>AdbClient.Data</RootNamespace>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>

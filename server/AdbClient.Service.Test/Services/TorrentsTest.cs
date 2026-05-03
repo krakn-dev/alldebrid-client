@@ -4,14 +4,14 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 using Moq;
-using RdtClient.Data.Data;
-using RdtClient.Data.Models.Data;
-using RdtClient.Data.Models.Internal;
-using RdtClient.Service.Services;
-using RdtClient.Service.Wrappers;
-using TorrentsService = RdtClient.Service.Services.Torrents;
+using AdbClient.Data.Data;
+using AdbClient.Data.Models.Data;
+using AdbClient.Data.Models.Internal;
+using AdbClient.Service.Services;
+using AdbClient.Service.Wrappers;
+using TorrentsService = AdbClient.Service.Services.Torrents;
 
-namespace RdtClient.Service.Test.Services;
+namespace AdbClient.Service.Test.Services;
 
 class Mocks
 {

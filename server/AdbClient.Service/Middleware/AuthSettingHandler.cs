@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using RdtClient.Data.Enums;
-using RdtClient.Service.Services;
+using AdbClient.Data.Enums;
+using AdbClient.Service.Services;
 
-namespace RdtClient.Service.Middleware;
+namespace AdbClient.Service.Middleware;
 
 public class AuthSettingRequirement : IAuthorizationRequirement
 {

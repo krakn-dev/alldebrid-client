@@ -1,8 +1,8 @@
 ﻿using System.IO.Abstractions;
-using RdtClient.Data.Models.Data;
+using AdbClient.Data.Models.Data;
 using System.Web;
 
-namespace RdtClient.Service.Helpers;
+namespace AdbClient.Service.Helpers;
 
 public static class DownloadHelper
 {

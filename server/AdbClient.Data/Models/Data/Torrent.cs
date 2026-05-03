@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
-using RdtClient.Data.Enums;
-using RdtClient.Data.Models.TorrentClient;
+using AdbClient.Data.Enums;
+using AdbClient.Data.Models.TorrentClient;
 
-namespace RdtClient.Data.Models.Data;
+namespace AdbClient.Data.Models.Data;
 
 public class Torrent
 {

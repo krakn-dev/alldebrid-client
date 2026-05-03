@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace RdtClient.Data.Enums;
+namespace AdbClient.Data.Enums;
 
 public enum Provider
 {

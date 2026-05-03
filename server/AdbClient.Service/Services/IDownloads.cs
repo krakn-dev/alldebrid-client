@@ -1,6 +1,6 @@
-﻿using RdtClient.Data.Models.Data;
+﻿using AdbClient.Data.Models.Data;
 
-namespace RdtClient.Service.Services;
+namespace AdbClient.Service.Services;
 
 public interface IDownloads
 {

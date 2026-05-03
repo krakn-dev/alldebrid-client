@@ -1,4 +1,4 @@
-﻿namespace RdtClient.Data.Enums;
+﻿namespace AdbClient.Data.Enums;
 
 public enum TorrentStatus
 {

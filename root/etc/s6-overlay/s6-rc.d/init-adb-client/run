@@ -1,11 +1,11 @@
 #!/usr/bin/with-contenv bash
 
 # cleanup pid if it exists
-[[ -e /config/rtdclient.pid ]] && \
-	rm -rf /config/rtdclient.pid
+[[ -e /config/adbclient.pid ]] && \
+	rm -rf /config/adbclient.pid
 
-[[ -e /data/rtdclient.pid ]] && \
-	rm -rf /data/rtdclient.pid
+[[ -e /data/adbclient.pid ]] && \
+	rm -rf /data/adbclient.pid
 
 # permissions
 echo "Setting permissions"

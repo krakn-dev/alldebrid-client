@@ -1,4 +1,4 @@
-﻿namespace RdtClient.Data.Models.Internal;
+﻿namespace AdbClient.Data.Models.Internal;
 
 public class SettingProperty
 {

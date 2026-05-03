@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace RdtClient.Data.Data;
+namespace AdbClient.Data.Data;
 
 public class UserData(DataContext dataContext)
 {

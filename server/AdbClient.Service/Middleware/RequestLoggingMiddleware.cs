@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System.Text;
 
-namespace RdtClient.Service.Middleware;
+namespace AdbClient.Service.Middleware;
 
 public class RequestLoggingMiddleware(RequestDelegate next, ILoggerFactory loggerFactory)
 {

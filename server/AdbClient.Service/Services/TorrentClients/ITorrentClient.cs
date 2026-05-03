@@ -1,7 +1,7 @@
-﻿using RdtClient.Data.Models.Data;
-using RdtClient.Data.Models.TorrentClient;
+﻿using AdbClient.Data.Models.Data;
+using AdbClient.Data.Models.TorrentClient;
 
-namespace RdtClient.Service.Services.TorrentClients;
+namespace AdbClient.Service.Services.TorrentClients;
 
 public interface ITorrentClient
 {

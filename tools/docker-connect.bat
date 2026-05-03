@@ -1,2 +1,2 @@
 @echo off
-docker exec -it rdtclient /bin/bash
+docker exec -it alldebridclient /bin/bash

@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace RdtClient.Data.Models.Data;
+namespace AdbClient.Data.Models.Data;
 
 public class Download
 {

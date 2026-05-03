@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System.Reflection;
 
-namespace RdtClient.Service.Services;
+namespace AdbClient.Service.Services;
 
 public class TrackerListGrabber(IHttpClientFactory httpClientFactory, IMemoryCache memoryCache, ILogger<TrackerListGrabber> logger) : ITrackerListGrabber
 {
@@ -115,7 +115,7 @@ public class TrackerListGrabber(IHttpClientFactory httpClientFactory, IMemoryCac
             ? $"v{version[..version.LastIndexOf('.')]}"
             : "";
 
-        httpClient.DefaultRequestHeaders.UserAgent.Add(new("RdtClient", currentVersion));
+        httpClient.DefaultRequestHeaders.UserAgent.Add(new("AdbClient", currentVersion));
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
         var token = cts.Token;
         var response = await httpClient.GetAsync(trackerUri, HttpCompletionOption.ResponseHeadersRead, token).ConfigureAwait(false);

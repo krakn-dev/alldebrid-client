@@ -1,4 +1,4 @@
-namespace RdtClient.Service.Wrappers;
+namespace AdbClient.Service.Wrappers;
 
 public class ProcessFactory: IProcessFactory
 {

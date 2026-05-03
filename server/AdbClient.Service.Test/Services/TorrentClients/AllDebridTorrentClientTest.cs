@@ -2,13 +2,13 @@
 using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
-using RdtClient.Data.Enums;
-using RdtClient.Data.Models.Data;
-using RdtClient.Service.Services;
-using RdtClient.Service.Services.TorrentClients;
+using AdbClient.Data.Enums;
+using AdbClient.Data.Models.Data;
+using AdbClient.Service.Services;
+using AdbClient.Service.Services.TorrentClients;
 using File = AllDebridNET.File;
 
-namespace RdtClient.Service.Test.Services.TorrentClients;
+namespace AdbClient.Service.Test.Services.TorrentClients;
 
 public class AllDebridTorrentClientTest
 {

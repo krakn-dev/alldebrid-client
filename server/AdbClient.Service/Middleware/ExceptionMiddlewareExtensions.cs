@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 
-namespace RdtClient.Service.Middleware;
+namespace AdbClient.Service.Middleware;
 
 public static class ExceptionMiddlewareExtensions
 {

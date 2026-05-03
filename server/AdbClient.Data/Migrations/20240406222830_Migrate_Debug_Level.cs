@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace RdtClient.Data.Migrations
+namespace AdbClient.Data.Migrations
 {
     /// <inheritdoc />
     public partial class Migrate_Debug_Level : Migration

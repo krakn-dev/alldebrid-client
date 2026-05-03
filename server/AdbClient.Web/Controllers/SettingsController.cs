@@ -2,14 +2,14 @@
 using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using RdtClient.Data.Data;
-using RdtClient.Data.Models.Data;
-using RdtClient.Data.Models.Internal;
-using RdtClient.Service.Helpers;
-using RdtClient.Service.Services;
-using RdtClient.Web.Models.Requests;
+using AdbClient.Data.Data;
+using AdbClient.Data.Models.Data;
+using AdbClient.Data.Models.Internal;
+using AdbClient.Service.Helpers;
+using AdbClient.Service.Services;
+using AdbClient.Web.Models.Requests;
 
-namespace RdtClient.Web.Controllers;
+namespace AdbClient.Web.Controllers;
 
 [Authorize(Policy = "AuthSetting")]
 [Route("Api/Settings")]
@@ -102,7 +102,7 @@ public class SettingsController(Settings settings, Torrents torrents) : Controll
             Link = "https://34.download.real-debrid.com/speedtest/testDefault.rar",
             Torrent = new()
             {
-                DownloadClient = RdtClient.Data.Enums.DownloadClient.Internal,
+                DownloadClient = AdbClient.Data.Enums.DownloadClient.Internal,
                 RdName = "testDefault.rar"
             }
         };

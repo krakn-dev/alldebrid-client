@@ -5,18 +5,18 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using MonoTorrent;
-using RdtClient.Data.Data;
-using RdtClient.Data.Enums;
-using RdtClient.Data.Models.Data;
-using RdtClient.Data.Models.Internal;
-using RdtClient.Data.Models.TorrentClient;
-using RdtClient.Service.BackgroundServices;
-using RdtClient.Service.Helpers;
-using RdtClient.Service.Services.TorrentClients;
-using RdtClient.Service.Wrappers;
-using Torrent = RdtClient.Data.Models.Data.Torrent;
+using AdbClient.Data.Data;
+using AdbClient.Data.Enums;
+using AdbClient.Data.Models.Data;
+using AdbClient.Data.Models.Internal;
+using AdbClient.Data.Models.TorrentClient;
+using AdbClient.Service.BackgroundServices;
+using AdbClient.Service.Helpers;
+using AdbClient.Service.Services.TorrentClients;
+using AdbClient.Service.Wrappers;
+using Torrent = AdbClient.Data.Models.Data.Torrent;
 
-namespace RdtClient.Service.Services;
+namespace AdbClient.Service.Services;
 
 public class Torrents(
     ILogger<Torrents> logger,
@@ -424,7 +424,7 @@ public class Torrents(
 
         if (deleteData)
         {
-            Log($"Deleting RdtClient data", torrent);
+            Log($"Deleting AdbClient data", torrent);
 
             await downloads.DeleteForTorrent(torrent.TorrentId);
             await torrentData.Delete(torrentId);

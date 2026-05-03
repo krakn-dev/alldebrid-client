@@ -1,7 +1,7 @@
-﻿using RdtClient.Data.Enums;
-using RdtClient.Data.Models.Data;
+﻿using AdbClient.Data.Enums;
+using AdbClient.Data.Models.Data;
 
-namespace RdtClient.Data.Data;
+namespace AdbClient.Data.Data;
 
 public interface ITorrentData
 {

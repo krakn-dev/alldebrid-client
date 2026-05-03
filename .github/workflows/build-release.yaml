@@ -48,7 +48,7 @@ jobs:
         run:  |
           $v = "${{ github.ref_name }}".TrimStart('v')
           dotnet build -c Release --no-restore -p:Version=$v -p:AssemblyVersion=$v
-          dotnet publish RdtClient.Web/RdtClient.Web.csproj -c Release --no-build -p:Version=$v -p:AssemblyVersion=$v -o ../publish
+          dotnet publish AdbClient.Web/AdbClient.Web.csproj -c Release --no-build -p:Version=$v -p:AssemblyVersion=$v -o ../publish
 
       - name: Create ZIP
         shell: pwsh

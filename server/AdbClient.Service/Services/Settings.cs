@@ -1,10 +1,10 @@
-﻿using RdtClient.Data.Data;
-using RdtClient.Data.Enums;
-using RdtClient.Data.Models.Internal;
+﻿using AdbClient.Data.Data;
+using AdbClient.Data.Enums;
+using AdbClient.Data.Models.Internal;
 using Serilog.Core;
 using Serilog.Events;
 
-namespace RdtClient.Service.Services;
+namespace AdbClient.Service.Services;
 
 public class Settings(SettingData settingData)
 {

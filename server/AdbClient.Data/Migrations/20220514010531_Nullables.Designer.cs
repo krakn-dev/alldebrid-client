@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using RdtClient.Data.Data;
+using AdbClient.Data.Data;
 
 #nullable disable
 
-namespace RdtClient.Data.Migrations
+namespace AdbClient.Data.Migrations
 {
     [DbContext(typeof(DataContext))]
     [Migration("20220514010531_Nullables")]
@@ -211,7 +211,7 @@ namespace RdtClient.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("RdtClient.Data.Models.Data.Download", b =>
+            modelBuilder.Entity("AdbClient.Data.Models.Data.Download", b =>
                 {
                     b.Property<Guid>("DownloadId")
                         .ValueGeneratedOnAdd()
@@ -267,7 +267,7 @@ namespace RdtClient.Data.Migrations
                     b.ToTable("Downloads");
                 });
 
-            modelBuilder.Entity("RdtClient.Data.Models.Data.Setting", b =>
+            modelBuilder.Entity("AdbClient.Data.Models.Data.Setting", b =>
                 {
                     b.Property<string>("SettingId")
                         .HasColumnType("TEXT");
@@ -280,7 +280,7 @@ namespace RdtClient.Data.Migrations
                     b.ToTable("Settings");
                 });
 
-            modelBuilder.Entity("RdtClient.Data.Models.Data.Torrent", b =>
+            modelBuilder.Entity("AdbClient.Data.Models.Data.Torrent", b =>
                 {
                     b.Property<Guid>("TorrentId")
                         .ValueGeneratedOnAdd()
@@ -439,9 +439,9 @@ namespace RdtClient.Data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("RdtClient.Data.Models.Data.Download", b =>
+            modelBuilder.Entity("AdbClient.Data.Models.Data.Download", b =>
                 {
-                    b.HasOne("RdtClient.Data.Models.Data.Torrent", "Torrent")
+                    b.HasOne("AdbClient.Data.Models.Data.Torrent", "Torrent")
                         .WithMany("Downloads")
                         .HasForeignKey("TorrentId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -450,7 +450,7 @@ namespace RdtClient.Data.Migrations
                     b.Navigation("Torrent");
                 });
 
-            modelBuilder.Entity("RdtClient.Data.Models.Data.Torrent", b =>
+            modelBuilder.Entity("AdbClient.Data.Models.Data.Torrent", b =>
                 {
                     b.Navigation("Downloads");
                 });

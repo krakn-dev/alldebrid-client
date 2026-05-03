@@ -3,7 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
-namespace RdtClient.Service.BackgroundServices;
+namespace AdbClient.Service.BackgroundServices;
 
 public class UpdateChecker(ILogger<UpdateChecker> logger) : BackgroundService
 {
@@ -81,7 +81,7 @@ public class UpdateChecker(ILogger<UpdateChecker> logger) : BackgroundService
     private static async Task<T?> GitHubRequest<T>(string endpoint, CancellationToken cancellationToken)
     {
             var httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.UserAgent.Add(new("RdtClient", CurrentVersion));
+            httpClient.DefaultRequestHeaders.UserAgent.Add(new("AdbClient", CurrentVersion));
             var response = await httpClient.GetStringAsync($"https://api.github.com{endpoint}", cancellationToken);
             
             return JsonConvert.DeserializeObject<T>(response);

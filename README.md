@@ -17,7 +17,7 @@ See [README-DOCKER.md](README-DOCKER.md) for the full Docker guide.
 1. Install [ASP.NET Core Runtime 9.0](https://dotnet.microsoft.com/download/dotnet/9.0).
 2. Download the latest release zip and extract it.
 3. In `appsettings.json` set `LogLevel.Path` and `Database.Path` to paths on your host. Use escaped backslashes, e.g. `D:\\AllDebridClient\\db\\adbclient.db`.
-4. Run `RdtClient.Web.exe` directly, or run `service-install.bat` to install it as a background service.
+4. Run `AdbClient.Web.exe` directly, or run `service-install.bat` to install it as a background service.
 
 ---
 
@@ -26,7 +26,7 @@ See [README-DOCKER.md](README-DOCKER.md) for the full Docker guide.
 1. Install [.NET 9](https://docs.microsoft.com/en-us/dotnet/core/install/linux).
 2. Download and extract the latest release archive.
 3. In `appsettings.json` set the `Database.Path`.
-4. Test it runs: `dotnet RdtClient.Web.dll` — browse to `http://<host>:6500`.
+4. Test it runs: `dotnet AdbClient.Web.dll` — browse to `http://<host>:6500`.
 5. Create a systemd service:
 
 ```ini
@@ -35,7 +35,7 @@ Description=AllDebrid Client
 
 [Service]
 WorkingDirectory=/opt/alldebrid-client
-ExecStart=/usr/bin/dotnet RdtClient.Web.dll
+ExecStart=/usr/bin/dotnet AdbClient.Web.dll
 SyslogIdentifier=AllDebridClient
 User=<username>
 
@@ -83,8 +83,8 @@ Files download to a subfolder named after the category under your configured dow
 # Client
 cd client && npm install && ng build -c production
 
-# Server — open server/RdtClient.sln in Visual Studio,
-# Publish RdtClient.Web to the PublishFolder target.
+# Server — open server/AdbClient.sln in Visual Studio,
+# Publish AdbClient.Web to the PublishFolder target.
 ```
 
 ---
@@ -92,4 +92,4 @@ cd client && npm install && ng build -c production
 ## Troubleshooting
 
 - **Forgot password:** Delete `adbclient.db` and restart.
-- **Logs:** Set log level to `Debug` in Settings. The log file is written to your configured persistent path as `rdtclient.log`.
+- **Logs:** Set log level to `Debug` in Settings. The log file is written to your configured persistent path as `adbclient.log`.

@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace RdtClient.Data.Migrations
+namespace AdbClient.Data.Migrations
 {
     /// <inheritdoc />
     public partial class Downloads_Add_FileName : Migration

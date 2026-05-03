@@ -3,11 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using RdtClient.Data.Data;
-using RdtClient.Service.Services;
+using AdbClient.Data.Data;
+using AdbClient.Service.Services;
 
 
-namespace RdtClient.Service.BackgroundServices;
+namespace AdbClient.Service.BackgroundServices;
 
 public class Startup(IServiceProvider serviceProvider) : IHostedService
 {
