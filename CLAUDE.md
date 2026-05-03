@@ -14,19 +14,23 @@ Area: short imperative phrase
 
 ## Versioning
 
-Format: `UPSTREAM.MAJOR.MINOR.PATCH.FORK_REVISION`  
-Current upstream base: `2.0.116` — first fork release is `2.0.116.1`.
+Format: `MAJOR.MINOR.PATCH` ([Semantic Versioning](https://semver.org/spec/v2.0.0.html)).  
+Current version: `1.0.0`. Forked from upstream rogerfar/rdt-client v2.0.116.
 
-- Bump `.FORK_REVISION` for every release cut from this fork.
-- Reset to `1` when syncing a new upstream version.
-- Tag as `v2.0.116.N` — CI reads the tag and sets `Version`/`AssemblyVersion` automatically.
-- Never manually edit version in `.csproj` files for releases.
+- Bump `PATCH` for backwards-compatible bug fixes.
+- Bump `MINOR` for backwards-compatible new features.
+- Bump `MAJOR` for breaking changes.
+- Tag releases as `v1.0.0`, `v1.1.0`, etc. — CI reads the tag and sets `Version`/`AssemblyVersion` automatically.
+- Never manually edit `<Version>` in `.csproj` files for releases; the CI overwrites it from the tag.
 
 ## CHANGELOG
 
+Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+
 - `## [Unreleased]` is the active working section.
-- Before a release: rename it to `## [2.0.116.N] - YYYY-MM-DD`, add empty `[Unreleased]` above.
-- On upstream sync: add `## [2.0.X] - YYYY-MM-DD (upstream sync)` between fork sections.
+- Before a release: rename it to `## [X.Y.Z] - YYYY-MM-DD`, add empty `## [Unreleased]` above.
+- Each version section uses subsections: `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`.
+- Keep compare links at the bottom of the file up to date.
 
 ## Project structure
 

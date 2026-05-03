@@ -1,45 +1,47 @@
 # Changelog
 
-<!-- Versioning: UPSTREAM_MAJOR.UPSTREAM_MINOR.UPSTREAM_PATCH.FORK_REVISION
-     e.g. 2.0.116.1, 2.0.116.2 … reset fork revision to 1 on each upstream sync. -->
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+Forked from [rogerfar/rdt-client](https://github.com/rogerfar/rdt-client) at v2.0.116.
+Prior upstream history: <https://github.com/rogerfar/rdt-client/blob/main/CHANGELOG.md>
 
 ## [Unreleased]
 
----
+## [1.0.0] - 2026-05-03
 
-## [2.0.116.2] - 2026-05-03
+### Added
 
-### Changed
-- Rebrand: rename all remaining `RdtClient` identifiers to `AdbClient` (project directories, .csproj files, solution, class names, string literals, docker scripts, s6 service folders)
-- Tests: fix `RunTorrentComplete` cross-platform path failure on Linux CI
-- CI: suppress Node.js 20 action deprecation warning
-- Repo: add `CLAUDE.md` with commit format, versioning, and project structure guidelines
-
----
-
-## [2.0.116.1] - 2026-05-02
+- Torrent table: filter by name
+- Torrent table: sortable columns with direction indicators
 
 ### Changed
-- Torrent table: filter by name, sortable columns with direction indicators
-- Settings: shorter descriptions, responsive CSS grid layout (compact numeric/bool fields)
-- Navbar: simplified premium indicator — green/red dot + days remaining
+
+- Rebranded to AllDebrid Client — new package name `alldebrid-client`, assemblies renamed to `AdbClient.*`
+- Database file renamed from `rdtclient.db` to `adbclient.db`
+- Settings UI: shorter descriptions, responsive CSS grid layout for compact fields
+- Navbar: simplified premium indicator (green/red dot + days remaining)
+- Default authentication mode changed to `None`
+- Path configuration: `DataPath` moved to `appsettings.json`; Windows defaults retained in settings UI descriptions
 - Server: C# type alias standardization throughout
 - Server: controller DTOs extracted to `Models/Requests/`
 - Server: explicit `Exception` types on all throw statements
 - Server: `await using` on `IFormFile` streams
-- Rebranded as AllDebrid Client (`Adb.Client.*` assemblies)
 
----
+### Removed
 
-## [2.0.116] - 2025-08-04 (upstream base)
+- All torrent providers except AllDebrid (removed Real-Debrid, Premiumize, Torbox, etc.)
+- qBittorrent download client integration
+- Sonarr/Radarr (*arr) API layer
+- External download client selector — internal downloader only
+- Download client selector from the add-torrent dialog
 
-### Added
-- Setting to ban certain trackers from being added.
+### Fixed
 
-### Changed
-- Upgraded to Angular 20.
+- Test suite updated for AllDebrid-only provider configuration
+- Cross-platform path handling in `RunTorrentComplete` test (was failing on Linux CI)
 
----
-
-Forked from [rogerfar/rdt-client](https://github.com/rogerfar/rdt-client) at v2.0.116.
-Prior upstream history: https://github.com/rogerfar/rdt-client/blob/main/CHANGELOG.md
+[unreleased]: https://github.com/lekrakin/alldebrid-client/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/lekrakin/alldebrid-client/releases/tag/v1.0.0
