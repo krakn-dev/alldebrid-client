@@ -74,13 +74,15 @@ public class TorrentsTest
     public async Task RunTorrentComplete_WhenCommandSet_ShouldRunCommand(Torrent torrent, List<Download> downloads)
     {
         // Arrange
+        var baseDownloadPath = Path.Combine(Path.GetTempPath(), "adb-test-downloads");
         var settings = new DbSettings
         {
             General = new()
             {
                 RunOnTorrentCompleteFileName = "/bin/echo",
                 RunOnTorrentCompleteArguments = "%N %L %F %R %D %C %Z %I"
-            }
+            },
+            Paths = new() { DownloadPath = baseDownloadPath }
         };
 
         var mocks = new Mocks();
@@ -88,9 +90,9 @@ public class TorrentsTest
         mocks.TorrentDataMock.Setup(t => t.GetById(torrent.TorrentId)).Returns(Task.FromResult<Torrent?>(torrent));
         mocks.DownloadsMock.Setup(d => d.GetForTorrent(torrent.TorrentId)).ReturnsAsync(downloads);
 
-        var downloadPath = $"{settings.Paths.DownloadPath}/{torrent.Category}";
-        var torrentPath = $"{downloadPath}/{torrent.RdName}";
-        var filePath = $"{torrentPath}/{downloads[0].FileName}";
+        var downloadPath = Path.Combine(baseDownloadPath, torrent.Category!);
+        var torrentPath = Path.Combine(downloadPath, torrent.RdName!);
+        var filePath = Path.Combine(torrentPath, downloads[0].FileName!);
 
         var fileSystemMock = new MockFileSystem(new Dictionary<string, MockFileData>
         {

@@ -768,9 +768,9 @@ public class Torrents(
         return torrent;
     }
 
-    private static string DownloadPath(Torrent torrent)
+    private static string DownloadPath(Torrent torrent, DbSettings? settings = null)
     {
-        var settingDownloadPath = Settings.Get.Paths.DownloadPath;
+        var settingDownloadPath = (settings ?? Settings.Get).Paths.DownloadPath;
 
         if (!string.IsNullOrWhiteSpace(torrent.Category))
         {
@@ -825,7 +825,7 @@ public class Torrents(
 
         Log($"Parsing external program {fileName} with arguments {arguments}", torrent);
 
-        var downloadPath = DownloadPath(torrent);
+        var downloadPath = DownloadPath(torrent, settings);
         var torrentPath = Path.Combine(downloadPath, torrent.RdName ?? "Unknown");
 
         var filePath = torrentPath;
