@@ -16,7 +16,7 @@ See [README-DOCKER.md](README-DOCKER.md) for the full Docker guide.
 
 1. Install [ASP.NET Core Runtime 9.0](https://dotnet.microsoft.com/download/dotnet/9.0).
 2. Download the latest release zip and extract it.
-3. In `appsettings.json` set `LogLevel.Path` and `Database.Path` to paths on your host. Use escaped backslashes, e.g. `D:\\RdtClient\\db\\rdtclient.db`.
+3. In `appsettings.json` set `LogLevel.Path` and `Database.Path` to paths on your host. Use escaped backslashes, e.g. `D:\\AllDebridClient\\db\\adbclient.db`.
 4. Run `RdtClient.Web.exe` directly, or run `service-install.bat` to install it as a background service.
 
 ---
@@ -91,5 +91,5 @@ cd client && npm install && ng build -c production
 
 ## Troubleshooting
 
-- **Forgot password:** Delete `rdtclient.db` and restart.
+- **Forgot password:** Delete `adbclient.db` and restart.
 - **Logs:** Set log level to `Debug` in Settings. The log file is written to your configured persistent path as `rdtclient.log`.
