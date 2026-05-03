@@ -7,6 +7,16 @@
 
 ---
 
+## [2.0.116.2] - 2026-05-03
+
+### Changed
+- Rebrand: rename all remaining `RdtClient` identifiers to `AdbClient` (project directories, .csproj files, solution, class names, string literals, docker scripts, s6 service folders)
+- Tests: fix `RunTorrentComplete` cross-platform path failure on Linux CI
+- CI: suppress Node.js 20 action deprecation warning
+- Repo: add `CLAUDE.md` with commit format, versioning, and project structure guidelines
+
+---
+
 ## [2.0.116.1] - 2026-05-02
 
 ### Changed
