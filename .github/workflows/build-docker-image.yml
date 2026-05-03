@@ -15,7 +15,7 @@ permissions:
   packages: write
 
 env:
-  APP_NAME: alldebridclient
+  APP_NAME: alldebrid-client
   DOCKER_FILE: ./Dockerfile
   ENABLE_DOCKERHUB: 1
   ENABLE_GHCR: 1
@@ -135,16 +135,3 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}@${{ needs.build.outputs.digest-amd64 }} \
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}@${{ needs.build.outputs.digest-arm64 }}
       
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Docker Hub Registry Description
-        if: ${{ env.ENABLE_DOCKERHUB == 1 }}
-        uses: peter-evans/dockerhub-description@v4
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-          repository: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}
-          short-description: |
-            A web interface to manage your torrents on debrid providers.
-          readme-filepath: ./README-DOCKER.md
