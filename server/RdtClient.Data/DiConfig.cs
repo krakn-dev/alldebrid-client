@@ -9,7 +9,7 @@ public static class DiConfig
 {
     public static void Config(IServiceCollection services, AppSettings appSettings)
     {
-        var dbPath = appSettings.Database?.Path ?? Path.Combine(appSettings.DataPath, "rdtclient.db");
+        var dbPath = appSettings.Database?.Path ?? Path.Combine(appSettings.DataPath, "adbclient.db");
 
         if (string.IsNullOrWhiteSpace(dbPath))
         {
