@@ -1,7 +1,7 @@
 #!/usr/bin/env pwsh
 
 param(
-    [string]$TempPath="c:/Temp/RtdClient",
+    [string]$TempPath="c:/Temp/AdbClient",
     [string]$Dockerfile="Dockerfile",
     [switch]$AutoAttach,
     [switch]$SkipCache,
@@ -12,20 +12,20 @@ param(
 [string] $dbPath = Join-Path -Path $TempPath -ChildPath "db"
 
 Write-Host "Stopping Container (if already running)"
-docker stop rdtclientdev
+docker stop adbclientdev
 
 Write-Host "removing Container (if exists)"
-docker rm rdtclientdev
+docker rm adbclientdev
 
 Write-Host "Building Container"
-$dockerArgs = @( "build", "--force-rm", "--tag", "rdtclientdev", "--progress=$BuildProgress", "--file", $Dockerfile, "." )
+$dockerArgs = @( "build", "--force-rm", "--tag", "adbclientdev", "--progress=$BuildProgress", "--file", $Dockerfile, "." )
 if ($SkipCache.IsPresent) { $dockerArgs += @("--no-cache" ) }
 
 & docker $dockerArgs
 
 Write-Host "Starting Container"
-& docker run --cap-add=NET_ADMIN -d -v ${$downloadPath}:/data/downloads -v ${$dbPath}:/data/db --log-driver json-file --log-opt max-size=10m -p 6500:6500 --name rdtclientdev rdtclientdev
+& docker run --cap-add=NET_ADMIN -d -v ${$downloadPath}:/data/downloads -v ${$dbPath}:/data/db --log-driver json-file --log-opt max-size=10m -p 6500:6500 --name adbclientdev adbclientdev
 
 if ($AutoAttach.IsPresent) {
-    docker exec -it rdtclientdev /bin/bash
+    docker exec -it adbclientdev /bin/bash
 }

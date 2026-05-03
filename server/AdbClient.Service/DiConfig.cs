@@ -5,20 +5,20 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Polly;
 using Polly.Extensions.Http;
-using RdtClient.Service.BackgroundServices;
-using RdtClient.Service.Middleware;
-using RdtClient.Service.Services;
-using RdtClient.Service.Services.TorrentClients;
-using RdtClient.Service.Wrappers;
+using AdbClient.Service.BackgroundServices;
+using AdbClient.Service.Middleware;
+using AdbClient.Service.Services;
+using AdbClient.Service.Services.TorrentClients;
+using AdbClient.Service.Wrappers;
 
-namespace RdtClient.Service;
+namespace AdbClient.Service;
 
 public static class DiConfig
 {
-    public const string RD_CLIENT = "RdClient";
-    public static readonly string UserAgent = $"rdt-client {Assembly.GetEntryAssembly()?.GetName().Version}";
+    public const string RD_CLIENT = "AdbClient";
+    public static readonly string UserAgent = $"alldebrid-client {Assembly.GetEntryAssembly()?.GetName().Version}";
 
-    public static void RegisterRdtServices(this IServiceCollection services)
+    public static void RegisterAdbServices(this IServiceCollection services)
     {
         services.AddMemoryCache();
 

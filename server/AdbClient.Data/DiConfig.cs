@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using RdtClient.Data.Data;
-using RdtClient.Data.Models.Internal;
+using AdbClient.Data.Data;
+using AdbClient.Data.Models.Internal;
 
-namespace RdtClient.Data;
+namespace AdbClient.Data;
 
 public static class DiConfig
 {
@@ -13,7 +13,7 @@ public static class DiConfig
 
         if (string.IsNullOrWhiteSpace(dbPath))
         {
-            throw new Exception("No database path configured. Set DataPath in appsettings.json (e.g. C:\\ProgramData\\RdtClient).");
+            throw new Exception("No database path configured. Set DataPath in appsettings.json (e.g. C:\\ProgramData\\AllDebridClient).");
         }
 
         Directory.CreateDirectory(Path.GetDirectoryName(dbPath)!);

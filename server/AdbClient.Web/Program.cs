@@ -2,11 +2,11 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Hosting.WindowsServices;
-using RdtClient.Data.Data;
-using RdtClient.Data.Models.Internal;
-using RdtClient.Service;
-using RdtClient.Service.Middleware;
-using RdtClient.Service.Services;
+using AdbClient.Data.Data;
+using AdbClient.Data.Models.Internal;
+using AdbClient.Service;
+using AdbClient.Service.Middleware;
+using AdbClient.Service.Services;
 using Serilog;
 using Serilog.Events;
 
@@ -36,7 +36,7 @@ builder.WebHost.ConfigureKestrel(options =>
     options.ListenAnyIP(appSettings.Port);
 });
 
-var logPath = appSettings.Logging?.File?.Path ?? Path.Combine(appSettings.DataPath, "rdtclient.log");
+var logPath = appSettings.Logging?.File?.Path ?? Path.Combine(appSettings.DataPath, "adbclient.log");
 
 Directory.CreateDirectory(Path.GetDirectoryName(logPath)!);
 
@@ -133,8 +133,8 @@ builder.Services.AddSignalR(hubOptions =>
 
 builder.Host.UseWindowsService();
 
-RdtClient.Data.DiConfig.Config(builder.Services, appSettings);
-builder.Services.RegisterRdtServices();
+AdbClient.Data.DiConfig.Config(builder.Services, appSettings);
+builder.Services.RegisterAdbServices();
 
 try
 {
@@ -175,7 +175,7 @@ try
 
     app.UseAuthorization();
 
-    app.MapHub<RdtHub>("/hub");
+    app.MapHub<AdbHub>("/hub");
 
     app.MapControllers();
 

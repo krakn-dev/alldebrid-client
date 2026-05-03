@@ -34,7 +34,7 @@ COPY server ./server
 RUN \
    echo "**** Building Source Code for $TARGETPLATFORM on $BUILDPLATFORM ****" && \
    cd server && \
-   dotnet restore --no-cache RdtClient.sln && \
+   dotnet restore --no-cache AdbClient.sln && \
    dotnet test && \
    dotnet publish --no-restore -c Release -o out ; 
 

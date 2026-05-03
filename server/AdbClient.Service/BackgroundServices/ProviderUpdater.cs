@@ -1,10 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using RdtClient.Data.Enums;
-using RdtClient.Service.Services;
+using AdbClient.Data.Enums;
+using AdbClient.Service.Services;
 
-namespace RdtClient.Service.BackgroundServices;
+namespace AdbClient.Service.BackgroundServices;
 
 public class ProviderUpdater(ILogger<ProviderUpdater> logger, IServiceProvider serviceProvider) : BackgroundService
 {
@@ -39,7 +39,7 @@ public class ProviderUpdater(ILogger<ProviderUpdater> logger, IServiceProvider s
                         updateTime = 30;
                     }
 
-                    if (RdtHub.HasConnections)
+                    if (AdbHub.HasConnections)
                     {
                         updateTime = Settings.Get.Provider.CheckInterval;
 

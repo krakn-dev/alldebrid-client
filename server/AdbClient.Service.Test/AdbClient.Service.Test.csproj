@@ -5,8 +5,8 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
-        <AssemblyName>Adb.Client.Service.Test</AssemblyName>
-        <RootNamespace>Adb.Client.Service.Test</RootNamespace>
+        <AssemblyName>AdbClient.Service.Test</AssemblyName>
+        <RootNamespace>AdbClient.Service.Test</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -32,7 +32,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\RdtClient.Service\RdtClient.Service.csproj" />
+      <ProjectReference Include="..\AdbClient.Service\AdbClient.Service.csproj" />
     </ItemGroup>
 
 </Project>

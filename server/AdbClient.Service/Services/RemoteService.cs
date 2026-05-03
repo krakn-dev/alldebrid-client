@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 
-namespace RdtClient.Service.Services;
+namespace AdbClient.Service.Services;
 
-public class RemoteService(IHubContext<RdtHub> hub, Torrents torrents)
+public class RemoteService(IHubContext<AdbHub> hub, Torrents torrents)
 {
     public async Task Update()
     {

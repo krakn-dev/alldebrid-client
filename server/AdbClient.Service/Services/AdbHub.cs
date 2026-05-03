@@ -1,9 +1,9 @@
 ﻿using System.Collections.Concurrent;
 using Microsoft.AspNetCore.SignalR;
 
-namespace RdtClient.Service.Services;
+namespace AdbClient.Service.Services;
 
-public class RdtHub : Hub
+public class AdbHub : Hub
 {
     private static readonly ConcurrentDictionary<string, string> Users = new();
 

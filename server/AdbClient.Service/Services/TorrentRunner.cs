@@ -1,14 +1,14 @@
 ﻿using Microsoft.Extensions.Logging;
-using RdtClient.Data.Enums;
-using RdtClient.Data.Models.Data;
-using RdtClient.Data.Models.Internal;
-using RdtClient.Service.Helpers;
-using RdtClient.Service.Services.Downloaders;
+using AdbClient.Data.Enums;
+using AdbClient.Data.Models.Data;
+using AdbClient.Data.Models.Internal;
+using AdbClient.Service.Helpers;
+using AdbClient.Service.Services.Downloaders;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text.Json;
 
-namespace RdtClient.Service.Services;
+namespace AdbClient.Service.Services;
 
 public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Downloads downloads)
 {
@@ -314,7 +314,7 @@ public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Dow
             switch (torrent.FinishedAction)
             {
                 case TorrentFinishedAction.RemoveAllTorrents:
-                    Log($"Removing torrents from debrid provider and RDT-Client, no files", torrent);
+                    Log($"Removing torrents from debrid provider and AllDebrid Client, no files", torrent);
                     await torrents.Delete(torrent.TorrentId, true, true, false);
 
                     break;

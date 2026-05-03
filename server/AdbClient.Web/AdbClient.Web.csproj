@@ -6,8 +6,8 @@
     <UserSecretsId>94c24cba-f03f-4453-a671-3640b517c573</UserSecretsId>
     <Version>2.0.116.1</Version>
 	<AssemblyVersion>2.0.116.1</AssemblyVersion>
-    <AssemblyName>Adb.Client.Web</AssemblyName>
-    <RootNamespace>Adb.Client.Web</RootNamespace>
+    <AssemblyName>AdbClient.Web</AssemblyName>
+    <RootNamespace>AdbClient.Web</RootNamespace>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
@@ -47,8 +47,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\RdtClient.Data\RdtClient.Data.csproj" />
-    <ProjectReference Include="..\RdtClient.Service\RdtClient.Service.csproj" />
+    <ProjectReference Include="..\AdbClient.Data\AdbClient.Data.csproj" />
+    <ProjectReference Include="..\AdbClient.Service\AdbClient.Service.csproj" />
   </ItemGroup>
 
   <ItemGroup>

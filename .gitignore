@@ -15,7 +15,7 @@ server/**/bin/
 server/**/obj/
 
 # App config and data
-server/RdtClient.Web/appsettings.Development.json
+server/AdbClient.Web/appsettings.Development.json
 /data
 
 # Misc
