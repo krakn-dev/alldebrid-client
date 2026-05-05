@@ -39,7 +39,7 @@ RUN \
    dotnet publish --no-restore -c Release -o out ; 
 
 # Stage 3 - Build runtime image
-FROM ghcr.io/linuxserver/baseimage-alpine:3.20
+FROM ghcr.io/linuxserver/baseimage-alpine:3.22
 ARG TARGETPLATFORM
 ENV TARGETPLATFORM=${TARGETPLATFORM:-linux/amd64}
 ARG BUILDPLATFORM
@@ -60,6 +60,7 @@ RUN \
    mkdir -p /data/downloads /data/db || true && \
    echo "**** Updating package information ****" && \
    apk update && \
+   apk upgrade --no-cache && \
    echo "**** Install pre-reqs ****" && \
    apk add bash icu-libs krb5-libs libgcc libintl libssl3 libstdc++ zlib && \
    echo "**** Installing dotnet ****" && \
