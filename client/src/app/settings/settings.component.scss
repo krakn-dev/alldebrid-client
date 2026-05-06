@@ -19,6 +19,18 @@
   .field:not(.field-compact) {
     grid-column: 1 / -1;
   }
+
+  &--two-col {
+    grid-template-columns: repeat(2, 1fr);
+
+    .field:not(.field-compact) {
+      grid-column: unset;
+    }
+
+    .settings-section {
+      grid-column: 1 / -1;
+    }
+  }
 }
 
 @media (max-width: 1023px) {
@@ -33,6 +45,10 @@
 
     .field:not(.field-compact) {
       grid-column: 1;
+    }
+
+    &--two-col {
+      grid-template-columns: 1fr;
     }
   }
 }

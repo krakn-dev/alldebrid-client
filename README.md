@@ -8,6 +8,17 @@ Built with Angular 20 and .NET 9. Forked from [rogerfar/rdt-client](https://gith
 
 ## Docker Setup
 
+Images are published to both Docker Hub and GitHub Container Registry on every tagged release:
+
+- Docker Hub: [`lekrakin/alldebrid-client`](https://hub.docker.com/r/lekrakin/alldebrid-client)
+- GHCR: [`ghcr.io/lekrakin/alldebrid-client`](https://github.com/lekrakin/alldebrid-client/pkgs/container/alldebrid-client)
+
+```bash
+docker pull lekrakin/alldebrid-client:latest
+# or
+docker pull ghcr.io/lekrakin/alldebrid-client:latest
+```
+
 See [README-DOCKER.md](README-DOCKER.md) for the full Docker guide.
 
 ---

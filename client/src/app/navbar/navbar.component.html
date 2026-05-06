@@ -51,16 +51,10 @@
     </div>
 
     <div class="navbar-end">
-      <div class="navbar-item has-dropdown is-hoverable">
-        <span class="navbar-link"> Account </span>
-
-        <div class="navbar-dropdown is-right">
-          <a class="navbar-item" routerLink="profile"> Profile </a>
-          <a class="navbar-item" (click)="logout()"> Logout </a>
-          <hr class="navbar-divider" />
-          <a href="https://github.com/lekrakin/alldebrid-client" target="_blank" class="navbar-item">Version {{ version }}</a>
-        </div>
-      </div>
+      <a href="https://github.com/lekrakin/alldebrid-client" target="_blank" rel="noopener" class="navbar-item has-text-grey">
+        v{{ version }}
+      </a>
+      <a class="navbar-item" (click)="logout()">Logout</a>
     </div>
   </div>
 </nav>

@@ -5,6 +5,7 @@ import { NgClass, KeyValuePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Nl2BrPipe } from '../nl2br.pipe';
 import { FileSizePipe } from '../filesize.pipe';
+import { AuthService } from '../auth.service';
 
 @Component({
   selector: 'app-settings',
@@ -15,6 +16,12 @@ import { FileSizePipe } from '../filesize.pipe';
 })
 export class SettingsComponent implements OnInit {
   public activeTab = 0;
+
+  public profileUsername: string;
+  public profilePassword: string;
+  public profileSaving = false;
+  public profileSuccess = false;
+  public profileError: string = null;
 
   public tabs: Setting[] = [];
   private settingMap = new Map<string, Setting>();
@@ -33,7 +40,10 @@ export class SettingsComponent implements OnInit {
 
   public canRegisterMagnetHandler = false;
 
-  constructor(private settingsService: SettingsService) {}
+  constructor(
+    private settingsService: SettingsService,
+    private authService: AuthService,
+  ) {}
 
   ngOnInit(): void {
     this.reset();
@@ -138,6 +148,24 @@ export class SettingsComponent implements OnInit {
       default:
         return '';
     }
+  }
+
+  public saveProfile(): void {
+    this.profileSuccess = false;
+    this.profileError = null;
+    this.profileSaving = true;
+
+    this.authService.update(this.profileUsername, this.profilePassword).subscribe({
+      next: () => {
+        this.profileSuccess = true;
+        this.profileSaving = false;
+      },
+      error: (err) => {
+        this.profileError = err.error;
+        this.profileSuccess = false;
+        this.profileSaving = false;
+      },
+    });
   }
 
   public registerMagnetHandler(): void {

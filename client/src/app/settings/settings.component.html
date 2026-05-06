@@ -8,6 +8,9 @@
     <li [ngClass]="{ 'is-active': activeTab === 99 }" (click)="activeTab = 99">
       <a>Speed Tests</a>
     </li>
+    <li [ngClass]="{ 'is-active': activeTab === 100 }" (click)="activeTab = 100">
+      <a>Profile</a>
+    </li>
   </ul>
 </div>
 
@@ -16,7 +19,7 @@
     @if (tab.description) {
       <p class="has-text-grey mb-3">{{ tab.description }}</p>
     }
-    <div class="settings-grid">
+    <div class="settings-grid" [class.settings-grid--two-col]="tab.key === 'General' || tab.key === 'Paths'">
       @for (setting of tab.settings; track setting.key) {
         @if (setting.type === 'Object') {
           <h3 class="settings-section">{{ setting.displayName }}</h3>
@@ -163,6 +166,36 @@
         <a href="https://developer.mozilla.org/en-US/docs/Glossary/Secure_Context/" target="_blank" rel="noopener noreferrer">secure context</a>.
       }
     </p>
+  </div>
+}
+
+@if (activeTab === 100) {
+  <div class="field">
+    <label class="label">Login username</label>
+    <div class="control">
+      <input class="input" type="text" minlength="1" [(ngModel)]="profileUsername" />
+    </div>
+    <p class="help">Change the username used to log in. Leave blank to keep the current username.</p>
+  </div>
+  <div class="field">
+    <label class="label">Login password</label>
+    <div class="control">
+      <input class="input" type="password" minlength="1" [(ngModel)]="profilePassword" />
+    </div>
+    <p class="help">Change the password used to log in. Leave blank to keep the current password.</p>
+  </div>
+  @if (profileError) {
+    <div class="notification is-danger is-light">Error saving: {{ profileError }}</div>
+  }
+  @if (profileSuccess) {
+    <div class="notification is-success is-light">Profile updated successfully.</div>
+  }
+  <div class="field">
+    <div class="control">
+      <button class="button is-success" (click)="saveProfile()" [disabled]="profileSaving" [ngClass]="{ 'is-loading': profileSaving }">
+        Save Profile
+      </button>
+    </div>
   </div>
 }
 
