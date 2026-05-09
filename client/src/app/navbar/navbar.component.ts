@@ -35,7 +35,7 @@ export class NavbarComponent implements OnInit {
     this.settingsService.getProfile().subscribe((result) => {
       this.profile = result;
 
-      switch (result.provider) {
+      switch (result?.provider) {
         case 'RealDebrid':
           this.providerLink = 'https://real-debrid.com/?id=1348683';
           break;

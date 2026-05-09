@@ -41,8 +41,15 @@ public class SettingsController(Settings settings, Torrents torrents) : Controll
     [Route("Profile")]
     public async Task<ActionResult<Profile>> Profile()
     {
-        var profile = await torrents.GetProfile();
-        return Ok(profile);
+        try
+        {
+            var profile = await torrents.GetProfile();
+            return Ok(profile);
+        }
+        catch (Exception ex) when (ex.Message.Contains("API Key not set"))
+        {
+            return Ok((Profile?)null);
+        }
     }
 
     [HttpGet]
