@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { Torrent } from '../models/torrent.model';
 import { TorrentService } from '../torrent.service';
@@ -53,16 +54,16 @@ export class TorrentTableComponent implements OnInit {
   constructor(
     private router: Router,
     private torrentService: TorrentService,
-  ) {}
+  ) {
+    torrentService.update$.pipe(takeUntilDestroyed()).subscribe((result) => {
+      this.torrents = result;
+    });
+  }
 
   ngOnInit(): void {
     this.torrentService.getList().subscribe({
       next: (result) => {
         this.torrents = result;
-
-        this.torrentService.update$.subscribe((result2) => {
-          this.torrents = result2;
-        });
       },
       error: (err) => {
         this.error = err.error;

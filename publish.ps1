@@ -3,6 +3,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$PSNativeCommandErrorActionPreference = "Stop"
 $root = $PSScriptRoot
 $dataPath = Join-Path $InstallPath "data"
 $settingsPath = Join-Path $InstallPath "appsettings.json"

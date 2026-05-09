@@ -85,8 +85,8 @@ public class DbSettingsDownloadClient
     [Description("Parallel threads per file. 0 disables parallelism. Internal downloader only.")]
     public int ParallelCount { get; set; } = 8;
 
-    [DisplayName("Chunk count")]
-    [Description("Chunks to split each file into during download.")]
+    [DisplayName("Chunk size (MB)")]
+    [Description("Size in MB of each download chunk. 0 = default (50 MB). Smaller values reduce memory usage.")]
     public int ChunkCount { get; set; } = 0;
 
     [DisplayName("Buffer size (bytes)")]

@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
-import { Observable, Subject } from 'rxjs';
+import { Observable, ReplaySubject } from 'rxjs';
 import { Torrent, TorrentFileAvailability } from './models/torrent.model';
 import { APP_BASE_HREF } from '@angular/common';
 
@@ -9,7 +9,7 @@ import { APP_BASE_HREF } from '@angular/common';
   providedIn: 'root',
 })
 export class TorrentService {
-  public update$: Subject<Torrent[]> = new Subject();
+  public update$: ReplaySubject<Torrent[]> = new ReplaySubject(1);
 
   private connection: signalR.HubConnection;
 

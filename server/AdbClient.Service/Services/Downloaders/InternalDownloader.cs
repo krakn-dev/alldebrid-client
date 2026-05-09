@@ -141,18 +141,15 @@ public class InternalDownloader : IDownloader
         settingDownloadMaxSpeed /= Math.Max(TorrentRunner.ActiveDownloadClients.Count, 1);
         settingDownloadMaxSpeed = settingDownloadMaxSpeed * 1024 * 1024;
 
-        var settingChunkCount = Settings.Get.DownloadClient.ChunkCount;
-
-        if (settingChunkCount <= 0)
-        {
-            settingChunkCount = 32;
-        }
+        var settingChunkSize = Settings.Get.DownloadClient.ChunkCount > 0
+            ? Settings.Get.DownloadClient.ChunkCount * 1024 * 1024
+            : 50 * 1024 * 1024;
 
         _downloadConfiguration.BufferSize = settingBufferSize;
         _downloadConfiguration.LogLevel = (int)Settings.Get.DownloadClient.LogLevel;
         _downloadConfiguration.Parallel = settingDownloadParallelCount;
         _downloadConfiguration.MaximumBytesPerSecond = settingDownloadMaxSpeed;
-        _downloadConfiguration.ChunkCount = settingChunkCount;
+        _downloadConfiguration.ChunkSize = settingChunkSize;
         _downloadConfiguration.Timeout = 5000;
         _downloadConfiguration.RetryCount = 5;
     }
