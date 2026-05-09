@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../auth.service';
 import { Profile } from '../models/profile.model';
@@ -23,6 +23,7 @@ export class NavbarComponent implements OnInit {
     private settingsService: SettingsService,
     private authService: AuthService,
     private router: Router,
+    private cdr: ChangeDetectorRef,
   ) {
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
@@ -52,10 +53,13 @@ export class NavbarComponent implements OnInit {
           this.providerLink = 'https://debrid-link.com/';
           break;
       }
+
+      this.cdr.detectChanges();
     });
 
     this.settingsService.getVersion().subscribe((result) => {
       this.version = result.version;
+      this.cdr.detectChanges();
     });
   }
 

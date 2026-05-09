@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { SettingsService } from 'src/app/settings.service';
 import { Setting } from '../models/setting.model';
 import { NgClass, KeyValuePipe } from '@angular/common';
@@ -43,6 +43,7 @@ export class SettingsComponent implements OnInit {
   constructor(
     private settingsService: SettingsService,
     private authService: AuthService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -59,6 +60,7 @@ export class SettingsComponent implements OnInit {
       }
 
       this.settingMap = new Map(settings.map((s) => [s.key, s]));
+      this.cdr.detectChanges();
     });
   }
 

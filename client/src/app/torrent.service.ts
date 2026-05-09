@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Inject, Injectable } from '@angular/core';
+import { Inject, Injectable, NgZone } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { Observable, ReplaySubject } from 'rxjs';
 import { Torrent, TorrentFileAvailability } from './models/torrent.model';
@@ -16,6 +16,7 @@ export class TorrentService {
   constructor(
     private http: HttpClient,
     @Inject(APP_BASE_HREF) private baseHref: string,
+    private ngZone: NgZone,
   ) {
     this.connect();
   }
@@ -32,7 +33,7 @@ export class TorrentService {
     this.connection.start().catch((err) => console.error(err));
 
     this.connection.on('update', (torrents: Torrent[]) => {
-      this.update$.next(torrents);
+      this.ngZone.run(() => this.update$.next(torrents));
     });
   }
 
