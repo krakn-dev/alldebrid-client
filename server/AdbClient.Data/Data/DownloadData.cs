@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using AdbClient.Data.Models.Data;
 using Download = AdbClient.Data.Models.Data.Download;
 
@@ -44,198 +44,44 @@ public class DownloadData(DataContext dataContext)
         };
 
         await dataContext.Downloads.AddAsync(download);
-
         await dataContext.SaveChangesAsync();
-
         await TorrentData.VoidCache();
 
         return download;
     }
 
-    public async Task UpdateUnrestrictedLink(Guid downloadId, string unrestrictedLink)
-    {
-        var dbDownload = await dataContext.Downloads
-                                           .FirstOrDefaultAsync(m => m.DownloadId == downloadId);
+    public Task UpdateUnrestrictedLink(Guid downloadId, string unrestrictedLink) =>
+        Patch(downloadId, d => d.Link = unrestrictedLink);
 
-        if (dbDownload == null)
-        {
-            return;
-        }
+    public Task UpdateFileName(Guid downloadId, string fileName) =>
+        Patch(downloadId, d => d.FileName = fileName);
 
-        dbDownload.Link = unrestrictedLink;
+    public Task UpdateDownloadStarted(Guid downloadId, DateTimeOffset? dateTime) =>
+        Patch(downloadId, d => d.DownloadStarted = dateTime);
 
-        await dataContext.SaveChangesAsync();
+    public Task UpdateDownloadFinished(Guid downloadId, DateTimeOffset? dateTime) =>
+        Patch(downloadId, d => d.DownloadFinished = dateTime);
 
-        await TorrentData.VoidCache();
-    }
+    public Task UpdateUnpackingQueued(Guid downloadId, DateTimeOffset? dateTime) =>
+        Patch(downloadId, d => d.UnpackingQueued = dateTime);
 
-    public async Task UpdateFileName(Guid downloadId, string fileName)
-    {
-        var dbDownload = await dataContext.Downloads
-                                           .FirstOrDefaultAsync(m => m.DownloadId == downloadId);
+    public Task UpdateUnpackingStarted(Guid downloadId, DateTimeOffset? dateTime) =>
+        Patch(downloadId, d => d.UnpackingStarted = dateTime);
 
-        if (dbDownload == null)
-        {
-            return;
-        }
+    public Task UpdateUnpackingFinished(Guid downloadId, DateTimeOffset? dateTime) =>
+        Patch(downloadId, d => d.UnpackingFinished = dateTime);
 
-        dbDownload.FileName = fileName;
+    public Task UpdateCompleted(Guid downloadId, DateTimeOffset? dateTime) =>
+        Patch(downloadId, d => d.Completed = dateTime);
 
-        await dataContext.SaveChangesAsync();
+    public Task UpdateError(Guid downloadId, string? error) =>
+        Patch(downloadId, d => d.Error = error);
 
-        await TorrentData.VoidCache();
-    }
+    public Task UpdateRetryCount(Guid downloadId, int retryCount) =>
+        Patch(downloadId, d => d.RetryCount = retryCount);
 
-    public async Task UpdateDownloadStarted(Guid downloadId, DateTimeOffset? dateTime)
-    {
-        var dbDownload = await dataContext.Downloads
-                                           .FirstOrDefaultAsync(m => m.DownloadId == downloadId);
-
-        if (dbDownload == null)
-        {
-            return;
-        }
-
-        dbDownload.DownloadStarted = dateTime;
-
-        await dataContext.SaveChangesAsync();
-
-        await TorrentData.VoidCache();
-    }
-
-    public async Task UpdateDownloadFinished(Guid downloadId, DateTimeOffset? dateTime)
-    {
-        var dbDownload = await dataContext.Downloads
-                                           .FirstOrDefaultAsync(m => m.DownloadId == downloadId);
-
-        if (dbDownload == null)
-        {
-            return;
-        }
-            
-        dbDownload.DownloadFinished = dateTime;
-
-        await dataContext.SaveChangesAsync();
-
-        await TorrentData.VoidCache();
-    }
-
-    public async Task UpdateUnpackingQueued(Guid downloadId, DateTimeOffset? dateTime)
-    {
-        var dbDownload = await dataContext.Downloads
-                                           .FirstOrDefaultAsync(m => m.DownloadId == downloadId);
-
-        if (dbDownload == null)
-        {
-            return;
-        }
-
-        dbDownload.UnpackingQueued = dateTime;
-
-        await dataContext.SaveChangesAsync();
-
-        await TorrentData.VoidCache();
-    }
-
-    public async Task UpdateUnpackingStarted(Guid downloadId, DateTimeOffset? dateTime)
-    {
-        var dbDownload = await dataContext.Downloads
-                                           .FirstOrDefaultAsync(m => m.DownloadId == downloadId);
-
-        if (dbDownload == null)
-        {
-            return;
-        }
-
-        dbDownload.UnpackingStarted = dateTime;
-
-        await dataContext.SaveChangesAsync();
-
-        await TorrentData.VoidCache();
-    }
-
-    public async Task UpdateUnpackingFinished(Guid downloadId, DateTimeOffset? dateTime)
-    {
-        var dbDownload = await dataContext.Downloads
-                                           .FirstOrDefaultAsync(m => m.DownloadId == downloadId);
-
-        if (dbDownload == null)
-        {
-            return;
-        }
-
-        dbDownload.UnpackingFinished = dateTime;
-
-        await dataContext.SaveChangesAsync();
-
-        await TorrentData.VoidCache();
-    }
-        
-    public async Task UpdateCompleted(Guid downloadId, DateTimeOffset? dateTime)
-    {
-        var dbDownload = await dataContext.Downloads
-                                           .FirstOrDefaultAsync(m => m.DownloadId == downloadId);
-
-        if (dbDownload == null)
-        {
-            return;
-        }
-
-        dbDownload.Completed = dateTime;
-
-        await dataContext.SaveChangesAsync();
-
-        await TorrentData.VoidCache();
-    }
-
-    public async Task UpdateError(Guid downloadId, string? error)
-    {
-        var dbDownload = await dataContext.Downloads
-                                           .FirstOrDefaultAsync(m => m.DownloadId == downloadId);
-
-        if (dbDownload == null)
-        {
-            return;
-        }
-
-        dbDownload.Error = error;
-
-        await dataContext.SaveChangesAsync();
-
-        await TorrentData.VoidCache();
-    }
-    
-    public async Task UpdateRetryCount(Guid downloadId, int retryCount)
-    {
-        var dbDownload = await dataContext.Downloads
-                                           .FirstOrDefaultAsync(m => m.DownloadId == downloadId);
-
-        if (dbDownload == null)
-        {
-            return;
-        }
-
-        dbDownload.RetryCount = retryCount;
-
-        await dataContext.SaveChangesAsync();
-
-        await TorrentData.VoidCache();
-    }
-
-    public async Task UpdateRemoteId(Guid downloadId, string remoteId)
-    {
-        var dbDownload = await dataContext.Downloads
-                                           .FirstOrDefaultAsync(m => m.DownloadId == downloadId);
-
-        if (dbDownload == null)
-        {
-            return;
-        }
-
-        dbDownload.RemoteId = remoteId;
-
-        await dataContext.SaveChangesAsync();
-    }
+    public Task UpdateRemoteId(Guid downloadId, string remoteId) =>
+        Patch(downloadId, d => d.RemoteId = remoteId);
 
     public async Task DeleteForTorrent(Guid torrentId)
     {
@@ -244,16 +90,14 @@ public class DownloadData(DataContext dataContext)
                                           .ToListAsync();
 
         dataContext.Downloads.RemoveRange(downloads);
-
         await dataContext.SaveChangesAsync();
-
         await TorrentData.VoidCache();
     }
 
     public async Task Reset(Guid downloadId)
     {
         var dbDownload = await dataContext.Downloads
-                                           .FirstOrDefaultAsync(m => m.DownloadId == downloadId) 
+                                           .FirstOrDefaultAsync(m => m.DownloadId == downloadId)
                          ?? throw new Exception($"Cannot find download with ID {downloadId}");
 
         dbDownload.RetryCount = 0;
@@ -269,7 +113,15 @@ public class DownloadData(DataContext dataContext)
         dbDownload.Error = null;
 
         await dataContext.SaveChangesAsync();
+        await TorrentData.VoidCache();
+    }
 
+    private async Task Patch(Guid downloadId, Action<Download> mutate)
+    {
+        var db = await dataContext.Downloads.FirstOrDefaultAsync(m => m.DownloadId == downloadId);
+        if (db == null) return;
+        mutate(db);
+        await dataContext.SaveChangesAsync();
         await TorrentData.VoidCache();
     }
 }

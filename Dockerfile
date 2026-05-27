@@ -98,4 +98,4 @@ COPY --from=node-build-env /appclient/root/ /
 EXPOSE 6500
 
 # Check Status
-HEALTHCHECK --interval=30s --timeout=30s --start-period=30s --retries=3 CMD curl --fail http://localhost:6500 || exit 
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 CMD curl -f http://localhost:6500 || exit 1

@@ -8,16 +8,10 @@ public static class DownloadHelper
 {
     public static string? GetDownloadPath(string downloadPath, Torrent torrent, Download download, IFileSystem? fileSystem = null)
     {
-        var fileUrl = download.Link;
-
-        if (string.IsNullOrWhiteSpace(fileUrl) || torrent.RdName == null)
+        if (string.IsNullOrWhiteSpace(download.Link) || torrent.RdName == null)
         {
             return null;
         }
-
-        var directory = RemoveInvalidPathChars(torrent.RdName);
-        
-        var torrentPath = Path.Combine(downloadPath, directory);
 
         var fileName = GetFileName(download);
 
@@ -26,20 +20,12 @@ public static class DownloadHelper
             return null;
         }
 
-        var matchingTorrentFiles = torrent.Files.Where(m => m.Path.EndsWith(fileName)).Where(m => !string.IsNullOrWhiteSpace(m.Path)).ToList();
+        var torrentPath = Path.Combine(downloadPath, RemoveInvalidPathChars(torrent.RdName));
 
-        if (matchingTorrentFiles.Count > 0)
+        var subPath = FindSubPath(torrent, fileName);
+        if (subPath != null)
         {
-            var matchingTorrentFile = matchingTorrentFiles[0];
-
-            var subPath = Path.GetDirectoryName(matchingTorrentFile.Path);
-
-            if (!string.IsNullOrWhiteSpace(subPath))
-            {
-                subPath = subPath.Trim('/').Trim('\\');
-
-                torrentPath = Path.Combine(torrentPath, subPath);
-            }
+            torrentPath = Path.Combine(torrentPath, subPath);
         }
 
         fileSystem ??= new FileSystem();
@@ -49,51 +35,40 @@ public static class DownloadHelper
             fileSystem.Directory.CreateDirectory(torrentPath);
         }
 
-        var filePath = Path.Combine(torrentPath, fileName);
-
-        return filePath;
+        return Path.Combine(torrentPath, fileName);
     }
 
     public static string? GetDownloadPath(Torrent torrent, Download download)
     {
-        var fileUrl = download.Link;
-
-        if (string.IsNullOrWhiteSpace(fileUrl) || torrent.RdName == null)
+        if (string.IsNullOrWhiteSpace(download.Link) || torrent.RdName == null)
         {
             return null;
         }
-
-        var uri = new Uri(fileUrl);
-        var torrentPath = RemoveInvalidPathChars(torrent.RdName);
 
         var fileName = download.FileName;
 
         if (string.IsNullOrWhiteSpace(fileName))
         {
-            fileName = uri.Segments.Last();
-
-            fileName = HttpUtility.UrlDecode(fileName);
+            fileName = HttpUtility.UrlDecode(new Uri(download.Link).Segments.Last());
         }
 
-        var matchingTorrentFiles = torrent.Files.Where(m => m.Path.EndsWith(fileName)).Where(m => !string.IsNullOrWhiteSpace(m.Path)).ToList();
+        var torrentPath = RemoveInvalidPathChars(torrent.RdName);
 
-        if (matchingTorrentFiles.Count > 0)
+        var subPath = FindSubPath(torrent, fileName);
+        if (subPath != null)
         {
-            var matchingTorrentFile = matchingTorrentFiles[0];
-
-            var subPath = Path.GetDirectoryName(matchingTorrentFile.Path);
-
-            if (!string.IsNullOrWhiteSpace(subPath))
-            {
-                subPath = subPath.Trim('/').Trim('\\');
-
-                torrentPath = Path.Combine(torrentPath, subPath);
-            }
+            torrentPath = Path.Combine(torrentPath, subPath);
         }
 
-        var filePath = Path.Combine(torrentPath, fileName);
+        return Path.Combine(torrentPath, fileName);
+    }
 
-        return filePath;
+    private static string? FindSubPath(Torrent torrent, string fileName)
+    {
+        var match = torrent.Files.FirstOrDefault(f => !string.IsNullOrWhiteSpace(f.Path) && f.Path.EndsWith(fileName));
+        if (match == null) return null;
+        var sub = Path.GetDirectoryName(match.Path);
+        return string.IsNullOrWhiteSpace(sub) ? null : sub.Trim('/').Trim('\\');
     }
 
     public static string? GetFileName(Download download)

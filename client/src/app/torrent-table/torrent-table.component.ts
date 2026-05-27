@@ -72,8 +72,10 @@ export class TorrentTableComponent implements OnInit {
   }
 
   public sort(property: string): void {
+    this.sortDirection = this.sortProperty === property
+      ? (this.sortDirection === 'asc' ? 'desc' : 'asc')
+      : 'asc';
     this.sortProperty = property;
-    this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
   }
 
   public sortIcon(property: string): Record<string, boolean> {
@@ -182,42 +184,24 @@ export class TorrentTableComponent implements OnInit {
   public changeSettingsModal(): void {
     this.changeSettingsError = null;
 
-    const selectedTorrents = this.torrents.filter((m) => this.selectedTorrents.indexOf(m.torrentId) > -1);
+    const selected = this.torrents.filter((m) => this.selectedTorrents.includes(m.torrentId));
+    const cv = <V>(getter: (t: Torrent) => V) => this.consensus(selected, getter);
 
-    this.updateSettingsDownloadClient = selectedTorrents.every(
-      (m, _, arr) => m.downloadClient === arr[0].downloadClient,
-    )
-      ? selectedTorrents[0].downloadClient
-      : null;
-    this.updateSettingsHostDownloadAction = selectedTorrents.every(
-      (m, _, arr) => m.hostDownloadAction === arr[0].hostDownloadAction,
-    )
-      ? selectedTorrents[0].hostDownloadAction
-      : null;
-    this.updateSettingsCategory = selectedTorrents.every((m, _, arr) => m.category === arr[0].category)
-      ? selectedTorrents[0].category
-      : null;
-    this.updateSettingsPriority = selectedTorrents.every((m, _, arr) => m.priority === arr[0].priority)
-      ? selectedTorrents[0].priority
-      : null;
-    this.updateSettingsDownloadRetryAttempts = selectedTorrents.every(
-      (m, _, arr) => m.downloadRetryAttempts === arr[0].downloadRetryAttempts,
-    )
-      ? selectedTorrents[0].downloadRetryAttempts
-      : null;
-    this.updateSettingsTorrentRetryAttempts = selectedTorrents.every(
-      (m, _, arr) => m.torrentRetryAttempts === arr[0].torrentRetryAttempts,
-    )
-      ? selectedTorrents[0].torrentRetryAttempts
-      : null;
-    this.updateSettingsDeleteOnError = selectedTorrents.every((m, _, arr) => m.deleteOnError === arr[0].deleteOnError)
-      ? selectedTorrents[0].deleteOnError
-      : null;
-    this.updateSettingsTorrentLifetime = selectedTorrents.every((m, _, arr) => m.lifetime === arr[0].lifetime)
-      ? selectedTorrents[0].lifetime
-      : null;
+    this.updateSettingsDownloadClient = cv((m) => m.downloadClient);
+    this.updateSettingsHostDownloadAction = cv((m) => m.hostDownloadAction);
+    this.updateSettingsCategory = cv((m) => m.category);
+    this.updateSettingsPriority = cv((m) => m.priority);
+    this.updateSettingsDownloadRetryAttempts = cv((m) => m.downloadRetryAttempts);
+    this.updateSettingsTorrentRetryAttempts = cv((m) => m.torrentRetryAttempts);
+    this.updateSettingsDeleteOnError = cv((m) => m.deleteOnError);
+    this.updateSettingsTorrentLifetime = cv((m) => m.lifetime);
 
     this.isChangeSettingsModalActive = true;
+  }
+
+  private consensus<V>(items: Torrent[], getter: (item: Torrent) => V): V | null {
+    const first = getter(items[0]);
+    return items.every((item) => getter(item) === first) ? first : null;
   }
 
   public changeSettingsCancel(): void {
@@ -245,7 +229,7 @@ export class TorrentTableComponent implements OnInit {
         torrent.priority = this.updateSettingsPriority;
       }
       if (this.updateSettingsDownloadRetryAttempts != null) {
-        torrent.retryCount = this.updateSettingsDownloadRetryAttempts;
+        torrent.downloadRetryAttempts = this.updateSettingsDownloadRetryAttempts;
       }
       if (this.updateSettingsTorrentRetryAttempts != null) {
         torrent.torrentRetryAttempts = this.updateSettingsTorrentRetryAttempts;

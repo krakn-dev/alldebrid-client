@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { saveAs } from 'file-saver-es';
 import { Torrent } from '../models/torrent.model';
@@ -66,6 +67,8 @@ export class TorrentComponent implements OnInit {
 
   public updating: boolean;
 
+  private readonly destroyRef = inject(DestroyRef);
+
   constructor(
     private activatedRoute: ActivatedRoute,
     private router: Router,
@@ -80,9 +83,9 @@ export class TorrentComponent implements OnInit {
         next: (torrent) => {
           this.torrent = torrent;
 
-          this.torrentService.update$.subscribe((result) => {
-            this.update(result);
-          });
+          this.torrentService.update$
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe((result) => this.update(result));
         },
         error: () => this.router.navigate(['/']),
       });
