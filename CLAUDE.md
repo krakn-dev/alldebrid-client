@@ -1,56 +1,80 @@
-# AllDebrid Client — Project Guidelines
+# AllDebrid Client
 
-## Git commit format
+<!-- ============================================================ -->
+<!-- PINNED CONTEXT — read every turn, update when rules change   -->
+<!-- ============================================================ -->
+## Pinned Context
 
-```
-Area: short imperative phrase
-```
+> Treat this block as the durable rulebook. When a persistent rule changes, edit this section in the same turn.
 
-- No period at the end. 72 characters max for the subject line.
-- Use the component or layer as the area. Examples already in history:
-  `Server:`, `Client:`, `Data:`, `Tests:`, `Docs:`, `Repo:`, `CI:`, `Rebrand:`
-- One logical change per commit — no "and" commits, split them.
-- Multi-line body is fine for commits that need explanation.
+- **Commits:** `Area: short imperative phrase`, no period, 72 chars max. Common areas: `Server`, `Client`, `Data`, `Tests`, `Docs`, `Repo`, `CI`, `Docker`.
+- **Attribution:** do not add generated-by, assistant, Codex, Claude, or similar AI attribution to code, docs, comments, commits, or metadata.
+- **Branches:** work on `main` unless the user explicitly asks for a branch. Keep history flat with fast-forward merges when possible.
+- **Versioning:** SemVer tags are `vX.Y.Z`. CI sets release versions from tags; do not manually edit project `<Version>` values for releases.
+- **Changelog:** keep `[Unreleased]` current using Keep a Changelog subsections.
+- **Naming:** do not introduce `Rdt`, `RDT`, or `rdt` prefixes. Use `Adb`, `adb`, `AdbClient`, and AllDebrid language.
+- **Secrets/local state:** never commit `.claude/`, `.cora/`, `.vscode/`, `.codex/`, app data, logs, local DBs, or local install output.
 
-## Versioning
+<!-- ============================================================ -->
 
-Format: `MAJOR.MINOR.PATCH` ([Semantic Versioning](https://semver.org/spec/v2.0.0.html)).  
-Current version: `1.0.0`. Forked from upstream rogerfar/rdt-client v2.0.116.
+Self-hosted AllDebrid torrent manager. Angular frontend, .NET 9 backend, SQLite data store, Docker release path.
 
-- Bump `PATCH` for backwards-compatible bug fixes.
-- Bump `MINOR` for backwards-compatible new features.
-- Bump `MAJOR` for breaking changes.
-- Tag releases as `v1.0.0`, `v1.1.0`, etc. — CI reads the tag and sets `Version`/`AssemblyVersion` automatically.
-- Never manually edit `<Version>` in `.csproj` files for releases; the CI overwrites it from the tag.
-
-## CHANGELOG
-
-Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
-
-- `## [Unreleased]` is the active working section.
-- Before a release: rename it to `## [X.Y.Z] - YYYY-MM-DD`, add empty `## [Unreleased]` above.
-- Each version section uses subsections: `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`.
-- Keep compare links at the bottom of the file up to date.
-
-## Project structure
-
-- `server/` — .NET 9 solution (`AdbClient.sln`) with 4 projects: Data, Service, Service.Test, Web
-- `client/` — Angular frontend (builds into `server/AdbClient.Web/wwwroot/`)
-- `root/` — Docker/s6-overlay service definitions
-- `.github/workflows/` — CI: `dotnet-test.yml` (push), `build-release.yaml` (tag), `build-docker-image.yml` (tag)
-
-## Local build
+## Commands
 
 ```powershell
-# Frontend
-cd client && npm run build
+# Full local verification
+.\tools\check-project.ps1
 
-# Backend (full publish)
-dotnet publish server/AdbClient.Web/AdbClient.Web.csproj -c Release -o publish
+# Frontend
+cd client
+npm ci
+npm run build
+npm run lint
+npm run format:check
+
+# Backend
+dotnet restore server
+dotnet build --no-restore server
+dotnet test --no-build server
+
+# Publish local Windows install
+.\publish.ps1 -InstallPath "G:\Programs\adbclient\AllDebridClient"
 ```
 
-## Naming conventions
+## Layout
 
-This is a fork of `rogerfar/rdt-client`. All identifiers have been rebranded:
-- `RdtClient` → `AdbClient`, `rdt-client` → `alldebrid-client`, `rdt` → `adb`
-- Do not reintroduce `Rdt`, `RDT`, or `rdt` prefixes in new code.
+- `client/` — Angular app. Builds into `server/AdbClient.Web/wwwroot/`.
+- `server/AdbClient.Web/` — ASP.NET Core host, controllers, auth, static frontend serving.
+- `server/AdbClient.Service/` — app logic, torrent orchestration, AllDebrid client, download/unpack/background services.
+- `server/AdbClient.Data/` — EF Core context, migrations, repositories, data models.
+- `server/AdbClient.Service.Test/` — backend tests.
+- `root/` — Docker s6-overlay service definitions.
+- `tools/` — local Docker and verification helpers.
+- `.github/workflows/` — test, release zip, and Docker image automation.
+
+## Architecture
+
+- Web depends on Service and Data.
+- Service depends on Data.
+- Data owns EF Core, migrations, and persistence models.
+- Controllers should stay thin: validate/shape requests, call services, return responses.
+- Tested filesystem code uses `System.IO.Abstractions` (`IFileSystem`) instead of direct `System.IO` access.
+
+## Automation
+
+- `dotnet-test.yml` validates backend restore/build/test and frontend lint/format checks.
+- `build-release.yaml` creates the Windows release zip from `vX.Y.Z` tags.
+- `build-docker-image.yml` publishes Docker Hub and GHCR images from tags.
+- Dependabot tracks NuGet, npm, and GitHub Actions weekly.
+
+## Docker
+
+- Runtime image exposes port `6500`.
+- Persistent paths are `/data/db` and `/data/downloads`.
+- Primary images are `lekrakin/alldebrid-client` and `ghcr.io/lekrakin/alldebrid-client`.
+
+## Known Cleanup Targets
+
+- Remove remaining upstream RealDebrid names only where they are not database/API compatibility fields.
+- Keep service logic modular; avoid adding more responsibilities to `Torrents.cs`.
+- Prefer small service classes with clear interfaces over broad static helpers.

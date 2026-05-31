@@ -4,6 +4,12 @@ build/
 publish/
 node_modules/
 
+# Local agent/editor state
+.claude/
+.cora/
+.vscode/
+.codex/
+
 # VS artifacts
 .vs/
 *.suo
