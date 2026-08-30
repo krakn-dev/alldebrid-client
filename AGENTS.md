@@ -3,7 +3,7 @@
 ## Canonical Architecture
 - Shared AI architecture: `G:\Dev\AI\AGENTS.md`
 - Project architecture model: `G:\Dev\AI\architecture\project.md`
-- Default commit rulebook: `G:\Dev\AI\architecture\git-commit-rulebook.md`
+- Default commit rulebook: `G:\Dev\AI\architecture\version-control.md`
 
 ## Project Context
 Use [CLAUDE.md](CLAUDE.md) as the single source of this project's commands, conventions, architecture notes, release flow, and local overrides.

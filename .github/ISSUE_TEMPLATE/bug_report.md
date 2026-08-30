@@ -13,8 +13,6 @@ assignees: ''
 
 **Are you using Docker or as a service?**
 
-**Which debrid provider are you using?**
-
-**Which downloader are you using?**
+**How did you install it (Docker, release ZIP, or local build)?**
 
 **Please attach a log file here with the log setting set to debug**

@@ -5,7 +5,7 @@ AllDebrid Client ships as a LinuxServer-style container with s6-overlay and pers
 Published images:
 
 - Docker Hub: `lekrakin/alldebrid-client`
-- GHCR: `ghcr.io/lekrakin/alldebrid-client`
+- GHCR: `ghcr.io/krkn-dev/alldebrid-client`
 
 ## Compose
 
@@ -24,6 +24,12 @@ services:
     ports:
       - "6500:6500"
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:6500/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 ```
 
 ## Docker CLI

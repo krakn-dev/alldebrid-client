@@ -2,7 +2,7 @@
 
 A self-hosted web interface for managing torrents through [AllDebrid](https://alldebrid.com). Add torrents via magnet link or file, download them to your host automatically, and integrate with Sonarr/Radarr.
 
-Built with Angular 20 and .NET 9. Forked from [rogerfar/rdt-client](https://github.com/rogerfar/rdt-client) at v2.0.116 — trimmed to AllDebrid only.
+Built with Angular 21 and .NET 9. Forked from [rogerfar/rdt-client](https://github.com/rogerfar/rdt-client) at v2.0.116 and reduced to an AllDebrid-only client.
 
 ---
 
@@ -11,12 +11,12 @@ Built with Angular 20 and .NET 9. Forked from [rogerfar/rdt-client](https://gith
 Images are published to both Docker Hub and GitHub Container Registry on every tagged release:
 
 - Docker Hub: [`lekrakin/alldebrid-client`](https://hub.docker.com/r/lekrakin/alldebrid-client)
-- GHCR: [`ghcr.io/lekrakin/alldebrid-client`](https://github.com/lekrakin/alldebrid-client/pkgs/container/alldebrid-client)
+- GHCR: [`ghcr.io/krkn-dev/alldebrid-client`](https://github.com/krkn-dev/alldebrid-client/pkgs/container/alldebrid-client)
 
 ```bash
 docker pull lekrakin/alldebrid-client:latest
 # or
-docker pull ghcr.io/lekrakin/alldebrid-client:latest
+docker pull ghcr.io/krkn-dev/alldebrid-client:latest
 ```
 
 See [README-DOCKER.md](README-DOCKER.md) for the full Docker guide.
@@ -27,7 +27,7 @@ See [README-DOCKER.md](README-DOCKER.md) for the full Docker guide.
 
 1. Install [ASP.NET Core Runtime 9.0](https://dotnet.microsoft.com/download/dotnet/9.0).
 2. Download the latest release zip and extract it.
-3. In `appsettings.json` set `LogLevel.Path` and `Database.Path` to paths on your host. Use escaped backslashes, e.g. `D:\\AllDebridClient\\db\\adbclient.db`.
+3. In `appsettings.json`, set `DataPath` to a writable persistent directory. Use escaped backslashes, e.g. `D:\\AllDebridClient\\data`.
 4. Run `AdbClient.Web.exe` directly, or run `service-install.bat` to install it as a background service.
 
 ---
@@ -36,7 +36,7 @@ See [README-DOCKER.md](README-DOCKER.md) for the full Docker guide.
 
 1. Install [.NET 9](https://docs.microsoft.com/en-us/dotnet/core/install/linux).
 2. Download and extract the latest release archive.
-3. In `appsettings.json` set the `Database.Path`.
+3. In `appsettings.json`, set `DataPath` to a writable persistent directory.
 4. Test it runs: `dotnet AdbClient.Web.dll` — browse to `http://<host>:6500`.
 5. Create a systemd service:
 
@@ -88,14 +88,31 @@ Files download to a subfolder named after the category under your configured dow
 
 ## Build
 
-**Prerequisites:** Node.js, npm, Angular CLI, .NET 9, Visual Studio 2022.
+**Prerequisites:** Node.js 20.19+, 22.12+, or 24+; npm; and the .NET 9 SDK. Docker Desktop is optional for container builds. A global Angular CLI install is not required.
 
-```bash
-# Client
-cd client && npm install && ng build -c production
+For local development on Windows, start with the root launcher:
 
-# Server — open server/AdbClient.sln in Visual Studio,
-# Publish AdbClient.Web to the PublishFolder target.
+```powershell
+.\dev.ps1
+```
+
+It opens a terminal menu where option `1` is the main path: build, verify, then run the backend if checks pass.
+
+Direct commands are also available:
+
+```powershell
+.\dev.ps1 rebuild
+.\dev.ps1 verify
+.\dev.ps1 run
+.\dev.ps1 frontend
+.\dev.ps1 backend
+.\dev.ps1 docker
+```
+
+`dev.ps1 publish` writes a framework-dependent Windows build to the ignored `publish/` directory. To publish elsewhere, pass an explicit path:
+
+```powershell
+.\dev.ps1 publish -InstallPath "D:\Apps\AllDebridClient"
 ```
 
 ---

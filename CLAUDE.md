@@ -22,6 +22,12 @@ Self-hosted AllDebrid torrent manager. Angular frontend, .NET 9 backend, SQLite 
 ## Commands
 
 ```powershell
+# Terminal menu / one-file launcher
+.\dev.ps1
+
+# Main local path: verify, then run backend if checks pass
+.\dev.ps1 run
+
 # Full local verification
 .\tools\check-project.ps1
 
@@ -37,8 +43,8 @@ dotnet restore server
 dotnet build --no-restore server
 dotnet test --no-build server
 
-# Publish local Windows install
-.\publish.ps1 -InstallPath "G:\Programs\adbclient\AllDebridClient"
+# Create local Windows publish output (defaults to ignored publish/)
+.\publish.ps1
 ```
 
 ## Layout
@@ -59,22 +65,24 @@ dotnet test --no-build server
 - Data owns EF Core, migrations, and persistence models.
 - Controllers should stay thin: validate/shape requests, call services, return responses.
 - Tested filesystem code uses `System.IO.Abstractions` (`IFileSystem`) instead of direct `System.IO` access.
+- Angular SPA routes must have a canonical landing route plus explicit aliases/fallbacks for externally opened or refreshed links.
+- Database/API fields with legacy `Rd` names are compatibility contracts; user-facing and internal implementation language uses AllDebrid/provider terminology.
 
 ## Automation
 
 - `dotnet-test.yml` validates backend restore/build/test and frontend lint/format checks.
 - `build-release.yaml` creates the Windows release zip from `vX.Y.Z` tags.
 - `build-docker-image.yml` publishes Docker Hub and GHCR images from tags.
-- Dependabot tracks NuGet, npm, and GitHub Actions weekly.
+- Dependabot configuration is present but new PRs are paused with an open-PR limit of zero.
 
 ## Docker
 
 - Runtime image exposes port `6500`.
 - Persistent paths are `/data/db` and `/data/downloads`.
-- Primary images are `lekrakin/alldebrid-client` and `ghcr.io/lekrakin/alldebrid-client`.
+- Primary images are `lekrakin/alldebrid-client` and `ghcr.io/krkn-dev/alldebrid-client`.
 
-## Known Cleanup Targets
+## Maintenance Boundaries
 
-- Remove remaining upstream RealDebrid names only where they are not database/API compatibility fields.
 - Keep service logic modular; avoid adding more responsibilities to `Torrents.cs`.
 - Prefer small service classes with clear interfaces over broad static helpers.
+- Do not ship self-update scripts; releases are installed explicitly or updated through the container runtime.

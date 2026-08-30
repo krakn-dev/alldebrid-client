@@ -3,9 +3,12 @@
 ## Local Setup
 
 ```powershell
-# Frontend (requires Node 22+)
+# Terminal menu for common dev tasks
+.\dev.ps1
+
+# Frontend (requires Node 20.19+, 22.12+, or 24+)
 cd client
-npm install
+npm ci
 npm start          # dev server on :4200, proxies /Api and /hub to :6500
 
 # Backend (requires .NET 9 SDK)
@@ -15,14 +18,7 @@ dotnet run --project server/AdbClient.Web
 ## Before Submitting
 
 ```powershell
-# Run backend tests
-dotnet test server
-
-# Run frontend lint
-cd client && npm run lint
-
-# Format frontend code
-cd client && npm run prettier
+.\dev.ps1 verify
 ```
 
 ## Commit Format
