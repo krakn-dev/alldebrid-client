@@ -83,7 +83,11 @@ public class AuthController(Authentication authentication, Settings settings) : 
             return StatusCode(401);
         }
 
-        await settings.Update("Provider:Provider", request.Provider);
+        if (string.IsNullOrWhiteSpace(request.Token))
+        {
+            return BadRequest("Invalid AllDebrid API key");
+        }
+
         await settings.Update("Provider:ApiKey", request.Token);
 
         return Ok();

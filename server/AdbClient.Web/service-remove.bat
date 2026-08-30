@@ -5,9 +5,9 @@ IF %ERRORLEVEL% EQU 0 (
     echo removing firewall rules...
     netsh.exe advfirewall firewall remove rule name="AllDebridClient" > nul
     echo removing service...   
-    net stop AllDebridClient
+    net.exe stop AllDebridClient
     timeout /t 5 /nobreak > NUL
-    sc delete AllDebridClient
+    sc.exe delete AllDebridClient
 ) ELSE (
     echo ######## ########  ########   #######  ########  
     echo ##       ##     ## ##     ## ##     ## ##     ## 

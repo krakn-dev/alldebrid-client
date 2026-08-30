@@ -203,7 +203,9 @@ public class DownloadHelperTest
         var path = DownloadHelper.GetDownloadPath("/data/downloads", torrent, download, fileSystem);
 
         // Assert
-        var expectedPath = Path.Combine("/data/downloads", torrent.RdName, fileRelativePath);
+        var expectedPath = Path.Combine("/data/downloads",
+                                        torrent.RdName,
+                                        fileRelativePath.Replace('/', Path.DirectorySeparatorChar));
         Assert.Equal(expectedPath, path);
     }
 
@@ -237,7 +239,8 @@ public class DownloadHelperTest
         var path = DownloadHelper.GetDownloadPath(torrent, download);
 
         // Assert
-        var expectedPath = Path.Combine(torrent.RdName, fileRelativePath);
+        var expectedPath = Path.Combine(torrent.RdName,
+                                        fileRelativePath.Replace('/', Path.DirectorySeparatorChar));
         Assert.Equal(expectedPath, path);
     }
 

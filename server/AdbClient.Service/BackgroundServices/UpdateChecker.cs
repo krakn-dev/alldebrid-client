@@ -1,7 +1,8 @@
 ﻿using System.Reflection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace AdbClient.Service.BackgroundServices;
 
@@ -38,7 +39,7 @@ public class UpdateChecker(ILogger<UpdateChecker> logger) : BackgroundService
         {
             try
             {
-                var gitHubReleases = await GitHubRequest<List<GitHubReleasesResponse>>("/repos/lekrakin/alldebrid-client/tags?per_page=1", stoppingToken);
+                var gitHubReleases = await GitHubRequest<List<GitHubReleasesResponse>>("/repos/krkn-dev/alldebrid-client/tags?per_page=1", stoppingToken);
 
                 var latestRelease = gitHubReleases?.FirstOrDefault(m => m.Name != null)?.Name;
 
@@ -55,7 +56,7 @@ public class UpdateChecker(ILogger<UpdateChecker> logger) : BackgroundService
 
                 LatestVersion = latestRelease;
 
-                var gitHubSecurityAdvisories = await GitHubRequest<List<GitHubSecurityAdvisoriesResponse>>("/repos/lekrakin/alldebrid-client/security-advisories", stoppingToken);
+                var gitHubSecurityAdvisories = await GitHubRequest<List<GitHubSecurityAdvisoriesResponse>>("/repos/krkn-dev/alldebrid-client/security-advisories", stoppingToken);
 
                 var unseenGhsaIds = gitHubSecurityAdvisories?.Where(advisory => !KnownGhsaIds.Contains(advisory.GhsaId));
                 
@@ -84,18 +85,18 @@ public class UpdateChecker(ILogger<UpdateChecker> logger) : BackgroundService
             httpClient.DefaultRequestHeaders.UserAgent.Add(new("AdbClient", CurrentVersion));
             var response = await httpClient.GetStringAsync($"https://api.github.com{endpoint}", cancellationToken);
             
-            return JsonConvert.DeserializeObject<T>(response);
+            return JsonSerializer.Deserialize<T>(response);
     }
 }
 
 public class GitHubReleasesResponse 
 {
-    [JsonProperty("name")]
+    [JsonPropertyName("name")]
     public string? Name { get; set; }
 }
 
 public class GitHubSecurityAdvisoriesResponse
 {
-    [JsonProperty("ghsa_id")]
+    [JsonPropertyName("ghsa_id")]
     public required string GhsaId { get; set; } 
 }

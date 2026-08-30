@@ -60,7 +60,7 @@ Serilog.Debugging.SelfLog.Enable(msg =>
     Debug.WriteLine(msg);
 });
 
-Log.Information("Starting RealDebridClient host");
+Log.Information("Starting AllDebrid Client host");
 
 builder.Services.AddControllers();
 
@@ -121,15 +121,12 @@ builder.Services.RegisterHttpClients();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSession();
 
-builder.Services.AddSpaStaticFiles(spaBuilder =>
-{
-    spaBuilder.RootPath = "wwwroot";
-});
-
 builder.Services.AddSignalR(hubOptions =>
 {
     hubOptions.EnableDetailedErrors = true;
 });
+
+builder.Services.AddHealthChecks();
 
 builder.Host.UseWindowsService();
 
@@ -169,6 +166,8 @@ try
 
     app.UseMiddleware<RequestLoggingMiddleware>();
 
+    app.UseStaticFiles();
+
     app.UseRouting();
 
     app.UseAuthentication();
@@ -179,15 +178,9 @@ try
 
     app.MapControllers();
 
-    app.UseWhen(x => !x.Request.Path.StartsWithSegments("/api"), routeBuilder =>
-    {
-        routeBuilder.UseSpaStaticFiles();
-        routeBuilder.UseSpa(spa =>
-        {
-            spa.Options.SourcePath = "wwwroot";
-            spa.Options.DefaultPage = "/index.html";
-        });
-    });
+    app.MapHealthChecks("/health");
+
+    app.MapFallbackToFile("index.html");
     
     // Run the app
     app.Run();

@@ -14,7 +14,12 @@ public class JsonModelBinder : IModelBinder
             bindingContext.ModelState.SetModelValue(bindingContext.ModelName, valueProviderResult);
 
             var valueAsString = valueProviderResult.FirstValue ?? "";
-            var result = Newtonsoft.Json.JsonConvert.DeserializeObject(valueAsString, bindingContext.ModelType);
+            var result = System.Text.Json.JsonSerializer.Deserialize(valueAsString,
+                                                                     bindingContext.ModelType,
+                                                                     new System.Text.Json.JsonSerializerOptions
+                                                                     {
+                                                                         PropertyNameCaseInsensitive = true
+                                                                     });
             if (result != null)
             {
                 bindingContext.Result = ModelBindingResult.Success(result);

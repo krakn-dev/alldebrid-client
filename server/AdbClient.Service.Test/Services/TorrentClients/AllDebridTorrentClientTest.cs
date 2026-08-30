@@ -1,7 +1,7 @@
 ﻿using AllDebridNET;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Newtonsoft.Json;
+using System.Text.Json;
 using AdbClient.Data.Enums;
 using AdbClient.Data.Models.Data;
 using AdbClient.Service.Services;
@@ -293,14 +293,14 @@ public class AllDebridTorrentClientTest
             RdName = "rdName"
         };
 
-        var serializedOriginal = JsonConvert.SerializeObject(torrent);
+        var serializedOriginal = JsonSerializer.Serialize(torrent);
         var allDebridTorrentClient = new AllDebridTorrentClient(mocks.LoggerMock.Object, mocks.AllDebridClientFactoryMock.Object, mocks.FileFilterMock.Object);
 
         // Act
         var result = await allDebridTorrentClient.UpdateData(torrent, null);
 
         // Assert
-        Assert.Equal(serializedOriginal, JsonConvert.SerializeObject(result));
+        Assert.Equal(serializedOriginal, JsonSerializer.Serialize(result));
         mocks.AllDebridClientFactoryMock.Verify(f => f.GetClient(), Times.Never);
     }
 

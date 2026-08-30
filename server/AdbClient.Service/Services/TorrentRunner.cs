@@ -62,7 +62,7 @@ public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Dow
     {
         if (string.IsNullOrWhiteSpace(Settings.Get.Provider.ApiKey))
         {
-            Log($"No RealDebridApiKey set in settings");
+            Log("No AllDebrid API key set in settings");
             return;
         }
 
@@ -318,7 +318,7 @@ public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Dow
                     await torrents.Delete(torrent.TorrentId, true, true, false);
 
                     break;
-                case TorrentFinishedAction.RemoveRealDebrid:
+                case TorrentFinishedAction.RemoveProvider:
                     Log($"Removing torrents from debrid provider, no files", torrent);
                     await torrents.Delete(torrent.TorrentId, false, true, false);
 
@@ -537,9 +537,9 @@ public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Dow
                     Log($"Torrent reported an error: {torrent.RdStatusRaw}", torrent);
                     Log($"Torrent retry count {torrent.RetryCount}/{torrent.TorrentRetryAttempts}", torrent);
 
-                    Log($"Received RealDebrid error: {torrent.RdStatusRaw}, not processing further", torrent);
+                    Log($"Received AllDebrid error: {torrent.RdStatusRaw}, not processing further", torrent);
 
-                    await torrents.UpdateComplete(torrent.TorrentId, $"Received RealDebrid error: {torrent.RdStatusRaw}.", DateTimeOffset.UtcNow, true);
+                    await torrents.UpdateComplete(torrent.TorrentId, $"Received AllDebrid error: {torrent.RdStatusRaw}.", DateTimeOffset.UtcNow, true);
 
                     continue;
                 }

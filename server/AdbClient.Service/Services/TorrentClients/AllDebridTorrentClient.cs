@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using AllDebridNET;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
+using System.Text.Json;
 using AdbClient.Data.Enums;
 using AdbClient.Data.Models.TorrentClient;
 using AdbClient.Service.Helpers;
@@ -29,10 +29,10 @@ public class AllDebridNetClientFactory(ILogger<AllDebridNetClientFactory> logger
                 throw new Exception("All-Debrid API Key not set in the settings");
             }
 
-            var httpClient = httpClientFactory.CreateClient();
-            httpClient.Timeout = TimeSpan.FromSeconds(10);
+            var httpClient = httpClientFactory.CreateClient(AdbClient.Service.DiConfig.ProviderHttpClient);
+            httpClient.Timeout = TimeSpan.FromSeconds(Math.Max(Settings.Get.Provider.Timeout, 1));
 
-            var allDebridNetClient = new AllDebridNETClient("RealDebridClient", apiKey, httpClient);
+            var allDebridNetClient = new AllDebridNETClient("AllDebridClient", apiKey, httpClient);
 
             return allDebridNetClient;
         }
@@ -201,7 +201,7 @@ public class AllDebridTorrentClient(ILogger<AllDebridTorrentClient> logger, IAll
 
             if (torrentClientTorrent.Files != null && torrentClientTorrent.Files.Count != 0)
             {
-                torrent.RdFiles = JsonConvert.SerializeObject(torrentClientTorrent.Files);
+                torrent.RdFiles = JsonSerializer.Serialize(torrentClientTorrent.Files);
             }
 
             torrent.ClientKind = Provider.AllDebrid;

@@ -87,7 +87,7 @@ public class SettingsController(Settings settings, Torrents torrents) : Controll
 
         var testFile = $"{path}/test.txt";
 
-        await System.IO.File.WriteAllTextAsync(testFile, "RealDebridClient Test File, you can remove this file.");
+        await System.IO.File.WriteAllTextAsync(testFile, "AllDebrid Client test file; you can remove this file.");
             
         await FileHelper.Delete(testFile);
 
@@ -100,44 +100,37 @@ public class SettingsController(Settings settings, Torrents torrents) : Controll
     {
         var downloadPath = Settings.Get.Paths.DownloadPath;
 
-        var testFilePath = Path.Combine(downloadPath, "testDefault.rar");
+        var testFilePath = Path.Combine(downloadPath, "speed-test.bin");
 
         await FileHelper.Delete(testFilePath);
 
-        var download = new Download
+        try
         {
-            Link = "https://34.download.real-debrid.com/speedtest/testDefault.rar",
-            Torrent = new()
+            var download = new Download
             {
-                DownloadClient = AdbClient.Data.Enums.DownloadClient.Internal,
-                RdName = "testDefault.rar"
-            }
-        };
+                Link = "https://speed.cloudflare.com/__down?bytes=52428800",
+                FileName = "speed-test.bin",
+                Torrent = new()
+                {
+                    DownloadClient = AdbClient.Data.Enums.DownloadClient.Internal,
+                    RdName = "speed-test.bin"
+                }
+            };
 
-        var downloadClient = new DownloadClient(download, download.Torrent, downloadPath);
-
-        await downloadClient.Start();
-
-        while (!downloadClient.Finished)
-        {
-            await Task.Delay(1000, CancellationToken.None);
-
-            if (cancellationToken.IsCancellationRequested)
+            var downloadClient = new DownloadClient(download, download.Torrent, downloadPath);
+            using var cancellationRegistration = cancellationToken.Register(() =>
             {
-                await downloadClient.Cancel();
-            }
+                _ = downloadClient.Cancel();
+            });
 
-            if (downloadClient.BytesDone > 1024 * 1024 * 50)
-            {
-                await downloadClient.Cancel();
+            await downloadClient.Start();
 
-                break;
-            }
+            return Ok(downloadClient.Speed);
         }
-
-        await FileHelper.Delete(testFilePath);
-
-        return Ok(downloadClient.Speed);
+        finally
+        {
+            await FileHelper.Delete(testFilePath);
+        }
     }
         
     [HttpGet]

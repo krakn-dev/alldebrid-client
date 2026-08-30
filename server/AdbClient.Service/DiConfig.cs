@@ -15,7 +15,7 @@ namespace AdbClient.Service;
 
 public static class DiConfig
 {
-    public const string RD_CLIENT = "AdbClient";
+    public const string ProviderHttpClient = "AllDebrid";
     public static readonly string UserAgent = $"alldebrid-client {Assembly.GetEntryAssembly()?.GetName().Version}";
 
     public static void RegisterAdbServices(this IServiceCollection services)
@@ -66,7 +66,7 @@ public static class DiConfig
             });
         });
 
-        services.AddHttpClient(RD_CLIENT)
+        services.AddHttpClient(ProviderHttpClient)
                 .AddPolicyHandler(retryPolicy);
     }
 }

@@ -27,7 +27,7 @@ public class Torrents(
     IEnricher enricher,
     AllDebridTorrentClient allDebridTorrentClient)
 {
-    private static readonly SemaphoreSlim RealDebridUpdateLock = new(1, 1);
+    private static readonly SemaphoreSlim ProviderUpdateLock = new(1, 1);
 
     private static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
@@ -277,7 +277,7 @@ public class Torrents(
 
         logger.LogDebug("Adding {hash} to debrid provider {torrentInfo}", torrent.Hash, torrent.ToLog());
 
-        await RealDebridUpdateLock.WaitAsync();
+        await ProviderUpdateLock.WaitAsync();
 
         try
         {
@@ -291,7 +291,7 @@ public class Torrents(
         }
         finally
         {
-            RealDebridUpdateLock.Release();
+            ProviderUpdateLock.Release();
         }
     }
 
@@ -432,7 +432,7 @@ public class Torrents(
 
         if (deleteRdTorrent && torrent.RdId != null)
         {
-            Log($"Deleting RealDebrid Torrent", torrent);
+            Log("Deleting torrent from AllDebrid", torrent);
 
             try
             {
@@ -529,7 +529,7 @@ public class Torrents(
 
     public async Task UpdateRdData()
     {
-        await RealDebridUpdateLock.WaitAsync();
+        await ProviderUpdateLock.WaitAsync();
 
         var torrents = await Get();
 
@@ -590,7 +590,7 @@ public class Torrents(
         }
         finally
         {
-            RealDebridUpdateLock.Release();
+            ProviderUpdateLock.Release();
         }
     }
 
