@@ -15,4 +15,4 @@ cd /app || exit
 
 echo "Starting alldebridclient"
 exec \
-  s6-setuidgid abc dotnet Adb.Client.Web.dll
+  s6-setuidgid abc dotnet AdbClient.Web.dll

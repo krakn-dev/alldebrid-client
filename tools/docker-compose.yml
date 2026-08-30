@@ -1,28 +1,24 @@
-version: '3.3'
-
 services:
-    alldebrid-client:
-        image: krakal/alldebrid-client
-        container_name: alldebrid-client
-        # build:
-        #     context: .
-        #     dockerfile: Dockerfile
-        environment:
-            - PUID=1001
-            - PGID=1001
-        volumes:
-            - ${PWD}/data/downloads:/data/downloads
-            - ${PWD}/data/db:/data/db
-        restart: always
-        logging:
-            driver: json-file
-            options:
-                max-size: 10m
-        ports:
-            - '6500:6500'
-        healthcheck:
-            test: curl --fail http://localhost:6500 || exit 1
-            interval: 30s
-            retries: 3
-            start_period: 30s
-            timeout: 30s
+  alldebrid-client:
+    image: ghcr.io/krkn-dev/alldebrid-client:latest
+    container_name: alldebrid-client
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: Etc/UTC
+    volumes:
+      - ../data/downloads:/data/downloads
+      - ../data/db:/data/db
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+    ports:
+      - "6500:6500"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:6500/health"]
+      interval: 30s
+      retries: 3
+      start_period: 60s
+      timeout: 10s
