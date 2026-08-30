@@ -38,6 +38,14 @@ jobs:
         working-directory: client
         run: npm run build
 
+      - name: Lint Frontend
+        working-directory: client
+        run: npm run lint
+
+      - name: Check Frontend Formatting
+        working-directory: client
+        run: npm run format:check
+
       - name: Restore Backend Dependencies
         working-directory: server
         run: dotnet restore
@@ -48,6 +56,7 @@ jobs:
         run:  |
           $v = "${{ github.ref_name }}".TrimStart('v')
           dotnet build -c Release --no-restore -p:Version=$v -p:AssemblyVersion=$v
+          dotnet test -c Release --no-build
           dotnet publish AdbClient.Web/AdbClient.Web.csproj -c Release --no-build -p:Version=$v -p:AssemblyVersion=$v -o ../publish
 
       - name: Create ZIP
