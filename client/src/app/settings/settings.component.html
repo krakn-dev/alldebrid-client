@@ -31,7 +31,12 @@
             @switch (setting.type) {
               @case ('String') {
                 <div class="control">
-                  <input class="input" type="text" [(ngModel)]="setting.value" [placeholder]="getPlaceholder(setting)" />
+                  <input
+                    class="input"
+                    type="text"
+                    [(ngModel)]="setting.value"
+                    [placeholder]="getPlaceholder(setting)"
+                  />
                 </div>
               }
               @case ('Int32') {
@@ -93,12 +98,14 @@
       <p class="help">Checks whether the download folder has write permissions.</p>
     </div>
     <div class="field">
-      <label class="label">Test AllDebrid download speed</label>
+      <label class="label">Test internet download speed</label>
       <div class="control">
         @if (testDownloadSpeedError) {
           <div class="notification is-danger is-light">{{ testDownloadSpeedError }}</div>
         } @else if (testDownloadSpeedSuccess) {
-          <div class="notification is-success is-light">Download speed: {{ testDownloadSpeedSuccess | filesize }}/s</div>
+          <div class="notification is-success is-light">
+            Download speed: {{ testDownloadSpeedSuccess | filesize }}/s
+          </div>
         } @else {
           <button
             class="button is-warning"
@@ -110,7 +117,7 @@
           </button>
         }
       </div>
-      <p class="help">Downloads up to 50 MB from AllDebrid to measure throughput.</p>
+      <p class="help">Downloads up to 50 MB from Cloudflare's speed-test endpoint to measure throughput.</p>
     </div>
     <div class="field">
       <label class="label">Test write speed</label>
@@ -161,9 +168,18 @@
         Registers this client as your browser's default handler for magnet links.
       } @else {
         Magnet link registration is unavailable. Your
-        <a href="https://caniuse.com/mdn-api_navigator_registerprotocolhandler" target="_blank" rel="noopener noreferrer">browser may not support this feature</a>,
-        or the client is not served in a
-        <a href="https://developer.mozilla.org/en-US/docs/Glossary/Secure_Context/" target="_blank" rel="noopener noreferrer">secure context</a>.
+        <a
+          href="https://caniuse.com/mdn-api_navigator_registerprotocolhandler"
+          target="_blank"
+          rel="noopener noreferrer"
+          >browser may not support this feature</a
+        >, or the client is not served in a
+        <a
+          href="https://developer.mozilla.org/en-US/docs/Glossary/Secure_Context/"
+          target="_blank"
+          rel="noopener noreferrer"
+          >secure context</a
+        >.
       }
     </p>
   </div>
@@ -192,7 +208,12 @@
   }
   <div class="field">
     <div class="control">
-      <button class="button is-success" (click)="saveProfile()" [disabled]="profileSaving" [ngClass]="{ 'is-loading': profileSaving }">
+      <button
+        class="button is-success"
+        (click)="saveProfile()"
+        [disabled]="profileSaving"
+        [ngClass]="{ 'is-loading': profileSaving }"
+      >
         Save Profile
       </button>
     </div>

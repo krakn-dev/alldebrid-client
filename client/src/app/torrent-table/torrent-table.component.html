@@ -34,7 +34,9 @@
         <th (click)="sort('priority')">Priority <i class="fas" [ngClass]="sortIcon('priority')"></i></th>
         <th (click)="sort('rdSeeders')">Seeders <i class="fas" [ngClass]="sortIcon('rdSeeders')"></i></th>
         <th (click)="sort('files.length')">Files <i class="fas" [ngClass]="sortIcon('files.length')"></i></th>
-        <th (click)="sort('downloads.length')">Downloads <i class="fas" [ngClass]="sortIcon('downloads.length')"></i></th>
+        <th (click)="sort('downloads.length')">
+          Downloads <i class="fas" [ngClass]="sortIcon('downloads.length')"></i>
+        </th>
         <th (click)="sort('rdSize')">Size <i class="fas" [ngClass]="sortIcon('rdSize')"></i></th>
         <th (click)="sort('added')">Requested <i class="fas" [ngClass]="sortIcon('added')"></i></th>
         <th (click)="sort('rdStatus')">Status <i class="fas" [ngClass]="sortIcon('rdStatus')"></i></th>
@@ -72,7 +74,7 @@
             {{ torrent.rdSize | filesize }}
           </td>
           <td>
-            {{ torrent.added | date: "medium" }}
+            {{ torrent.added | date: 'medium' }}
           </td>
           <td>
             {{ torrent | status }}
@@ -132,7 +134,7 @@
         </div>
       </div>
       <div class="notification is-primary">
-        Deleting a torrent from Real-Debrid will automatically delete it here too.
+        Deleting a torrent from AllDebrid will automatically delete it here too.
       </div>
       @if (deleteError?.length > 0) {
         <div class="notification is-danger is-light">Error deleting torrent: {{ deleteError }}</div>
@@ -201,10 +203,6 @@
           <select [(ngModel)]="updateSettingsDownloadClient">
             <option [ngValue]="null"></option>
             <option [ngValue]="0">Internal Downloader</option>
-            <option [ngValue]="1">Bezzad</option>
-            <option [ngValue]="2">Aria2c</option>
-            <option [ngValue]="3">Symlink Downloader</option>
-            <option [ngValue]="4">Synology DownloadStation</option>
           </select>
         </div>
         <p class="help">
@@ -221,7 +219,7 @@
         </div>
         <p class="help">
           When a torrent is finished downloading on the provider, perform this action. Use this setting if you only want
-          to add files to Real-Debrid but not download them to the host.
+          to add files to AllDebrid but not download them to the host.
         </p>
       </div>
       <div class="field">

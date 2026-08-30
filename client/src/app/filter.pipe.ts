@@ -6,6 +6,6 @@ export class FilterPipe implements PipeTransform {
   transform(torrents: Torrent[], search: string): Torrent[] {
     if (!search?.trim()) return torrents;
     const lower = search.toLowerCase();
-    return torrents.filter(t => t.rdName?.toLowerCase().includes(lower));
+    return torrents.filter((t) => t.rdName?.toLowerCase().includes(lower));
   }
 }

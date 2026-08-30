@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
 import { NgClass } from '@angular/common';
@@ -11,20 +11,17 @@ import { FormsModule } from '@angular/forms';
   standalone: true,
 })
 export class SetupComponent {
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
   public userName: string;
   public password: string;
-  public provider = 0;
   public token: string;
 
   public error: string;
   public working: boolean;
 
   public step: number = 1;
-
-  constructor(
-    private authService: AuthService,
-    private router: Router,
-  ) {}
 
   public setup(): void {
     this.error = null;
@@ -43,7 +40,10 @@ export class SetupComponent {
   }
 
   public setToken(): void {
-    this.authService.setupProvider(this.provider, this.token).subscribe({
+    this.working = true;
+    this.error = null;
+
+    this.authService.setupProvider(this.token).subscribe({
       next: () => {
         this.step = 3;
         this.working = false;

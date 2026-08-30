@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { Torrent } from '../models/torrent.model';
@@ -19,6 +19,9 @@ import { FilterPipe } from '../filter.pipe';
   standalone: true,
 })
 export class TorrentTableComponent implements OnInit {
+  private router = inject(Router);
+  private torrentService = inject(TorrentService);
+
   public torrents: Torrent[] = [];
   public selectedTorrents: string[] = [];
   public error: string;
@@ -51,10 +54,9 @@ export class TorrentTableComponent implements OnInit {
   public updateSettingsDeleteOnError: number;
   public updateSettingsTorrentLifetime: number;
 
-  constructor(
-    private router: Router,
-    private torrentService: TorrentService,
-  ) {
+  constructor() {
+    const torrentService = this.torrentService;
+
     torrentService.update$.pipe(takeUntilDestroyed()).subscribe((result) => {
       this.torrents = result;
     });
@@ -72,9 +74,7 @@ export class TorrentTableComponent implements OnInit {
   }
 
   public sort(property: string): void {
-    this.sortDirection = this.sortProperty === property
-      ? (this.sortDirection === 'asc' ? 'desc' : 'asc')
-      : 'asc';
+    this.sortDirection = this.sortProperty === property ? (this.sortDirection === 'asc' ? 'desc' : 'asc') : 'asc';
     this.sortProperty = property;
   }
 

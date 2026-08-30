@@ -1,10 +1,10 @@
-import { Pipe, PipeTransform } from '@angular/core';
-import { RealDebridStatus, Torrent } from './models/torrent.model';
+import { Pipe, PipeTransform, inject } from '@angular/core';
+import { ProviderStatus, Torrent } from './models/torrent.model';
 import { FileSizePipe } from './filesize.pipe';
 
 @Pipe({ name: 'status' })
 export class TorrentStatusPipe implements PipeTransform {
-  constructor(private pipe: FileSizePipe) {}
+  private pipe = inject(FileSizePipe);
 
   transform(torrent: Torrent): string {
     if (torrent.error) {
@@ -44,7 +44,7 @@ export class TorrentStatusPipe implements PipeTransform {
         const progress = (bytesDone / bytesTotal || 0) * 100;
 
         return `Extracting file ${unpacking.length + unpacked.length}/${torrent.downloads.length} (${progress.toFixed(
-          2,
+          2
         )}%)`;
       }
 
@@ -74,23 +74,23 @@ export class TorrentStatusPipe implements PipeTransform {
     }
 
     switch (torrent.rdStatus) {
-      case RealDebridStatus.Queued:
+      case ProviderStatus.Queued:
         return 'Not Yet Added to Provider';
-      case RealDebridStatus.Downloading:
+      case ProviderStatus.Downloading:
         if (torrent.rdSeeders < 1) {
           return `Torrent stalled`;
         }
         const speed = this.pipe.transform(torrent.rdSpeed, 'filesize');
         return `Torrent downloading (${torrent.rdProgress}% - ${speed}/s)`;
-      case RealDebridStatus.Processing:
+      case ProviderStatus.Processing:
         return `Torrent processing`;
-      case RealDebridStatus.WaitingForFileSelection:
+      case ProviderStatus.WaitingForFileSelection:
         return `Torrent waiting for file selection`;
-      case RealDebridStatus.Error:
+      case ProviderStatus.Error:
         return `Torrent error: ${torrent.rdStatusRaw}`;
-      case RealDebridStatus.Finished:
+      case ProviderStatus.Finished:
         return `Torrent finished, waiting for download links`;
-      case RealDebridStatus.Uploading:
+      case ProviderStatus.Uploading:
         return `Torrent uploading`;
       default:
         return 'Unknown status';

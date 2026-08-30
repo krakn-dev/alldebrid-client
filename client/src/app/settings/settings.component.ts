@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { SettingsService } from 'src/app/settings.service';
 import { Setting } from '../models/setting.model';
 import { NgClass, KeyValuePipe } from '@angular/common';
@@ -15,6 +15,10 @@ import { AuthService } from '../auth.service';
   standalone: true,
 })
 export class SettingsComponent implements OnInit {
+  private settingsService = inject(SettingsService);
+  private authService = inject(AuthService);
+  private cdr = inject(ChangeDetectorRef);
+
   public activeTab = 0;
 
   public profileUsername: string;
@@ -39,12 +43,6 @@ export class SettingsComponent implements OnInit {
   public testWriteSpeedSuccess: number;
 
   public canRegisterMagnetHandler = false;
-
-  constructor(
-    private settingsService: SettingsService,
-    private authService: AuthService,
-    private cdr: ChangeDetectorRef,
-  ) {}
 
   ngOnInit(): void {
     this.reset();
@@ -174,7 +172,7 @@ export class SettingsComponent implements OnInit {
     try {
       navigator.registerProtocolHandler('magnet', `${window.location.origin}/add?magnet=%s`);
       alert(
-        'Success! Your browser will now prompt you to confirm and add the client as the default handler for magnet links.',
+        'Success! Your browser will now prompt you to confirm and add the client as the default handler for magnet links.'
       );
     } catch (error) {
       alert('Magnet link registration failed.');

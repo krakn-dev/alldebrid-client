@@ -60,43 +60,14 @@
           @if (step === 2) {
             <div class="box">
               <div class="notification is-primary">
-                To be able to use the AllDebrid Client you need a premium subscription to download torrents.
+                AllDebrid Client requires an AllDebrid account with an active premium subscription.
                 <br /><br />
-                Not premium yet? You have the choice of 5 providers:
-                <br />
-                <a href="https://real-debrid.com/?id=1348683" target="_blank" rel="noopener"
-                  >Use this link to sign up to AllDebrid.</a
+                <a href="https://alldebrid.com/" target="_blank" rel="noopener"
+                  >Create or manage your AllDebrid account.</a
                 >
-                <br />
-                <a href="https://alldebrid.com/account/" target="_blank" rel="noopener"
-                  >Use this link to sign up to AllDebrid.</a
-                >
-                <br />
-                <a href="https://www.premiumize.me/" target="_blank" rel="noopener"
-                  >Use this link to sign up to Premiumize.</a
-                >
-                <br />
-                <a href="https://torbox.app/" target="_blank" rel="noopener">Use this link to sign up to TorBox.</a>
-                <br />
-                <a href="https://debrid-link.com/" target="_blank" rel="noopener"
-                  >Use this link to sign up to DebridLink.</a
-                >
-                <small>(Referal links)</small>
               </div>
               <div class="field">
-                <label class="label">Provider</label>
-                <div class="control select is-fullwidth">
-                  <select [(ngModel)]="provider">
-                    <option [ngValue]="0">AllDebrid</option>
-                    <option [ngValue]="1">AllDebrid</option>
-                    <option [ngValue]="2">Premiumize</option>
-                    <option [ngValue]="3">TorBox</option>
-                    <option [ngValue]="4">DebridLink</option>
-                  </select>
-                </div>
-              </div>
-              <div class="field">
-                <label for="debrid-api-token" class="label">API Private Token</label>
+                <label for="debrid-api-token" class="label">AllDebrid API key</label>
                 <div class="control">
                   <input
                     type="text"
@@ -108,45 +79,12 @@
                     required
                   />
                 </div>
-                @if (provider === 0) {
-                  <p class="help">
-                    You can find your API key here:
-                    <a href="https://real-debrid.com/apitoken" target="_blank" rel="noopener"
-                      >https://real-debrid.com/apitoken</a
-                    >.
-                  </p>
-                }
-                @if (provider === 1) {
-                  <p class="help">
-                    You can find your API key here:
-                    <a href="https://alldebrid.com/apikeys/" target="_blank" rel="noopener"
-                      >https://alldebrid.com/apikeys/</a
-                    >.
-                  </p>
-                }
-                @if (provider === 2) {
-                  <p class="help">
-                    You can find your API key here:
-                    <a href="https://www.premiumize.me/account" target="_blank" rel="noopener"
-                      >https://www.premiumize.me/account</a
-                    >.
-                  </p>
-                }
-                @if (provider === 3) {
-                  <p class="help">
-                    You can find your API key here:
-                    <a href="https://torbox.app/settings" target="_blank" rel="noopener">https://torbox.app/settings</a
-                    >.
-                  </p>
-                }
-                @if (provider === 4) {
-                  <p class="help">
-                    You can find your API key here:
-                    <a href="https://debrid-link.com/webapp/apikey" target="_blank" rel="noopener"
-                      >https://debrid-link.com/webapp/apikey</a
-                    >.
-                  </p>
-                }
+                <p class="help">
+                  Create or copy a key from
+                  <a href="https://alldebrid.com/apikeys/" target="_blank" rel="noopener"
+                    >https://alldebrid.com/apikeys/</a
+                  >.
+                </p>
               </div>
               <div class="field">
                 <button
@@ -169,9 +107,9 @@
           @if (step === 3) {
             <div class="box">
               <div class="notification is-primary">
-                You are now connected to AllDebrid! To setup Radarr or Sonarr, please following the instructions here:
-                <a href="https://github.com/lekrakin/alldebrid-client/" target="_blank" rel="noopener"
-                  >https://github.com/lekrakin/alldebrid-client/</a
+                You are now connected to AllDebrid. For Radarr or Sonarr setup, follow the project documentation:
+                <a href="https://github.com/krkn-dev/alldebrid-client/" target="_blank" rel="noopener"
+                  >https://github.com/krkn-dev/alldebrid-client/</a
                 >.
               </div>
               <div class="field">

@@ -48,11 +48,11 @@
           </div>
           <div class="field">
             <label class="label">Priority</label>
-            {{ torrent.priority || "" }}
+            {{ torrent.priority || '' }}
           </div>
           <div class="field">
             <label class="label">Category</label>
-            {{ torrent.category || "(no category set)" }}
+            {{ torrent.category || '(no category set)' }}
           </div>
           <div class="field">
             <label class="label">Downloader</label>
@@ -60,17 +60,8 @@
               @case (0) {
                 Internal Downloader
               }
-              @case (1) {
-                Bezadd
-              }
-              @case (2) {
-                Aria2c
-              }
-              @case (3) {
-                Symlink Downloader
-              }
-              @case (4) {
-                Synology DownloadStation
+              @default {
+                Unsupported legacy downloader ({{ torrent.downloadClient }})
               }
             }
           </div>
@@ -92,7 +83,7 @@
                 Download all files above a certain size
               }
               @case (1) {
-                Download all available files on Real-Debrid above a certain size
+                Download all available files on AllDebrid above a certain size
               }
               @case (2) {
                 Pick files I want to download
@@ -106,10 +97,10 @@
                 Do nothing
               }
               @case (1) {
-                Remove torrent from Real-Debrid and Real-Debrid Client
+                Remove torrent from AllDebrid and AllDebrid Client
               }
               @case (2) {
-                Remove torrent from Real-Debrid
+                Remove torrent from AllDebrid
               }
               @case (3) {
                 Remove torrent from client
@@ -156,14 +147,14 @@
           }
           <div class="field">
             <label class="label">Added on</label>
-            {{ torrent.added | date: "fullDate" }} {{ torrent.added | date: "mediumTime" }}
+            {{ torrent.added | date: 'fullDate' }} {{ torrent.added | date: 'mediumTime' }}
           </div>
           <div class="field">
             <label class="label">Files selected on</label>
             @if (torrent.filesSelected === null) {
               (no files selected yet)
             } @else {
-              {{ torrent.filesSelected | date: "fullDate" }} {{ torrent.filesSelected | date: "mediumTime" }}
+              {{ torrent.filesSelected | date: 'fullDate' }} {{ torrent.filesSelected | date: 'mediumTime' }}
             }
           </div>
           <div class="field">
@@ -171,37 +162,37 @@
             @if (torrent.completed === null) {
               (not completed yet)
             } @else {
-              {{ torrent.completed | date: "fullDate" }} {{ torrent.completed | date: "mediumTime" }}
+              {{ torrent.completed | date: 'fullDate' }} {{ torrent.completed | date: 'mediumTime' }}
             }
           </div>
         </div>
         <div style="flex: 1 1 0">
           <div class="field">
-            <label class="label">Real-Debrid ID</label>
+            <label class="label">AllDebrid ID</label>
             {{ torrent.rdId }}
           </div>
           <div class="field">
-            <label class="label">Real-Debrid Name</label>
+            <label class="label">AllDebrid name</label>
             {{ torrent.rdName }}
           </div>
           <div class="field">
-            <label class="label">Real-Debrid Size</label>
+            <label class="label">AllDebrid size</label>
             {{ torrent.rdSize | filesize }}
           </div>
           <div class="field">
-            <label class="label">Real-Debrid Host</label>
+            <label class="label">AllDebrid host</label>
             {{ torrent.rdHost }}
           </div>
           <div class="field">
-            <label class="label">Real-Debrid Split</label>
+            <label class="label">AllDebrid split</label>
             {{ torrent.rdSplit }}
           </div>
           <div class="field">
-            <label class="label">Real-Debrid Progress</label>
+            <label class="label">AllDebrid progress</label>
             {{ torrent.rdProgress || 0 }}%
           </div>
           <div class="field">
-            <label class="label">Real-Debrid Status</label>
+            <label class="label">AllDebrid status</label>
             @switch (torrent.rdStatus) {
               @case (0) {
                 Processing
@@ -222,20 +213,20 @@
             ({{ torrent.rdStatusRaw }})
           </div>
           <div class="field">
-            <label class="label">Real-Debrid Added</label>
-            {{ torrent.rdAdded | date: "fullDate" }} {{ torrent.rdAdded | date: "mediumTime" }}
+            <label class="label">Added to AllDebrid</label>
+            {{ torrent.rdAdded | date: 'fullDate' }} {{ torrent.rdAdded | date: 'mediumTime' }}
           </div>
           <div class="field">
-            <label class="label">Real-Debrid Ended</label>
-            {{ torrent.rdEnded | date: "fullDate" }} {{ torrent.rdEnded | date: "mediumTime" }}
+            <label class="label">Completed on AllDebrid</label>
+            {{ torrent.rdEnded | date: 'fullDate' }} {{ torrent.rdEnded | date: 'mediumTime' }}
           </div>
           <div class="field">
-            <label class="label">Real-Debrid Speed</label>
+            <label class="label">AllDebrid speed</label>
             {{ torrent.rdSpeed || 0 }}
           </div>
           <div class="field">
-            <label class="label">Real-Debrid Seeders</label>
-            {{ torrent.rdSeeders || "0" }}
+            <label class="label">AllDebrid seeders</label>
+            {{ torrent.rdSeeders || '0' }}
           </div>
         </div>
       </div>
@@ -336,13 +327,13 @@
                             </div>
                           }
                           <div class="field">
-                            <label class="label">Real-Debrid Unrestricted Link</label>
+                            <label class="label">AllDebrid unrestricted link</label>
                             @if (download.link) {
                               <a href="{{ download.link }}" target="_blank"> {{ download.link | decodeURI }}</a>
                             }
                           </div>
                           <div class="field">
-                            <label class="label">Real-Debrid Link</label>
+                            <label class="label">AllDebrid source link</label>
                             {{ download.path }}
                           </div>
                           <div class="field">
@@ -360,7 +351,7 @@
                           <div class="field">
                             <label class="label">Added</label>
                             @if (download.added) {
-                              {{ download.added | date: "fullDate" }} {{ download.added | date: "mediumTime" }}
+                              {{ download.added | date: 'fullDate' }} {{ download.added | date: 'mediumTime' }}
                             } @else {
                               (not added yet)
                             }
@@ -368,8 +359,8 @@
                           <div class="field">
                             <label class="label">Download Queued</label>
                             @if (download.downloadQueued) {
-                              {{ download.downloadQueued | date: "fullDate" }}
-                              {{ download.downloadQueued | date: "mediumTime" }}
+                              {{ download.downloadQueued | date: 'fullDate' }}
+                              {{ download.downloadQueued | date: 'mediumTime' }}
                             } @else {
                               (not queued for downloading yet)
                             }
@@ -377,8 +368,8 @@
                           <div class="field">
                             <label class="label">Download Started</label>
                             @if (download.downloadStarted) {
-                              {{ download.downloadStarted | date: "fullDate" }}
-                              {{ download.downloadStarted | date: "mediumTime" }}
+                              {{ download.downloadStarted | date: 'fullDate' }}
+                              {{ download.downloadStarted | date: 'mediumTime' }}
                             } @else {
                               (not started downloading yet)
                             }
@@ -386,8 +377,8 @@
                           <div class="field">
                             <label class="label">Download Finished</label>
                             @if (download.downloadFinished) {
-                              {{ download.downloadFinished | date: "fullDate" }}
-                              {{ download.downloadFinished | date: "mediumTime" }}
+                              {{ download.downloadFinished | date: 'fullDate' }}
+                              {{ download.downloadFinished | date: 'mediumTime' }}
                             } @else {
                               (not finished yet)
                             }
@@ -395,8 +386,8 @@
                           <div class="field">
                             <label class="label">Unpacking Queued</label>
                             @if (download.unpackingQueued) {
-                              {{ download.unpackingQueued | date: "fullDate" }}
-                              {{ download.unpackingQueued | date: "mediumTime" }}
+                              {{ download.unpackingQueued | date: 'fullDate' }}
+                              {{ download.unpackingQueued | date: 'mediumTime' }}
                             } @else {
                               (not queued for unpacking yet)
                             }
@@ -404,8 +395,8 @@
                           <div class="field">
                             <label class="label">Unpacking Started</label>
                             @if (download.unpackingStarted) {
-                              {{ download.unpackingStarted | date: "fullDate" }}
-                              {{ download.unpackingStarted | date: "mediumTime" }}
+                              {{ download.unpackingStarted | date: 'fullDate' }}
+                              {{ download.unpackingStarted | date: 'mediumTime' }}
                             } @else {
                               (not started unpacking yet)
                             }
@@ -413,8 +404,8 @@
                           <div class="field">
                             <label class="label">Unpacking Finished</label>
                             @if (download.unpackingFinished) {
-                              {{ download.unpackingFinished | date: "fullDate" }}
-                              {{ download.unpackingFinished | date: "mediumTime" }}
+                              {{ download.unpackingFinished | date: 'fullDate' }}
+                              {{ download.unpackingFinished | date: 'mediumTime' }}
                             } @else {
                               (not finished unpacking yet)
                             }
@@ -422,8 +413,8 @@
                           <div class="field">
                             <label class="label">Completed</label>
                             @if (download.completed) {
-                              {{ download.completed | date: "fullDate" }}
-                              {{ download.completed | date: "mediumTime" }}
+                              {{ download.completed | date: 'fullDate' }}
+                              {{ download.completed | date: 'mediumTime' }}
                             } @else {
                               (not completed yet)
                             }
@@ -477,7 +468,7 @@
         </div>
       </div>
       <div class="notification is-primary">
-        Deleting a torrent from Real-Debrid will automatically delete it here too.
+        Deleting a torrent from AllDebrid will automatically delete it here too.
       </div>
       @if (deleteError?.length > 0) {
         <div class="notification is-danger is-light">Error deleting torrent: {{ deleteError }}</div>
@@ -510,7 +501,7 @@
       <p>Are you sure you want to retry this torrent?</p>
       <p>
         This action will delete all the torrent data + all local downloads. Then it will re-add the original magnet link
-        or torrent file to Real-Debrid.
+        or torrent file to AllDebrid.
       </p>
       @if (retryError?.length > 0) {
         <div class="notification is-danger is-light">Error retrying torrent: {{ retryError }}</div>
@@ -541,7 +532,7 @@
     </header>
     <section class="modal-card-body">
       <p>Are you sure you want to retry this download?</p>
-      <p>This action will remove the local download and re-download the file from Real-Debrid.</p>
+      <p>This action will remove the local download and re-download the file from AllDebrid.</p>
       @if (downloadRetryError?.length > 0) {
         <div class="notification is-danger is-light">Error retrying download: {{ downloadRetryError }}</div>
       }
@@ -584,10 +575,6 @@
         <div class="control select is-fullwidth">
           <select [(ngModel)]="updateSettingsDownloadClient">
             <option [ngValue]="0">Internal Downloader</option>
-            <option [ngValue]="1">Bezzad</option>
-            <option [ngValue]="2">Aria2c</option>
-            <option [ngValue]="3">Symlink Downloader</option>
-            <option [ngValue]="4">Synology DownloadStation</option>
           </select>
         </div>
         <p class="help">
@@ -605,7 +592,7 @@
         </div>
         <p class="help">
           When a torrent is finished downloading on the provider, perform this action. Use this setting if you only want
-          to add files to Real-Debrid but not download them to the host.
+          to add files to AllDebrid but not download them to the host.
         </p>
       </div>
       <div class="field">

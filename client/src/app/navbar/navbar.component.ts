@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../auth.service';
 import { Profile } from '../models/profile.model';
@@ -13,18 +13,18 @@ import { NgClass } from '@angular/common';
   standalone: true,
 })
 export class NavbarComponent implements OnInit {
+  private settingsService = inject(SettingsService);
+  private authService = inject(AuthService);
+  private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
+
   public showMobileMenu = false;
 
   public profile: Profile;
-  public providerLink: string;
+  public readonly providerLink = 'https://alldebrid.com/account/';
   public version: string;
 
-  constructor(
-    private settingsService: SettingsService,
-    private authService: AuthService,
-    private router: Router,
-    private cdr: ChangeDetectorRef,
-  ) {
+  constructor() {
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
         this.showMobileMenu = false;
@@ -35,24 +35,6 @@ export class NavbarComponent implements OnInit {
   ngOnInit(): void {
     this.settingsService.getProfile().subscribe((result) => {
       this.profile = result;
-
-      switch (result?.provider) {
-        case 'RealDebrid':
-          this.providerLink = 'https://real-debrid.com/?id=1348683';
-          break;
-        case 'AllDebrid':
-          this.providerLink = 'https://alldebrid.com/account/';
-          break;
-        case 'Premiumize':
-          this.providerLink = 'https://www.premiumize.me/';
-          break;
-        case 'TorBox':
-          this.providerLink = 'https://torbox.app/';
-          break;
-        case 'DebridLink':
-          this.providerLink = 'https://debrid-link.com/';
-          break;
-      }
 
       this.cdr.detectChanges();
     });

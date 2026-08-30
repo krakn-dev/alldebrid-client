@@ -29,6 +29,10 @@ import { FileSizePipe } from '../filesize.pipe';
   standalone: true,
 })
 export class TorrentComponent implements OnInit {
+  private activatedRoute = inject(ActivatedRoute);
+  private router = inject(Router);
+  private torrentService = inject(TorrentService);
+
   public torrent: Torrent;
 
   public activeTab: number = 0;
@@ -69,12 +73,6 @@ export class TorrentComponent implements OnInit {
 
   private readonly destroyRef = inject(DestroyRef);
 
-  constructor(
-    private activatedRoute: ActivatedRoute,
-    private router: Router,
-    private torrentService: TorrentService,
-  ) {}
-
   ngOnInit(): void {
     this.activatedRoute.params.subscribe((params) => {
       const torrentId = params['id'];
@@ -109,7 +107,7 @@ export class TorrentComponent implements OnInit {
         .split('')
         .map(function (c) {
           return c.charCodeAt(0);
-        }),
+        })
     );
 
     const blob = new Blob([byteArray], { type: 'application/x-bittorrent' });

@@ -31,6 +31,16 @@ const routes: Routes = [
         component: TorrentTableComponent,
       },
       {
+        path: 'torrents',
+        redirectTo: '',
+        pathMatch: 'full',
+      },
+      {
+        path: 'index.html',
+        redirectTo: '',
+        pathMatch: 'full',
+      },
+      {
         path: 'torrent/:id',
         component: TorrentComponent,
       },
@@ -45,6 +55,10 @@ const routes: Routes = [
       {
         path: 'profile',
         component: ProfileComponent,
+      },
+      {
+        path: '**',
+        redirectTo: '',
       },
     ],
   },

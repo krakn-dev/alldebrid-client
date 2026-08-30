@@ -36,7 +36,7 @@ export class Torrent {
   public rdHost: string;
   public rdSplit: number;
   public rdProgress: number;
-  public rdStatus: RealDebridStatus;
+  public rdStatus: ProviderStatus;
   public rdStatusRaw: string;
   public rdAdded: Date;
   public rdEnded: Date;
@@ -62,7 +62,7 @@ export class TorrentFileAvailability {
   public filesize: number;
 }
 
-export enum RealDebridStatus {
+export enum ProviderStatus {
   Queued = 0,
 
   Processing = 1,

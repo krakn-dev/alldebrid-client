@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Inject, Injectable, NgZone } from '@angular/core';
+import { Injectable, NgZone, inject } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { Observable, ReplaySubject } from 'rxjs';
 import { Torrent, TorrentFileAvailability } from './models/torrent.model';
@@ -9,15 +9,15 @@ import { APP_BASE_HREF } from '@angular/common';
   providedIn: 'root',
 })
 export class TorrentService {
+  private http = inject(HttpClient);
+  private baseHref = inject(APP_BASE_HREF);
+  private ngZone = inject(NgZone);
+
   public update$: ReplaySubject<Torrent[]> = new ReplaySubject(1);
 
   private connection: signalR.HubConnection;
 
-  constructor(
-    private http: HttpClient,
-    @Inject(APP_BASE_HREF) private baseHref: string,
-    private ngZone: NgZone,
-  ) {
+  constructor() {
     this.connect();
   }
 
@@ -75,7 +75,7 @@ export class TorrentService {
     torrentId: string,
     deleteData: boolean,
     deleteRdTorrent: boolean,
-    deleteLocalFiles: boolean,
+    deleteLocalFiles: boolean
   ): Observable<void> {
     return this.http.post<void>(`${this.baseHref}Api/Torrents/Delete/${torrentId}`, {
       deleteData,
@@ -99,7 +99,7 @@ export class TorrentService {
   public verifyRegex(
     includeRegex: string,
     excludeRegex: string,
-    magnetLink: string,
+    magnetLink: string
   ): Observable<{ includeError: string; excludeError: string; selectedFiles: TorrentFileAvailability[] }> {
     return this.http.post<{ includeError: string; excludeError: string; selectedFiles: TorrentFileAvailability[] }>(
       `${this.baseHref}Api/Torrents/VerifyRegex`,
@@ -107,7 +107,7 @@ export class TorrentService {
         includeRegex,
         excludeRegex,
         magnetLink,
-      },
+      }
     );
   }
 }

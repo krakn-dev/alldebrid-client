@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { TorrentService } from 'src/app/torrent.service';
 import { Torrent, TorrentFileAvailability } from '../models/torrent.model';
@@ -14,6 +14,11 @@ import { NgClass } from '@angular/common';
   standalone: true,
 })
 export class AddNewTorrentComponent implements OnInit {
+  private router = inject(Router);
+  private torrentService = inject(TorrentService);
+  private settingsService = inject(SettingsService);
+  private activatedRoute = inject(ActivatedRoute);
+
   public fileName: string;
   public magnetLink: string;
   private currentTorrentFile: string;
@@ -48,13 +53,6 @@ export class AddNewTorrentComponent implements OnInit {
 
   private selectedFile: File;
 
-  constructor(
-    private router: Router,
-    private torrentService: TorrentService,
-    private settingsService: SettingsService,
-    private activatedRoute: ActivatedRoute,
-  ) {}
-
   ngOnInit(): void {
     this.activatedRoute.queryParams.subscribe((params) => {
       if (params['magnet']) {
@@ -63,18 +61,23 @@ export class AddNewTorrentComponent implements OnInit {
     });
     this.settingsService.get().subscribe((settings) => {
       this.category = settings.find((m) => m.key === 'DownloadClient:Default:Category')?.value as string;
-      this.hostDownloadAction = this.downloadAction = settings.find((m) => m.key === 'DownloadClient:Default:HostDownloadAction')
-        ?.value as number;
+      this.hostDownloadAction = this.downloadAction = settings.find(
+        (m) => m.key === 'DownloadClient:Default:HostDownloadAction'
+      )?.value as number;
       this.downloadAction =
         settings.find((m) => m.key === 'DownloadClient:Default:OnlyDownloadAvailableFiles')?.value === true ? 1 : 0;
       this.finishedAction = settings.find((m) => m.key === 'DownloadClient:Default:FinishedAction')?.value as number;
-      this.finishedActionDelay = settings.find((m) => m.key == 'DownloadClient:Default:FinishedActionDelay')?.value as number;
+      this.finishedActionDelay = settings.find((m) => m.key == 'DownloadClient:Default:FinishedActionDelay')
+        ?.value as number;
       this.downloadMinSize = settings.find((m) => m.key === 'DownloadClient:Default:MinFileSize')?.value as number;
       this.includeRegex = settings.find((m) => m.key === 'DownloadClient:Default:IncludeRegex')?.value as string;
       this.excludeRegex = settings.find((m) => m.key === 'DownloadClient:Default:ExcludeRegex')?.value as string;
-      this.torrentRetryAttempts = settings.find((m) => m.key === 'DownloadClient:Default:TorrentRetryAttempts')?.value as number;
-      this.downloadRetryAttempts = settings.find((m) => m.key === 'DownloadClient:Default:DownloadRetryAttempts')?.value as number;
-      this.torrentDeleteOnError = settings.find((m) => m.key === 'DownloadClient:Default:DeleteOnError')?.value as number;
+      this.torrentRetryAttempts = settings.find((m) => m.key === 'DownloadClient:Default:TorrentRetryAttempts')
+        ?.value as number;
+      this.downloadRetryAttempts = settings.find((m) => m.key === 'DownloadClient:Default:DownloadRetryAttempts')
+        ?.value as number;
+      this.torrentDeleteOnError = settings.find((m) => m.key === 'DownloadClient:Default:DeleteOnError')
+        ?.value as number;
       this.torrentLifetime = settings.find((m) => m.key === 'DownloadClient:Default:TorrentLifetime')?.value as number;
       this.priority = settings.find((m) => m.key === 'DownloadClient:Default:Priority')?.value as number;
     });
