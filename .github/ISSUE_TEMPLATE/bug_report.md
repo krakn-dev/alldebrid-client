@@ -1,10 +1,9 @@
 ---
 name: Bug report
-about: Use this template to report actual bugs. If you are looking for general help, please post a discussion.
-title: ''
-labels: ''
-assignees: ''
-
+about: Report a reproducible problem with AllDebrid Client.
+title: ""
+labels: ""
+assignees: ""
 ---
 
 **What version are you using?**
@@ -15,4 +14,12 @@ assignees: ''
 
 **How did you install it (Docker, release ZIP, or local build)?**
 
-**Please attach a log file here with the log setting set to debug**
+**What did you expect to happen?**
+
+**What happened instead?**
+
+**Steps to reproduce**
+
+**Relevant logs**
+
+Remove API keys, credentials, download links, and other private data before attaching logs.
