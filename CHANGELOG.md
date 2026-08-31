@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Native Logpose support through the exact qBittorrent Web API operations it uses: SID login, version probing, category creation, magnet and torrent-file adds, progress/path reporting, and post-import cleanup.
 
+### Fixed
+
+- Convert legacy One Pace `https://nyaa.si/?q=<info-hash>` metadata links to canonical magnets instead of attempting to parse Nyaa search HTML as a torrent file.
+
 ## [1.2.0](https://github.com/krakn-dev/alldebrid-client/compare/v1.1.0...v1.2.0) (2026-08-31)
 
 

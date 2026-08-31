@@ -116,6 +116,24 @@ public class QBittorrentContractTest
         Assert.Equal((hash, false), compatibility.DeletedTorrent);
     }
 
+    [Theory]
+    [InlineData("https://nyaa.si/?q=a031cac6baf81b804c4d034dfaef0e5e4a671145")]
+    [InlineData("https://nyaa.si/?q=A031CAC6BAF81B804C4D034DFAEF0E5E4A671145")]
+    public async Task AddNyaaInfoHashSearchUrl_MatchesLogposeRequest(string searchUrl)
+    {
+        var compatibility = new RecordingCompatibility();
+        await using var app = await StartApplication(compatibility);
+        using var client = CreateClient(app);
+
+        using var add = await client.PostAsync("api/v2/torrents/add", Form(
+            ("urls", searchUrl),
+            ("category", "logpose")));
+
+        Assert.Equal(HttpStatusCode.OK, add.StatusCode);
+        Assert.Equal("Ok.", await add.Content.ReadAsStringAsync());
+        Assert.Equal((searchUrl, "logpose"), compatibility.AddedTorrent);
+    }
+
     private static FormUrlEncodedContent Form(params (string Key, string Value)[] values)
     {
         return new(values.Select(value => new KeyValuePair<string, string>(value.Key, value.Value)));

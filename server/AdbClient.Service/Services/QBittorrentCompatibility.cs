@@ -53,18 +53,19 @@ public sealed class QBittorrentCompatibility(
 
         foreach (var torrentUrl in torrentUrls)
         {
+            var normalizedTorrentUrl = NormalizeTorrentUrl(torrentUrl);
             var torrent = CreateTorrent(category);
 
-            if (torrentUrl.StartsWith("magnet:?", StringComparison.OrdinalIgnoreCase))
+            if (normalizedTorrentUrl.StartsWith("magnet:?", StringComparison.OrdinalIgnoreCase))
             {
-                await torrents.AddMagnetToDebridQueue(torrentUrl, torrent);
+                await torrents.AddMagnetToDebridQueue(normalizedTorrentUrl, torrent);
                 continue;
             }
 
-            if (!Uri.TryCreate(torrentUrl, UriKind.Absolute, out var uri) ||
+            if (!Uri.TryCreate(normalizedTorrentUrl, UriKind.Absolute, out var uri) ||
                 (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
             {
-                throw new ArgumentException($"Unsupported torrent URL: {torrentUrl}", nameof(urls));
+                throw new ArgumentException($"Unsupported torrent URL: {normalizedTorrentUrl}", nameof(urls));
             }
 
             logger.LogDebug("Downloading torrent metadata from {TorrentUrl}", uri);
@@ -73,6 +74,39 @@ public sealed class QBittorrentCompatibility(
             var fileBytes = await client.GetByteArrayAsync(uri, cancellationToken);
             await torrents.AddFileToDebridQueue(fileBytes, torrent);
         }
+    }
+
+    private static string NormalizeTorrentUrl(string torrentUrl)
+    {
+        if (!Uri.TryCreate(torrentUrl, UriKind.Absolute, out var uri) ||
+            !string.Equals(uri.IdnHost, "nyaa.si", StringComparison.OrdinalIgnoreCase) ||
+            !string.Equals(uri.AbsolutePath, "/", StringComparison.Ordinal) ||
+            string.IsNullOrEmpty(uri.Query))
+        {
+            return torrentUrl;
+        }
+
+        const string queryPrefix = "?q=";
+        var isValidInfoHashSearch = uri.Scheme == Uri.UriSchemeHttps &&
+                                    uri.IsDefaultPort &&
+                                    string.IsNullOrEmpty(uri.UserInfo) &&
+                                    string.IsNullOrEmpty(uri.Fragment) &&
+                                    uri.Query.StartsWith(queryPrefix, StringComparison.Ordinal) &&
+                                    uri.Query.Length == queryPrefix.Length + 40;
+
+        if (!isValidInfoHashSearch)
+        {
+            throw new ArgumentException($"Unsupported Nyaa search URL: {torrentUrl}", nameof(torrentUrl));
+        }
+
+        var infoHash = uri.Query[queryPrefix.Length..];
+
+        if (infoHash.Any(character => !Uri.IsHexDigit(character)))
+        {
+            throw new ArgumentException($"Unsupported Nyaa search URL: {torrentUrl}", nameof(torrentUrl));
+        }
+
+        return $"magnet:?xt=urn:btih:{infoHash.ToLowerInvariant()}";
     }
 
     public async Task<IReadOnlyList<QBittorrentTorrentInfo>> GetTorrents(string? category)

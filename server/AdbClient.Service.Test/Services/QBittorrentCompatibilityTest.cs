@@ -165,10 +165,106 @@ public class QBittorrentCompatibilityTest
                 torrent.ExcludeRegex == null)), Times.Once);
     }
 
-    [Fact]
-    public async Task AddTorrentUrl_DownloadsAndAddsTorrentFile()
+    [Theory]
+    [InlineData("https://nyaa.si/?q=a031cac6baf81b804c4d034dfaef0e5e4a671145")]
+    [InlineData("https://nyaa.si/?q=A031CAC6BAF81B804C4D034DFAEF0E5E4A671145")]
+    public async Task AddNyaaInfoHashSearchUrl_QueuesCanonicalMagnetAndPreservesCategory(string searchUrl)
     {
-        const string torrentUrl = "https://example.test/one-pace.torrent";
+        const string infoHash = "a031cac6baf81b804c4d034dfaef0e5e4a671145";
+        const string storedHash = "A031CAC6BAF81B804C4D034DFAEF0E5E4A671145";
+        const string magnet = $"magnet:?xt=urn:btih:{infoHash}";
+
+        var torrentData = new Mock<ITorrentData>();
+        torrentData.Setup(data => data.GetByHash(storedHash)).ReturnsAsync((Torrent?)null);
+        torrentData.Setup(data => data.Add(
+                       It.IsAny<string?>(),
+                       storedHash,
+                       It.IsAny<string?>(),
+                       It.IsAny<bool>(),
+                       It.IsAny<DownloadClientKind>(),
+                       It.IsAny<Torrent>()))
+                   .ReturnsAsync((string? _, string hash, string? _, bool _, DownloadClientKind _, Torrent torrent) =>
+                   {
+                       torrent.Hash = hash;
+                       return torrent;
+                   });
+
+        var enricher = new Mock<IEnricher>();
+        enricher.Setup(value => value.EnrichMagnetLink(magnet)).ReturnsAsync(magnet);
+
+        var httpClientFactory = new Mock<IHttpClientFactory>();
+        var compatibility = CreateCompatibility(
+            torrentData: torrentData,
+            enricher: enricher,
+            httpClientFactory: httpClientFactory);
+
+        await compatibility.Add(searchUrl, "logpose");
+
+        enricher.Verify(value => value.EnrichMagnetLink(magnet), Times.Once);
+        httpClientFactory.Verify(factory => factory.CreateClient(It.IsAny<string>()), Times.Never);
+        torrentData.Verify(data => data.Add(
+            null,
+            storedHash,
+            magnet,
+            false,
+            DownloadClientKind.Internal,
+            It.Is<Torrent>(torrent => torrent.Category == "logpose")), Times.Once);
+    }
+
+    [Theory]
+    [InlineData("https://nyaa.si/?q=a031cac6baf81b804c4d034dfaef0e5e4a67114")]
+    [InlineData("https://nyaa.si/?q=a031cac6baf81b804c4d034dfaef0e5e4a6711450")]
+    [InlineData("https://nyaa.si/?q=g031cac6baf81b804c4d034dfaef0e5e4a671145")]
+    [InlineData("https://nyaa.si/?q=a031cac6baf81b804c4d034dfaef0e5e4a671145&f=0")]
+    public async Task AddNyaaInfoHashSearchUrl_RejectsInvalidQuery(string searchUrl)
+    {
+        var httpClientFactory = new Mock<IHttpClientFactory>();
+        var compatibility = CreateCompatibility(httpClientFactory: httpClientFactory);
+
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
+            compatibility.Add(searchUrl, "logpose"));
+
+        Assert.Contains("Unsupported Nyaa search URL", exception.Message, StringComparison.Ordinal);
+        httpClientFactory.Verify(factory => factory.CreateClient(It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AddNyaaInfoHashSearchUrl_RetryUsesExistingTorrent()
+    {
+        const string infoHash = "a031cac6baf81b804c4d034dfaef0e5e4a671145";
+        const string storedHash = "A031CAC6BAF81B804C4D034DFAEF0E5E4A671145";
+        const string magnet = $"magnet:?xt=urn:btih:{infoHash}";
+        const string searchUrl = $"https://nyaa.si/?q={infoHash}";
+        var existingTorrent = new Torrent
+        {
+            TorrentId = Guid.NewGuid(),
+            Hash = storedHash,
+            Category = "logpose"
+        };
+
+        var torrentData = new Mock<ITorrentData>();
+        torrentData.Setup(data => data.GetByHash(storedHash)).ReturnsAsync(existingTorrent);
+
+        var enricher = new Mock<IEnricher>();
+        enricher.Setup(value => value.EnrichMagnetLink(magnet)).ReturnsAsync(magnet);
+
+        var compatibility = CreateCompatibility(torrentData: torrentData, enricher: enricher);
+
+        await compatibility.Add(searchUrl, "logpose");
+
+        torrentData.Verify(data => data.Add(
+            It.IsAny<string?>(),
+            It.IsAny<string>(),
+            It.IsAny<string?>(),
+            It.IsAny<bool>(),
+            It.IsAny<DownloadClientKind>(),
+            It.IsAny<Torrent>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AddTorrentUrlOnOtherHost_DownloadsAndAddsTorrentFile()
+    {
+        const string torrentUrl = "https://example.test/?q=a031cac6baf81b804c4d034dfaef0e5e4a671145";
         var torrentBytes = Encoding.Latin1.GetBytes(
             "d4:infod6:lengthi1e4:name11:episode.mkv12:piece lengthi16384e6:pieces20:00000000000000000000ee");
 
