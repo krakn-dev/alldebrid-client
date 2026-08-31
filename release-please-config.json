@@ -1,0 +1,45 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "release-type": "simple",
+  "changelog-type": "github",
+  "include-component-in-tag": false,
+  "include-v-in-tag": true,
+  "pull-request-header": "This pull request prepares the next version from changes merged since the last release.",
+  "pull-request-footer": "Merge this pull request to create the version tag and GitHub release.",
+  "packages": {
+    ".": {
+      "package-name": "alldebrid-client",
+      "extra-files": [
+        {
+          "type": "xml",
+          "path": "server/AdbClient.Web/AdbClient.Web.csproj",
+          "xpath": "//Project/PropertyGroup/Version"
+        },
+        {
+          "type": "xml",
+          "path": "server/AdbClient.Web/AdbClient.Web.csproj",
+          "xpath": "//Project/PropertyGroup/AssemblyVersion"
+        },
+        {
+          "type": "json",
+          "path": "client/package.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": "client/package-lock.json",
+          "jsonpath": "$.version"
+        },
+        {
+          "type": "json",
+          "path": "client/package-lock.json",
+          "jsonpath": "$.packages[''].version"
+        },
+        {
+          "type": "generic",
+          "path": "Dockerfile"
+        }
+      ]
+    }
+  }
+}

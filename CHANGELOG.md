@@ -5,47 +5,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-Forked from [rogerfar/rdt-client](https://github.com/rogerfar/rdt-client) at v2.0.116.
-Prior upstream history: <https://github.com/rogerfar/rdt-client/blob/main/CHANGELOG.md>
-
-## [Unreleased]
-
-### Added
-
-- Root `dev.ps1` / `dev.cmd` launcher with a terminal menu for rebuild, verify, local server, Docker dev, and publish workflows.
-- Main `dev.ps1 run` path that builds, verifies, and starts the backend only after checks pass.
-- Lightweight `/health` endpoint used by Docker health checks.
-
-### Changed
-
-- Setup, profile, torrent details, and provider links now consistently describe the supported AllDebrid-only workflow.
-- Angular packages updated to 21.2.22, Angular CDK to 21.2.14, and Angular ESLint to 21.4.0.
-- ASP.NET serves the SPA with built-in static-file and fallback routing instead of the legacy SpaServices package.
-- JSON serialization now uses the built-in `System.Text.Json` stack instead of an accidental transitive Newtonsoft dependency.
-- Docker images copy the maintained .NET 9 runtime image instead of downloading hard-coded 9.0.0 archives.
-- The .NET SDK selector now lives at the repository root and accepts current .NET 9 feature-band updates.
-- Local publish output defaults to the ignored `publish/` directory; publishing over a running service is rejected.
-- GitHub release and test workflows now enforce frontend linting and formatting; release builds also run backend tests.
-
-### Fixed
-
-- Windows service and s6 launchers now reference the actual `AdbClient.Web` executable and assembly names.
-- Nested download-path tests now assert platform-native separators on Windows and Linux.
-- The AllDebrid HTTP client now receives the configured timeout and retry policy.
-- Docker Desktop is discovered when its CLI is installed outside `PATH`.
-- Docker Compose uses the current GHCR image, persistent paths, and health endpoint.
-- GitHub URLs now point at the `krkn-dev/alldebrid-client` repository.
-
-### Removed
-
-- Unused Real-Debrid, Premiumize, TorBox, DebridLink, Aria2, Synology, and legacy downloader packages.
-- Unused Angular animation/dynamic-bootstrap packages, `curray`, and redundant file-saver typings.
-- Dead self-update scripts, obsolete multi-architecture Docker helper, and the one-time standards handoff document.
-
-### Security
-
-- Refreshed the frontend dependency lockfile to pick up patched Angular and build-tool releases.
-
 ## [1.1.0] - 2026-05-09
 
 ### Added
@@ -89,7 +48,7 @@ Prior upstream history: <https://github.com/rogerfar/rdt-client/blob/main/CHANGE
 
 ### Removed
 
-- All torrent providers except AllDebrid (removed Real-Debrid, Premiumize, Torbox, etc.)
+- All torrent providers except AllDebrid
 - qBittorrent download client integration
 - Sonarr/Radarr (*arr) API layer
 - External download client selector — internal downloader only
@@ -100,6 +59,5 @@ Prior upstream history: <https://github.com/rogerfar/rdt-client/blob/main/CHANGE
 - Test suite updated for AllDebrid-only provider configuration
 - Cross-platform path handling in `RunTorrentComplete` test (was failing on Linux CI)
 
-[unreleased]: https://github.com/krkn-dev/alldebrid-client/compare/v1.1.0...HEAD
 [1.1.0]: https://github.com/krkn-dev/alldebrid-client/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/krkn-dev/alldebrid-client/releases/tag/v1.0.0

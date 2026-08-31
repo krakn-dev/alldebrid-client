@@ -1,42 +1,54 @@
 # Contributing
 
-## Local Setup
+## Local setup
+
+Prerequisites are Node.js 24, npm, and the .NET 10 SDK.
 
 ```powershell
-# Terminal menu for common dev tasks
 .\dev.ps1
 
-# Frontend (requires Node 20.19+, 22.12+, or 24+)
+# Or run each side directly:
 cd client
 npm ci
-npm start          # dev server on :4200, proxies /Api and /hub to :6500
+npm start
 
-# Backend (requires .NET 9 SDK)
 dotnet run --project server/AdbClient.Web
 ```
 
-## Before Submitting
+The Angular development server listens on port 4200 and proxies API and SignalR requests to the backend on port 6500.
+
+## Verification
+
+Run the complete local check before opening a pull request:
 
 ```powershell
 .\dev.ps1 verify
 ```
 
-## Commit Format
+Continuous integration repeats the backend build and tests, frontend lint/format/build/audit, and an `amd64` container build.
 
+## Commits and pull requests
+
+Use [Conventional Commits](https://www.conventionalcommits.org/):
+
+```text
+fix(downloads): handle an interrupted transfer
+feat(settings): add a configurable retry limit
+docs: clarify the Docker volume layout
+feat(api)!: remove a deprecated endpoint
 ```
-Area: short imperative phrase
-```
 
-Areas: `Server`, `Client`, `Data`, `Tests`, `Docs`, `Repo`, `CI`
+Keep each commit focused. Use the body to explain non-obvious behavior or migration details. Pull requests target `main` and must pass CI.
 
-Rules: no period at the end, 72-character subject-line limit, one logical change per commit.
+## Versions and releases
 
-## Pull Requests
+Versions follow Semantic Versioning:
 
-- Target the `main` branch
-- Add an entry to `[Unreleased]` in `CHANGELOG.md`
-- Keep PRs focused — one feature or fix per PR
+- `fix:` increments the patch version.
+- `feat:` increments the minor version.
+- A `!` or `BREAKING CHANGE:` footer increments the major version.
+- Documentation, tests, refactors, build, CI, and chores do not create a release unless they include a breaking change.
 
-## Versioning
+Release Please maintains a release pull request from commits merged since the latest release. That pull request updates `CHANGELOG.md`, `version.txt`, the .NET assembly version, frontend package metadata, and Docker defaults together. Merging it creates the Git tag and GitHub release; the same verified workflow then uploads the Windows package and checksum.
 
-Semantic Versioning (`MAJOR.MINOR.PATCH`). Releases are tagged `vX.Y.Z`; CI builds and publishes automatically from the tag. Never edit `<Version>` in `.csproj` files manually.
+Do not manually edit managed version fields or push release tags.

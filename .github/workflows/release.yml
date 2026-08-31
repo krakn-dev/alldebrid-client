@@ -1,0 +1,107 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Verify
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+
+  release:
+    name: Prepare or publish release
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      sha: ${{ steps.release.outputs.sha }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - name: Create or update release pull request
+        id: release
+        uses: googleapis/release-please-action@v5
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  windows:
+    name: Windows package
+    if: needs.release.outputs.release_created == 'true'
+    needs: release
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout released revision
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.release.outputs.sha }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build frontend
+        working-directory: client
+        shell: pwsh
+        run: |
+          npm ci
+          npm run build
+
+      - name: Publish backend
+        shell: pwsh
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
+        run: |
+          dotnet restore server
+          dotnet publish server/AdbClient.Web/AdbClient.Web.csproj `
+            --configuration Release `
+            --no-restore `
+            -p:Version=$env:VERSION `
+            -p:AssemblyVersion=$env:VERSION `
+            --output publish
+
+      - name: Create package and checksum
+        id: package
+        shell: pwsh
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
+        run: |
+          $asset = "AllDebridClient-v$env:VERSION-windows.zip"
+          Compress-Archive -Path publish\* -DestinationPath $asset
+          $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $asset).Hash.ToLowerInvariant()
+          "$hash  $asset" | Set-Content -LiteralPath "$asset.sha256"
+          "asset=$asset" >> $env:GITHUB_OUTPUT
+
+      - name: Upload release assets
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ needs.release.outputs.tag_name }}
+          ASSET: ${{ steps.package.outputs.asset }}
+        run: gh release upload $env:TAG_NAME $env:ASSET "$env:ASSET.sha256" --clobber
