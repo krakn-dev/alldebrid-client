@@ -1,7 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
   "release-type": "simple",
-  "changelog-type": "github",
   "include-component-in-tag": false,
   "include-v-in-tag": true,
   "pull-request-header": "This pull request prepares the next version from changes merged since the last release.",
@@ -11,14 +10,8 @@
       "package-name": "alldebrid-client",
       "extra-files": [
         {
-          "type": "xml",
-          "path": "server/AdbClient.Web/AdbClient.Web.csproj",
-          "xpath": "//Project/PropertyGroup/Version"
-        },
-        {
-          "type": "xml",
-          "path": "server/AdbClient.Web/AdbClient.Web.csproj",
-          "xpath": "//Project/PropertyGroup/AssemblyVersion"
+          "type": "generic",
+          "path": "server/AdbClient.Web/AdbClient.Web.csproj"
         },
         {
           "type": "json",
