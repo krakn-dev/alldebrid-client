@@ -56,7 +56,7 @@ public class Torrents(
                 if (TorrentRunner.ActiveUnpackClients.TryGetValue(download.DownloadId, out var unpackClient))
                 {
                     download.BytesTotal = 100;
-                    download.BytesDone = unpackClient.Progess;
+                    download.BytesDone = unpackClient.Progress;
                 }
             }
         }
@@ -520,7 +520,7 @@ public class Torrents(
             Expiration = user.Expiration,
             CurrentVersion = UpdateChecker.CurrentVersion,
             LatestVersion = UpdateChecker.LatestVersion,
-            IsInsecure = UpdateChecker.IsInsecure,
+            UpdateAvailable = UpdateChecker.UpdateAvailable,
             DisableUpdateNotification = Settings.Get.General.DisableUpdateNotifications
         };
 
@@ -761,7 +761,7 @@ public class Torrents(
             if (TorrentRunner.ActiveUnpackClients.TryGetValue(download.DownloadId, out var unpackClient))
             {
                 download.BytesTotal = 100;
-                download.BytesDone = unpackClient.Progess;
+                download.BytesDone = unpackClient.Progress;
             }
         }
 

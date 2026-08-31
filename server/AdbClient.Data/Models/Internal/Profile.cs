@@ -7,6 +7,6 @@ public class Profile
     public DateTimeOffset? Expiration { get; set; }
     public string? CurrentVersion { get; set; }
     public string? LatestVersion { get; set; }
-    public bool? IsInsecure { get; set; }
+    public bool UpdateAvailable { get; set; }
     public bool? DisableUpdateNotification { get; set; }
 }

@@ -1,11 +1,10 @@
-﻿using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using AdbClient.Data.Data;
+using AdbClient.Service.Helpers;
 using AdbClient.Service.Services;
-
 
 namespace AdbClient.Service.BackgroundServices;
 
@@ -15,12 +14,10 @@ public class Startup(IServiceProvider serviceProvider) : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        var version = Assembly.GetEntryAssembly()?.GetName().Version;
-        
         using var scope = serviceProvider.CreateScope();
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<Startup>>();
 
-        logger.LogWarning("Starting host on version {version}", version);
+        logger.LogWarning("Starting host on version {Version}", ApplicationVersion.CurrentText);
 
         var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();
         await dbContext.Database.MigrateAsync(cancellationToken);

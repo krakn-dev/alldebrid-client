@@ -1,5 +1,5 @@
 # Stage 1 - Build the frontend
-FROM node:22.16.0-alpine3.22 AS node-build-env
+FROM node:24-alpine3.22 AS node-build-env
 ARG TARGETPLATFORM
 ENV TARGETPLATFORM=${TARGETPLATFORM:-linux/amd64}
 ARG BUILDPLATFORM
@@ -21,12 +21,14 @@ RUN \
 RUN ls -FCla /appclient/root
 
 # Stage 2 - Build the backend
-FROM mcr.microsoft.com/dotnet/sdk:9.0-alpine AS dotnet-build-env
+FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS dotnet-build-env
 ARG TARGETPLATFORM
 ENV TARGETPLATFORM=${TARGETPLATFORM:-linux/amd64}
 ARG BUILDPLATFORM
 ENV BUILDPLATFORM=${BUILDPLATFORM:-linux/amd64}
-ARG VERSION=1.0.0
+# x-release-please-start-version
+ARG VERSION=1.1.0
+# x-release-please-end
 
 RUN mkdir /appserver
 WORKDIR /appserver
@@ -36,11 +38,11 @@ RUN \
    echo "**** Building Source Code for $TARGETPLATFORM on $BUILDPLATFORM ****" && \
    cd server && \
    dotnet restore --no-cache AdbClient.sln && \
-   dotnet test && \
-   dotnet publish --no-restore -c Release -p:Version="$VERSION" -p:AssemblyVersion="$VERSION" -o out
+   dotnet test --no-restore -c Release && \
+   dotnet publish AdbClient.Web/AdbClient.Web.csproj --no-restore -c Release -p:Version="$VERSION" -p:AssemblyVersion="$VERSION" -o out
 
 # Stage 3 - Supply the matching multi-architecture ASP.NET runtime
-FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS dotnet-runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS dotnet-runtime
 
 # Stage 4 - Build runtime image
 FROM ghcr.io/linuxserver/baseimage-alpine:3.22
@@ -51,10 +53,13 @@ ENV BUILDPLATFORM=${BUILDPLATFORM:-linux/amd64}
 
 # set version label
 ARG BUILD_DATE
-ARG VERSION=1.0.0
+# x-release-please-start-version
+ARG VERSION=1.1.0
+# x-release-please-end
 LABEL build_version="Linuxserver.io extended version:- ${VERSION} Build-date:- ${BUILD_DATE}"
 ENV XDG_CONFIG_HOME="/config/xdg"
 ENV ALLDEBRIDCLIENT_BRANCH="main"
+ENV DataPath="/data/db"
 
 RUN \
    mkdir -p /data/downloads /data/db && \

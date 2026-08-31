@@ -71,7 +71,7 @@ public class DbSettingsGeneral
     public string? BannedTrackers { get; set; } = null;
 
     [DisplayName("Disable update notifications")]
-    [Description("Security vulnerability notices are always shown regardless.")]
+    [Description("Hide notifications when a newer release is available.")]
     public bool DisableUpdateNotifications { get; set; } = false;
 }
 

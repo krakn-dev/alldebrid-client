@@ -16,10 +16,6 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
     ContentRootPath = WindowsServiceHelpers.IsWindowsService() ? AppContext.BaseDirectory : default
 });
 
-// Bind the AppSettings from the appsettings.json files.
-builder.Configuration.AddJsonFile("appsettings.json", false, false);
-builder.Configuration.AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", true, false);
-
 // Bind AppSettings
 var appSettings = new AppSettings();
 builder.Configuration.Bind(appSettings);

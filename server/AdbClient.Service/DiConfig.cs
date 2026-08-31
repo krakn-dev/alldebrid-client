@@ -1,11 +1,11 @@
 ﻿using System.IO.Abstractions;
 using System.Net;
-using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Polly;
 using Polly.Extensions.Http;
 using AdbClient.Service.BackgroundServices;
+using AdbClient.Service.Helpers;
 using AdbClient.Service.Middleware;
 using AdbClient.Service.Services;
 using AdbClient.Service.Services.TorrentClients;
@@ -16,7 +16,7 @@ namespace AdbClient.Service;
 public static class DiConfig
 {
     public const string ProviderHttpClient = "AllDebrid";
-    public static readonly string UserAgent = $"alldebrid-client {Assembly.GetEntryAssembly()?.GetName().Version}";
+    public static readonly string UserAgent = $"alldebrid-client {ApplicationVersion.CurrentText ?? "unknown"}";
 
     public static void RegisterAdbServices(this IServiceCollection services)
     {

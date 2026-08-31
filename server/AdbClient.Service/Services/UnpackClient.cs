@@ -1,9 +1,6 @@
-﻿using System.Diagnostics;
 using AdbClient.Data.Models.Data;
 using AdbClient.Service.Helpers;
 using SharpCompress.Archives;
-using SharpCompress.Archives.Rar;
-using SharpCompress.Archives.Zip;
 
 namespace AdbClient.Service.Services;
 
@@ -13,15 +10,15 @@ public class UnpackClient(Download download, string destinationPath)
 
     public string? Error { get; private set; }
 
-    public int Progess { get; private set; }
+    public int Progress { get; private set; }
 
-    private readonly Torrent _torrent = download.Torrent ?? throw new Exception($"Torrent is null");
+    private readonly Torrent _torrent = download.Torrent ?? throw new Exception("Torrent is null");
 
     private readonly CancellationTokenSource _cancellationTokenSource = new();
 
     public void Start()
     {
-        Progess = 0;
+        Progress = 0;
 
         try
         {
@@ -78,7 +75,7 @@ public class UnpackClient(Download download, string destinationPath)
 
             if (extractPathTemp != null)
             {
-                Extract(filePath, extractPathTemp, cancellationToken);
+                await Extract(filePath, extractPathTemp, cancellationToken);
 
                 await FileHelper.Delete(filePath);
 
@@ -90,7 +87,7 @@ public class UnpackClient(Download download, string destinationPath)
 
                     if (File.Exists(mainRarFile))
                     {
-                        Extract(mainRarFile, extractPath, cancellationToken);
+                        await Extract(mainRarFile, extractPath, cancellationToken);
                     }
 
                     await FileHelper.DeleteDirectory(extractPathTemp);
@@ -98,12 +95,10 @@ public class UnpackClient(Download download, string destinationPath)
             }
             else
             {
-                Extract(filePath, extractPath, cancellationToken);
+                await Extract(filePath, extractPath, cancellationToken);
 
                 await FileHelper.Delete(filePath);
             }
-
-
         }
         catch (Exception ex)
         {
@@ -115,61 +110,32 @@ public class UnpackClient(Download download, string destinationPath)
         }
     }
 
-
     private static async Task<IList<string>> GetArchiveFiles(string filePath)
     {
         await using Stream stream = File.OpenRead(filePath);
 
-        var extension = Path.GetExtension(filePath);
-
-        IArchive archive;
-        if (extension == ".zip")
-        {
-            archive = ZipArchive.Open(stream);
-        }
-        else
-        {
-            archive = RarArchive.Open(stream);
-        }
+        using var archive = ArchiveFactory.OpenArchive(stream);
 
         var entries = archive.Entries
                              .Where(entry => !entry.IsDirectory)
                              .Select(m => m.Key!)
                              .ToList();
 
-        archive.Dispose();
-
         return entries;
     }
 
-    private void Extract(string filePath, string extractPath, CancellationToken cancellationToken)
+    private async Task Extract(string filePath, string extractPath, CancellationToken cancellationToken)
     {
         var parts = ArchiveFactory.GetFileParts(filePath);
+        var files = parts.Select(part => new FileInfo(part)).ToList();
+        using var archive = ArchiveFactory.OpenArchive(files);
+        var entries = archive.Entries.ToList();
 
-        var fi = parts.Select(m => new FileInfo(m));
-
-        var extension = Path.GetExtension(filePath);
-
-        IArchive archive;
-        if (extension == ".zip")
+        for (var index = 0; index < entries.Count; index++)
         {
-            archive = ZipArchive.Open(fi);
+            cancellationToken.ThrowIfCancellationRequested();
+            await entries[index].WriteToDirectoryAsync(extractPath, cancellationToken: cancellationToken);
+            Progress = (int)Math.Round((index + 1d) / entries.Count * 100);
         }
-        else
-        {
-            archive = RarArchive.Open(fi);
-        }
-
-        archive.ExtractToDirectory(extractPath,
-                                   d =>
-                                   {
-                                       Debug.WriteLine(d);
-                                       Progess = (int)Math.Round(d);
-                                   },
-                                   cancellationToken: cancellationToken);
-
-        archive.Dispose();
-
-        GC.Collect();
     }
 }

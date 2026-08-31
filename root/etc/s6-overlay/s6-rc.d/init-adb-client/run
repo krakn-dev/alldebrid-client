@@ -1,13 +1,6 @@
 #!/usr/bin/with-contenv bash
 
-# cleanup pid if it exists
-[[ -e /config/adbclient.pid ]] && \
-	rm -rf /config/adbclient.pid
+rm -f /config/adbclient.pid /data/adbclient.pid
 
-[[ -e /data/adbclient.pid ]] && \
-	rm -rf /data/adbclient.pid
-
-# permissions
 echo "Setting permissions"
-chown -R abc:abc \
-	/app /data
+chown -R abc:abc /app /data

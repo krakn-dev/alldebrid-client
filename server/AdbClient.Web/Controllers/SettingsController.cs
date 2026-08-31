@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using AdbClient.Data.Data;
@@ -33,7 +32,7 @@ public class SettingsController(Settings settings, Torrents torrents) : Controll
         }
 
         await settings.Update(settings1);
-        
+
         return Ok();
     }
 
@@ -56,14 +55,12 @@ public class SettingsController(Settings settings, Torrents torrents) : Controll
     [Route("Version")]
     public ActionResult<Version> Version()
     {
-        var version = Assembly.GetExecutingAssembly().GetName().Version!;
-
         return Ok(new
         {
-            Version = version
+            Version = ApplicationVersion.CurrentText ?? "unknown"
         });
     }
-        
+
     [HttpPost]
     [Route("TestPath")]
     public async Task<ActionResult> TestPath([FromBody] SettingsControllerTestPathRequest? request)
@@ -88,12 +85,12 @@ public class SettingsController(Settings settings, Torrents torrents) : Controll
         var testFile = $"{path}/test.txt";
 
         await System.IO.File.WriteAllTextAsync(testFile, "AllDebrid Client test file; you can remove this file.");
-            
+
         await FileHelper.Delete(testFile);
 
         return Ok();
     }
-        
+
     [HttpGet]
     [Route("TestDownloadSpeed")]
     public async Task<ActionResult> TestDownloadSpeed(CancellationToken cancellationToken)
@@ -132,7 +129,7 @@ public class SettingsController(Settings settings, Torrents torrents) : Controll
             await FileHelper.Delete(testFilePath);
         }
     }
-        
+
     [HttpGet]
     [Route("TestWriteSpeed")]
     public async Task<ActionResult> TestWriteSpeed()
@@ -161,15 +158,15 @@ public class SettingsController(Settings settings, Torrents torrents) : Controll
 
             await fileStream.WriteAsync(buffer.AsMemory(0, buffer.Length));
         }
-            
+
         watch.Stop();
 
         var writeSpeed = fileStream.Length / watch.Elapsed.TotalSeconds;
-            
+
         fileStream.Close();
 
         await FileHelper.Delete(testFilePath);
-        
+
         return Ok(writeSpeed);
     }
 

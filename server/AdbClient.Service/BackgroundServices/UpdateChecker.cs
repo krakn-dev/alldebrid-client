@@ -1,102 +1,75 @@
-﻿using System.Reflection;
+using System.Net.Http.Json;
+using System.Text.Json.Serialization;
+using AdbClient.Service.Helpers;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace AdbClient.Service.BackgroundServices;
 
-public class UpdateChecker(ILogger<UpdateChecker> logger) : BackgroundService
+public class UpdateChecker(ILogger<UpdateChecker> logger, IHttpClientFactory httpClientFactory) : BackgroundService
 {
-    public static string? CurrentVersion { get; private set; }
-    public static string? LatestVersion { get; private set; }
-    
-    public static bool? IsInsecure { get; private set; }
+    private const string LatestReleaseEndpoint = "https://api.github.com/repos/krkn-dev/alldebrid-client/releases/latest";
 
-    private static readonly List<string> KnownGhsaIds = [];
+    public static string? CurrentVersion { get; private set; }
+
+    public static string? LatestVersion { get; private set; }
+
+    public static bool UpdateAvailable { get; private set; }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!Startup.Ready)
         {
-            await Task.Delay(1000, stoppingToken);
+            await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
         }
 
-        var version = Assembly.GetEntryAssembly()?.GetName().Version?.ToString();
+        CurrentVersion = ApplicationVersion.CurrentTag;
 
-        if (string.IsNullOrWhiteSpace(version))
+        if (CurrentVersion == null)
         {
-            CurrentVersion = "";
-
+            logger.LogWarning("Unable to determine the current application version; update checks are disabled.");
             return;
         }
 
-        CurrentVersion = $"v{version}";
-
-        logger.LogInformation("UpdateChecker started, currently on version {CurrentVersion}.", CurrentVersion);
+        logger.LogInformation("Update checker started on {CurrentVersion}.", CurrentVersion);
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            try
-            {
-                var gitHubReleases = await GitHubRequest<List<GitHubReleasesResponse>>("/repos/krkn-dev/alldebrid-client/tags?per_page=1", stoppingToken);
-
-                var latestRelease = gitHubReleases?.FirstOrDefault(m => m.Name != null)?.Name;
-
-                if (latestRelease == null)
-                {
-                    logger.LogWarning($"Unable to find latest version on GitHub");
-                    return;
-                }
-
-                if (latestRelease != CurrentVersion)
-                {
-                    logger.LogInformation("New version found on GitHub: {latestRelease}", latestRelease);
-                }
-
-                LatestVersion = latestRelease;
-
-                var gitHubSecurityAdvisories = await GitHubRequest<List<GitHubSecurityAdvisoriesResponse>>("/repos/krkn-dev/alldebrid-client/security-advisories", stoppingToken);
-
-                var unseenGhsaIds = gitHubSecurityAdvisories?.Where(advisory => !KnownGhsaIds.Contains(advisory.GhsaId));
-                
-                if (unseenGhsaIds == null)
-                {
-                    logger.LogWarning($"Unable to find security advisories on GitHub");
-                    return;
-                }
-
-                IsInsecure = unseenGhsaIds.Any();
-            }
-            catch (Exception ex)
-            {
-                logger.LogDebug(ex, "Unexpected error occurred while checking for updates. This error is safe to ignore.");
-            }
-
+            await CheckForUpdate(stoppingToken);
             await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
         }
-
-        logger.LogInformation("UpdateChecker stopped.");
     }
 
-    private static async Task<T?> GitHubRequest<T>(string endpoint, CancellationToken cancellationToken)
+    private async Task CheckForUpdate(CancellationToken stoppingToken)
     {
-            var httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.UserAgent.Add(new("AdbClient", CurrentVersion));
-            var response = await httpClient.GetStringAsync($"https://api.github.com{endpoint}", cancellationToken);
-            
-            return JsonSerializer.Deserialize<T>(response);
+        try
+        {
+            var httpClient = httpClientFactory.CreateClient(nameof(UpdateChecker));
+            var release = await httpClient.GetFromJsonAsync<GitHubRelease>(LatestReleaseEndpoint, stoppingToken);
+
+            if (string.IsNullOrWhiteSpace(release?.TagName))
+            {
+                logger.LogWarning("GitHub did not return a latest release version.");
+                return;
+            }
+
+            LatestVersion = release.TagName;
+            UpdateAvailable = ApplicationVersion.IsNewerRelease(LatestVersion, CurrentVersion);
+
+            if (UpdateAvailable)
+            {
+                logger.LogInformation("A newer release is available: {LatestVersion}.", LatestVersion);
+            }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !stoppingToken.IsCancellationRequested)
+        {
+            logger.LogDebug(ex, "The GitHub update check failed; the application will retry later.");
+        }
     }
 }
 
-public class GitHubReleasesResponse 
+public sealed class GitHubRelease
 {
-    [JsonPropertyName("name")]
-    public string? Name { get; set; }
-}
-
-public class GitHubSecurityAdvisoriesResponse
-{
-    [JsonPropertyName("ghsa_id")]
-    public required string GhsaId { get; set; } 
+    [JsonPropertyName("tag_name")]
+    public string? TagName { get; init; }
 }
