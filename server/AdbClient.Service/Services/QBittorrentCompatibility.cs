@@ -1,0 +1,270 @@
+using AdbClient.Data.Enums;
+using AdbClient.Data.Models.Data;
+using AdbClient.Service.Helpers;
+using AdbClient.Service.Models.QBittorrent;
+using Microsoft.Extensions.Logging;
+
+namespace AdbClient.Service.Services;
+
+public sealed class QBittorrentCompatibility(
+    ILogger<QBittorrentCompatibility> logger,
+    Authentication authentication,
+    Settings settings,
+    Torrents torrents,
+    IHttpClientFactory httpClientFactory) : IQBittorrentCompatibility
+{
+    private const long UnknownEta = 8_640_000;
+
+    public async Task<bool> Login(string userName, string password)
+    {
+        var result = await authentication.Login(userName, password);
+        return result.Succeeded;
+    }
+
+    public async Task CreateCategory(string category)
+    {
+        category = category.Trim();
+
+        if (category.Length == 0)
+        {
+            throw new ArgumentException("Category cannot be empty.", nameof(category));
+        }
+
+        var categories = (Settings.Get.General.Categories ?? string.Empty)
+                         .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                         .Distinct(StringComparer.OrdinalIgnoreCase)
+                         .ToList();
+
+        if (!categories.Contains(category, StringComparer.OrdinalIgnoreCase))
+        {
+            categories.Add(category);
+            await settings.Update("General:Categories", string.Join(',', categories));
+        }
+    }
+
+    public async Task Add(string urls, string? category, CancellationToken cancellationToken = default)
+    {
+        var torrentUrls = urls.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        if (torrentUrls.Length == 0)
+        {
+            throw new ArgumentException("At least one torrent URL is required.", nameof(urls));
+        }
+
+        foreach (var torrentUrl in torrentUrls)
+        {
+            var torrent = CreateTorrent(category);
+
+            if (torrentUrl.StartsWith("magnet:?", StringComparison.OrdinalIgnoreCase))
+            {
+                await torrents.AddMagnetToDebridQueue(torrentUrl, torrent);
+                continue;
+            }
+
+            if (!Uri.TryCreate(torrentUrl, UriKind.Absolute, out var uri) ||
+                (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+            {
+                throw new ArgumentException($"Unsupported torrent URL: {torrentUrl}", nameof(urls));
+            }
+
+            logger.LogDebug("Downloading torrent metadata from {TorrentUrl}", uri);
+
+            var client = httpClientFactory.CreateClient();
+            var fileBytes = await client.GetByteArrayAsync(uri, cancellationToken);
+            await torrents.AddFileToDebridQueue(fileBytes, torrent);
+        }
+    }
+
+    public async Task<IReadOnlyList<QBittorrentTorrentInfo>> GetTorrents(string? category)
+    {
+        var allTorrents = await torrents.Get();
+        var filteredTorrents = allTorrents.AsEnumerable();
+
+        if (!string.IsNullOrWhiteSpace(category) && !category.Equals("all", StringComparison.OrdinalIgnoreCase))
+        {
+            filteredTorrents = filteredTorrents.Where(torrent =>
+                string.Equals(torrent.Category, category, StringComparison.OrdinalIgnoreCase));
+        }
+
+        return filteredTorrents.Select(MapTorrent).ToList();
+    }
+
+    public async Task Delete(string hashes, bool deleteFiles)
+    {
+        var torrentHashes = hashes.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        foreach (var hash in torrentHashes)
+        {
+            var torrent = await torrents.GetByHash(hash);
+
+            if (torrent == null)
+            {
+                continue;
+            }
+
+            // qBittorrent always removes the client entry. Logpose passes deleteFiles=false
+            // after importing, so the local media remains available at its destination.
+            await torrents.Delete(torrent.TorrentId, true, true, deleteFiles);
+        }
+    }
+
+    private static Torrent CreateTorrent(string? category)
+    {
+        var defaults = Settings.Get.DownloadClient.Default;
+
+        return new()
+        {
+            Category = string.IsNullOrWhiteSpace(category) ? null : category.Trim(),
+            DownloadClient = Data.Enums.DownloadClient.Internal,
+            DownloadAction = TorrentDownloadAction.DownloadAll,
+            HostDownloadAction = TorrentHostDownloadAction.DownloadAll,
+            FinishedAction = TorrentFinishedAction.None,
+            FinishedActionDelay = 0,
+            DownloadMinSize = 0,
+            IncludeRegex = null,
+            ExcludeRegex = null,
+            TorrentRetryAttempts = defaults.TorrentRetryAttempts,
+            DownloadRetryAttempts = defaults.DownloadRetryAttempts,
+            DeleteOnError = defaults.DeleteOnError,
+            Lifetime = defaults.TorrentLifetime,
+            Priority = defaults.Priority > 0 ? defaults.Priority : null
+        };
+    }
+
+    private static QBittorrentTorrentInfo MapTorrent(Torrent torrent)
+    {
+        var providerProgress = Math.Clamp((torrent.RdProgress ?? 0) / 100d, 0d, 1d);
+        var localProgress = torrent.Downloads.Count == 0
+            ? 0d
+            : torrent.Downloads.Average(download =>
+                download.Completed.HasValue
+                    ? 1d
+                    : download.BytesTotal > 0
+                        ? Math.Clamp((double)download.BytesDone / download.BytesTotal, 0d, 1d)
+                        : 0d);
+
+        var completed = torrent.Completed.HasValue && string.IsNullOrWhiteSpace(torrent.Error);
+        var progress = completed ? 1d : Math.Min(0.999d, (providerProgress + localProgress) / 2d);
+        var localSpeed = torrent.Downloads.Sum(download => Math.Max(0, download.Speed));
+        var downloadSpeed = torrent.Downloads.Count > 0 ? localSpeed : Math.Max(0, torrent.RdSpeed ?? 0);
+        var activeDownloadSize = torrent.Downloads.Sum(download => Math.Max(0, download.BytesTotal));
+        var size = Math.Max(0, torrent.RdSize ?? activeDownloadSize);
+        var savePath = GetSavePath(torrent.Category);
+
+        return new()
+        {
+            Hash = torrent.Hash,
+            Name = torrent.RdName ?? torrent.Hash,
+            Category = torrent.Category ?? string.Empty,
+            Progress = progress,
+            State = GetState(torrent, completed, downloadSpeed),
+            SavePath = savePath,
+            ContentPath = GetContentPath(torrent, savePath),
+            Size = size,
+            DownloadSpeed = downloadSpeed,
+            Eta = GetEta(completed, size, progress, downloadSpeed)
+        };
+    }
+
+    private static string GetState(Torrent torrent, bool completed, long downloadSpeed)
+    {
+        if (!string.IsNullOrWhiteSpace(torrent.Error) || torrent.RdStatus == TorrentStatus.Error)
+        {
+            return "error";
+        }
+
+        if (completed)
+        {
+            return "pausedUP";
+        }
+
+        if (downloadSpeed > 0)
+        {
+            return "downloading";
+        }
+
+        return torrent.RdStatus switch
+        {
+            TorrentStatus.Processing or TorrentStatus.WaitingForFileSelection => "metaDL",
+            TorrentStatus.Downloading when torrent.RdSeeders < 1 => "stalledDL",
+            TorrentStatus.Downloading => "downloading",
+            TorrentStatus.Uploading => "uploading",
+            _ => "queuedDL"
+        };
+    }
+
+    private static long GetEta(bool completed, long size, double progress, long downloadSpeed)
+    {
+        if (completed)
+        {
+            return 0;
+        }
+
+        if (size <= 0 || downloadSpeed <= 0 || progress <= 0)
+        {
+            return UnknownEta;
+        }
+
+        var eta = Math.Ceiling(size * (1d - progress) / downloadSpeed);
+        return (long)Math.Clamp(eta, 0d, UnknownEta);
+    }
+
+    private static string GetSavePath(string? category)
+    {
+        var mappedPath = string.IsNullOrWhiteSpace(Settings.Get.Paths.MappedPath)
+            ? Settings.Get.Paths.DownloadPath
+            : Settings.Get.Paths.MappedPath;
+
+        return CombineMappedPath(mappedPath, category);
+    }
+
+    private static string GetContentPath(Torrent torrent, string savePath)
+    {
+        if (torrent.Downloads.Count == 1)
+        {
+            var relativePath = DownloadHelper.GetDownloadPath(torrent, torrent.Downloads[0]);
+
+            if (!string.IsNullOrWhiteSpace(relativePath))
+            {
+                return CombineMappedPath(savePath, relativePath);
+            }
+        }
+
+        return string.IsNullOrWhiteSpace(torrent.RdName)
+            ? savePath
+            : CombineMappedPath(savePath, DownloadHelper.RemoveInvalidPathChars(torrent.RdName));
+    }
+
+    private static string CombineMappedPath(string root, string? child)
+    {
+        var separator = root.Contains('\\') && !root.Contains('/')
+            ? '\\'
+            : root.Contains('/') && !root.Contains('\\')
+                ? '/'
+                : Path.DirectorySeparatorChar;
+
+        var result = root.Trim().TrimEnd('/', '\\');
+        var rootOnly = result.Length == 0 && root.IndexOfAny(['/', '\\']) >= 0;
+
+        if (rootOnly)
+        {
+            result = separator.ToString();
+        }
+
+        if (string.IsNullOrWhiteSpace(child))
+        {
+            return result;
+        }
+
+        var normalizedChild = child.Trim().Trim('/', '\\')
+                                   .Replace('/', separator)
+                                   .Replace('\\', separator);
+
+        if (result == separator.ToString())
+        {
+            return result + normalizedChild;
+        }
+
+        return result.Length == 0 ? normalizedChild : $"{result}{separator}{normalizedChild}";
+    }
+}

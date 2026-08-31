@@ -35,6 +35,7 @@ public static class DiConfig
         services.AddScoped<Settings>();
         services.AddScoped<Torrents>();
         services.AddScoped<TorrentRunner>();
+        services.AddScoped<IQBittorrentCompatibility, QBittorrentCompatibility>();
 
         services.AddSingleton<IDownloadableFileFilter, DownloadableFileFilter>();
         services.AddSingleton<ITrackerListGrabber, TrackerListGrabber>();

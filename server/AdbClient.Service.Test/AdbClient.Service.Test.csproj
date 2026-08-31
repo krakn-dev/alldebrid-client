@@ -30,6 +30,11 @@
 
     <ItemGroup>
       <ProjectReference Include="..\AdbClient.Service\AdbClient.Service.csproj" />
+      <ProjectReference Include="..\AdbClient.Web\AdbClient.Web.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <FrameworkReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
 
 </Project>
