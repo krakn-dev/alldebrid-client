@@ -129,6 +129,10 @@ public class WatchFolderChecker(ILogger<WatchFolderChecker> logger, IServiceProv
 
                         logger.Log(LogLevel.Debug, "Moved {torrentFile} to {processedPath}", torrentFile, processedPath);
                     }
+                    catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                    {
+                        throw;
+                    }
                     catch
                     {
                         if (!Directory.Exists(errorStorePath))
@@ -151,9 +155,13 @@ public class WatchFolderChecker(ILogger<WatchFolderChecker> logger, IServiceProv
                     }
                 }
             }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
             catch (Exception ex)
             {
-                logger.LogError(ex, $"Unexpected error occurred in WatchFolderChecker: {ex.Message}");
+                logger.LogError(ex, "Unexpected error occurred in WatchFolderChecker.");
             }
         }
     }
