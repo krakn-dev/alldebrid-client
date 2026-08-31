@@ -13,7 +13,7 @@ using Serilog.Events;
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
     Args = args,
-    ContentRootPath = WindowsServiceHelpers.IsWindowsService() ? AppContext.BaseDirectory : default
+    ContentRootPath = AppContext.BaseDirectory
 });
 
 // Bind AppSettings
