@@ -100,7 +100,7 @@ function Test-RequiredCommand($Name) {
     }
 
     if ($Name -eq "dotnet" -and @(& $toolPath --list-sdks).Count -eq 0) {
-        throw "The .NET runtime is installed, but no .NET SDK is available. Install the .NET 9 SDK to build this project."
+        throw "The .NET runtime is installed, but no .NET SDK is available. Install the .NET 10 SDK to build this project."
     }
 
     return $toolPath

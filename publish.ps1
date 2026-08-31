@@ -1,5 +1,8 @@
 param(
-    [string]$InstallPath
+    [string]$InstallPath,
+    [string]$DataPath,
+    [ValidatePattern('^\d+\.\d+\.\d+$')]
+    [string]$Version
 )
 
 $ErrorActionPreference = "Stop"
@@ -20,11 +23,15 @@ if ($normalizedInstallPath -ieq $projectRoot -or $normalizedInstallPath -ieq $dr
 }
 
 $service = Get-CimInstance Win32_Service -Filter "Name='AllDebridClient'" -ErrorAction SilentlyContinue
-if ($service.State -eq "Running" -and $service.PathName -like "*$normalizedInstallPath*") {
+if ($service.State -eq "Running" -and $service.PathName.IndexOf($normalizedInstallPath, [StringComparison]::OrdinalIgnoreCase) -ge 0) {
     throw "AllDebridClient is running from $InstallPath. Stop the service before publishing over its files."
 }
 
-$dataPath = Join-Path $InstallPath "data"
+if ([string]::IsNullOrWhiteSpace($DataPath)) {
+    $DataPath = Join-Path $InstallPath "data"
+}
+
+$DataPath = [System.IO.Path]::GetFullPath($DataPath)
 $settingsPath = Join-Path $InstallPath "appsettings.json"
 
 Write-Host "==> Building frontend"
@@ -48,16 +55,28 @@ if (Test-Path $InstallPath) {
 }
 
 Write-Host "==> Publishing to $InstallPath"
-dotnet publish (Join-Path $root "server\AdbClient.Web\AdbClient.Web.csproj") -c Release -o $InstallPath
+$publishArguments = @(
+    "publish",
+    (Join-Path $root "server\AdbClient.Web\AdbClient.Web.csproj"),
+    "--configuration", "Release",
+    "--output", $InstallPath
+)
+
+if (-not [string]::IsNullOrWhiteSpace($Version)) {
+    $publishArguments += "-p:Version=$Version"
+    $publishArguments += "-p:AssemblyVersion=$Version"
+}
+
+& dotnet @publishArguments
 if ($LASTEXITCODE -ne 0) {
     throw "Backend publish failed with exit code $LASTEXITCODE."
 }
 
-Write-Host "==> Setting data path to $dataPath"
+Write-Host "==> Setting data path to $DataPath"
 $settings = Get-Content $settingsPath -Raw | ConvertFrom-Json
-$settings.DataPath = $dataPath
-$settings | ConvertTo-Json | Set-Content $settingsPath
+$settings.DataPath = $DataPath
+$settings | ConvertTo-Json -Depth 10 | Set-Content $settingsPath
 
-New-Item -ItemType Directory -Path $dataPath -Force | Out-Null
+New-Item -ItemType Directory -Path $DataPath -Force | Out-Null
 
 Write-Host "==> Done: $InstallPath"
