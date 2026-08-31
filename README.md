@@ -1,6 +1,6 @@
 # AllDebrid Client
 
-A self-hosted web interface for managing torrents through [AllDebrid](https://alldebrid.com). Add torrents via magnet link or file, download them to your host automatically, and integrate with Sonarr/Radarr.
+A self-hosted web interface for managing torrents through [AllDebrid](https://alldebrid.com). Add torrents via magnet link or file, download them to your host automatically, and connect [Logpose](https://github.com/jasanpreetn9/logpose) directly.
 
 Built with Angular 21 and .NET 10 LTS.
 
@@ -69,17 +69,25 @@ sudo systemctl start alldebrid-client
 
 ---
 
-## Sonarr / Radarr Integration
+## Logpose Integration
 
-AllDebrid Client emulates the qBittorrent web API, so Sonarr and Radarr connect to it natively.
+AllDebrid Client implements the qBittorrent Web API subset used by Logpose. This is a focused Logpose integration, not a general qBittorrent replacement for Sonarr or Radarr.
 
-1. In Sonarr/Radarr go to **Settings → Download Clients → Add → qBittorrent**.
-2. Set **Host** to your server IP, **Port** to `6500`.
-3. Enter your username and password.
-4. Set **Category** to `sonarr` or `radarr`.
-5. Hit **Test** then **Save**.
+1. In AllDebrid Client, set **Download path** to the physical shared download directory.
+2. Set **Mapped path** to that same directory as Logpose sees it. For containers sharing `/media/downloads`, use `/media/downloads` in both applications.
+3. Point Logpose's normal qBittorrent configuration at AllDebrid Client:
 
-Files download to a subfolder named after the category under your configured download path.
+```yaml
+downloadPath: "/media/downloads"
+
+qbittorrent:
+  enabled: true
+  host: "http://alldebrid-client:6500/"
+  username: "your-alldebrid-client-username"
+  password: "your-alldebrid-client-password"
+```
+
+Use the AllDebrid Client login when username/password authentication is enabled. When authentication is disabled, the values may be blank. Logpose creates and uses the `logpose` category automatically; files are downloaded under `<Download path>/logpose`, and completed imports leave the downloaded media in place.
 
 ---
 
