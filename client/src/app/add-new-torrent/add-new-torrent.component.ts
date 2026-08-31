@@ -140,7 +140,7 @@ export class AddNewTorrentComponent implements OnInit {
 
     if (this.magnetLink) {
       this.torrentService.uploadMagnet(this.magnetLink, torrent).subscribe({
-        next: () => this.router.navigate(['/']),
+        next: () => this.router.navigate(['/torrents']),
         error: (err) => {
           this.error = err.error;
           this.saving = false;
@@ -148,7 +148,7 @@ export class AddNewTorrentComponent implements OnInit {
       });
     } else if (this.selectedFile) {
       this.torrentService.uploadFile(this.selectedFile, torrent).subscribe({
-        next: () => this.router.navigate(['/']),
+        next: () => this.router.navigate(['/torrents']),
         error: (err) => {
           this.error = err.error;
           this.saving = false;

@@ -56,6 +56,6 @@ export class SetupComponent {
   }
 
   public close(): void {
-    this.router.navigate(['/']);
+    this.router.navigate(['/torrents']);
   }
 }

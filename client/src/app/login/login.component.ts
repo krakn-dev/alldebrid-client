@@ -31,7 +31,7 @@ export class LoginComponent {
     this.error = null;
     this.loggingIn = true;
     this.authService.login(this.userName, this.password).subscribe({
-      next: () => this.router.navigate(['/']),
+      next: () => this.router.navigate(['/torrents']),
       error: (err) => {
         this.loggingIn = false;
         this.error = err.error;

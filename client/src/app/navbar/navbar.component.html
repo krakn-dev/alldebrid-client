@@ -1,6 +1,6 @@
 <nav class="navbar is-dark is-fixed-top" role="navigation" aria-label="main navigation">
   <div class="navbar-brand">
-    <a class="navbar-item" routerLink="/">
+    <a class="navbar-item" routerLink="/torrents">
       <img src="assets/logo.png" />
     </a>
 
@@ -20,7 +20,7 @@
 
   <div class="navbar-menu" [class.is-active]="showMobileMenu">
     <div class="navbar-start">
-      <a class="navbar-item" routerLink="/">
+      <a class="navbar-item" routerLink="/torrents">
         <span class="icon">
           <i class="fas fa-table" aria-hidden="true"></i>
         </span>
@@ -64,19 +64,13 @@
   </div>
 </nav>
 
-@if (
-  profile &&
-  (!profile.disableUpdateNotification || profile.isInsecure) &&
-  profile.latestVersion &&
-  profile.currentVersion !== profile.latestVersion
-) {
-  <div class="notification" [ngClass]="profile.isInsecure ? 'is-danger' : 'is-warning'">
-    @if (profile.isInsecure) {
-      <span> Your current version is insecure. </span>
-    }
+@if (profile && !profile.disableUpdateNotification && profile.updateAvailable) {
+  <div class="notification is-warning">
     <span>
-      Version {{ profile.latestVersion }} of AllDebrid Client was found. You are currently on version
-      {{ profile.currentVersion }}.
+      AllDebrid Client {{ profile.latestVersion }} is available. You are currently on {{ profile.currentVersion }}.
     </span>
+    <a href="https://github.com/krkn-dev/alldebrid-client/releases/latest" target="_blank" rel="noopener">
+      View release
+    </a>
   </div>
 }

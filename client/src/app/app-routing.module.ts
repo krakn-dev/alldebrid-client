@@ -28,16 +28,16 @@ const routes: Routes = [
     children: [
       {
         path: '',
-        component: TorrentTableComponent,
-      },
-      {
-        path: 'torrents',
-        redirectTo: '',
+        redirectTo: 'torrents',
         pathMatch: 'full',
       },
       {
+        path: 'torrents',
+        component: TorrentTableComponent,
+      },
+      {
         path: 'index.html',
-        redirectTo: '',
+        redirectTo: 'torrents',
         pathMatch: 'full',
       },
       {
@@ -58,7 +58,7 @@ const routes: Routes = [
       },
       {
         path: '**',
-        redirectTo: '',
+        redirectTo: 'torrents',
       },
     ],
   },

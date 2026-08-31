@@ -3,13 +3,12 @@ import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../auth.service';
 import { Profile } from '../models/profile.model';
 import { SettingsService } from '../settings.service';
-import { NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-navbar',
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.scss'],
-  imports: [RouterLink, NgClass],
+  imports: [RouterLink],
   standalone: true,
 })
 export class NavbarComponent implements OnInit {

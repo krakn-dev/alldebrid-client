@@ -85,7 +85,7 @@ export class TorrentComponent implements OnInit {
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe((result) => this.update(result));
         },
-        error: () => this.router.navigate(['/']),
+        error: () => this.router.navigate(['/torrents']),
       });
     });
   }
@@ -137,7 +137,7 @@ export class TorrentComponent implements OnInit {
           this.isDeleteModalActive = false;
           this.deleting = false;
 
-          this.router.navigate(['/']);
+          this.router.navigate(['/torrents']);
         },
         error: (err) => {
           this.deleteError = err.error;
@@ -164,7 +164,7 @@ export class TorrentComponent implements OnInit {
         this.isRetryModalActive = false;
         this.retrying = false;
 
-        this.router.navigate(['/']);
+        this.router.navigate(['/torrents']);
       },
       error: (err) => {
         this.retryError = err.error;
