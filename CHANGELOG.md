@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0](https://github.com/krakn-dev/alldebrid-client/compare/v1.1.0...v1.2.0) (2026-08-31)
+
+
+### Features
+
+* **platform:** move to .NET 10 and harden runtime ([95d5f2b](https://github.com/krakn-dev/alldebrid-client/commit/95d5f2b7d668858b4095edc330c676bf944ab1fa))
+* **release:** automate verified semantic releases ([6773cad](https://github.com/krakn-dev/alldebrid-client/commit/6773cad168be6b3c745a63e436048febc3fa31c8))
+* **windows:** add guarded service deployment ([4a83881](https://github.com/krakn-dev/alldebrid-client/commit/4a83881879afc1a3e8f25deebe60500c44fd33ad))
+
+
+### Bug Fixes
+
+* **client:** repair landing route and release notices ([4b64ccd](https://github.com/krakn-dev/alldebrid-client/commit/4b64ccd689b95b77cf55c394609c8509f45402a3))
+* **docker:** use local persistent compose builds ([8a48a2a](https://github.com/krakn-dev/alldebrid-client/commit/8a48a2aeba2fe9d95288618b2b8964ff80348d39))
+* **release:** preserve notes and project formatting ([34970e9](https://github.com/krakn-dev/alldebrid-client/commit/34970e95ad28918b3bef18c7f9335e824f54ce48))
+* **service:** treat shutdown cancellation normally ([9cf582d](https://github.com/krakn-dev/alldebrid-client/commit/9cf582d68f2cfd3c05af1e4cbfa792169111c558))
+* **web:** resolve runtime files from executable ([10901eb](https://github.com/krakn-dev/alldebrid-client/commit/10901ebe23e41430bf5f22fb0cb29c7ae4130fcb))
+
 ## [1.1.0] - 2026-05-09
 
 ### Added
