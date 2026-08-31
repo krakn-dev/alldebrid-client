@@ -1,6 +1,8 @@
 services:
   alldebrid-client:
-    image: ghcr.io/krkn-dev/alldebrid-client:latest
+    build:
+      context: ..
+    image: alldebrid-client:local
     container_name: alldebrid-client
     environment:
       PUID: 1000

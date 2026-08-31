@@ -1,23 +1,27 @@
 # Docker
 
-AllDebrid Client ships as a LinuxServer-style container with s6-overlay and persistent `/data` mounts.
-
-Published images:
-
-- Docker Hub: `lekrakin/alldebrid-client`
-- GHCR: `ghcr.io/krkn-dev/alldebrid-client`
+AllDebrid Client runs as a LinuxServer-style container with s6-overlay and persistent `/data` mounts. Images are built locally from the versioned source, so no external container account is required.
 
 ## Compose
+
+From the repository root:
+
+```bash
+docker compose -f tools/docker-compose.yml up -d --build
+```
+
+The equivalent Compose service is:
 
 ```yaml
 services:
   alldebrid-client:
-    image: lekrakin/alldebrid-client:latest
+    build: .
+    image: alldebrid-client:local
     container_name: alldebrid-client
     environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Etc/UTC
+      PUID: 1000
+      PGID: 1000
+      TZ: Etc/UTC
     volumes:
       - ./data/db:/data/db
       - ./data/downloads:/data/downloads
@@ -32,9 +36,13 @@ services:
       start_period: 60s
 ```
 
+Browse to `http://<host>:6500`.
+
 ## Docker CLI
 
 ```bash
+docker build -t alldebrid-client:local .
+
 docker run -d \
   --name alldebrid-client \
   -e PUID=1000 \
@@ -44,39 +52,29 @@ docker run -d \
   -v ./data/db:/data/db \
   -v ./data/downloads:/data/downloads \
   --restart unless-stopped \
-  lekrakin/alldebrid-client:latest
+  alldebrid-client:local
 ```
-
-Browse to `http://<host>:6500`.
 
 ## Volumes
 
-| Container path | Purpose |
-| --- | --- |
-| `/data/db` | SQLite database, settings, logs |
-| `/data/downloads` | Downloaded files |
+| Container path    | Purpose                             |
+| ----------------- | ----------------------------------- |
+| `/data/db`        | SQLite database, settings, and logs |
+| `/data/downloads` | Downloaded files                    |
 
 ## Updating
 
-```bash
-docker compose pull
-docker compose up -d
-docker image prune
-```
-
-For a single container created with `docker run`:
+Check out the version you want, then rebuild the same service:
 
 ```bash
-docker pull lekrakin/alldebrid-client:latest
-docker stop alldebrid-client
-docker rm alldebrid-client
-# Re-run the original docker run command with the same volume mounts.
+git pull --ff-only
+docker compose -f tools/docker-compose.yml up -d --build
 ```
 
-## Local Image Build
+Release tags identify exact reproducible source versions. The release workflow publishes the Windows package; it does not push containers to Docker Hub or another registry.
+
+## Windows helper
 
 ```powershell
 .\tools\docker-build-dev.ps1
 ```
-
-For multi-arch release builds, use the GitHub Actions release workflow. It builds Docker Hub and GHCR images from `vX.Y.Z` tags.
