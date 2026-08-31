@@ -1,3 +1,4 @@
+using System.IO.Abstractions;
 using AdbClient.Data.Enums;
 using AdbClient.Data.Models.Data;
 using AdbClient.Service.Helpers;
@@ -11,7 +12,8 @@ public sealed class QBittorrentCompatibility(
     Authentication authentication,
     Settings settings,
     Torrents torrents,
-    IHttpClientFactory httpClientFactory) : IQBittorrentCompatibility
+    IHttpClientFactory httpClientFactory,
+    IFileSystem fileSystem) : IQBittorrentCompatibility
 {
     private const long UnknownEta = 8_640_000;
 
@@ -136,11 +138,227 @@ public sealed class QBittorrentCompatibility(
                 continue;
             }
 
+            var cleanupPlan = deleteFiles ? null : CreateEmptyDirectoryCleanupPlan(torrent);
+
             // qBittorrent always removes the client entry. Logpose passes deleteFiles=false
             // after importing, so the local media remains available at its destination.
             await torrents.Delete(torrent.TorrentId, true, true, deleteFiles);
+
+            if (cleanupPlan != null)
+            {
+                CleanupEmptyJobDirectories(cleanupPlan);
+            }
         }
     }
+
+    private EmptyDirectoryCleanupPlan? CreateEmptyDirectoryCleanupPlan(Torrent torrent)
+    {
+        if (string.IsNullOrWhiteSpace(Settings.Get.Paths.DownloadPath) ||
+            string.IsNullOrWhiteSpace(torrent.RdName))
+        {
+            return null;
+        }
+
+        try
+        {
+            var downloadRoot = NormalizeFullPath(Settings.Get.Paths.DownloadPath);
+            var categoryRoot = string.IsNullOrWhiteSpace(torrent.Category)
+                ? downloadRoot
+                : NormalizeFullPath(fileSystem.Path.Combine(downloadRoot, torrent.Category));
+
+            if (!IsSameOrDescendant(categoryRoot, downloadRoot))
+            {
+                logger.LogWarning(
+                    "Skipping qBittorrent directory cleanup because category path {CategoryRoot} is outside download root {DownloadRoot}",
+                    categoryRoot,
+                    downloadRoot);
+                return null;
+            }
+
+            var jobRoot = NormalizeFullPath(fileSystem.Path.Combine(
+                categoryRoot,
+                DownloadHelper.RemoveInvalidPathChars(torrent.RdName)));
+
+            if (!IsStrictDescendant(jobRoot, categoryRoot))
+            {
+                logger.LogWarning(
+                    "Skipping qBittorrent directory cleanup because job path {JobRoot} is outside category root {CategoryRoot}",
+                    jobRoot,
+                    categoryRoot);
+                return null;
+            }
+
+            var candidates = new HashSet<string>(PathComparer)
+            {
+                jobRoot
+            };
+
+            foreach (var download in torrent.Downloads)
+            {
+                var relativePath = DownloadHelper.GetDownloadPath(torrent, download);
+
+                if (string.IsNullOrWhiteSpace(relativePath))
+                {
+                    continue;
+                }
+
+                var filePath = NormalizeFullPath(fileSystem.Path.Combine(categoryRoot, relativePath));
+                var directory = fileSystem.Path.GetDirectoryName(filePath);
+
+                if (string.IsNullOrWhiteSpace(directory))
+                {
+                    continue;
+                }
+
+                directory = NormalizeFullPath(directory);
+
+                if (!IsSameOrDescendant(directory, jobRoot))
+                {
+                    logger.LogWarning(
+                        "Skipping qBittorrent directory cleanup because download path {DownloadPath} is outside job root {JobRoot}",
+                        directory,
+                        jobRoot);
+                    return null;
+                }
+
+                candidates.Add(directory);
+            }
+
+            return new(
+                downloadRoot,
+                categoryRoot,
+                candidates.OrderByDescending(path => path.Length).ToList());
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Unable to safely resolve qBittorrent cleanup paths for {TorrentHash}", torrent.Hash);
+            return null;
+        }
+    }
+
+    private void CleanupEmptyJobDirectories(EmptyDirectoryCleanupPlan plan)
+    {
+        foreach (var candidate in plan.CandidateDirectories)
+        {
+            var current = candidate;
+
+            while (IsStrictDescendant(current, plan.CategoryRoot))
+            {
+                if (!IsSameOrDescendant(current, plan.DownloadRoot) ||
+                    HasReparsePoint(current, plan.DownloadRoot))
+                {
+                    logger.LogWarning("Skipping unsafe qBittorrent directory cleanup path {CleanupPath}", current);
+                    break;
+                }
+
+                if (fileSystem.Directory.Exists(current))
+                {
+                    try
+                    {
+                        if (fileSystem.Directory.EnumerateFileSystemEntries(current).Any())
+                        {
+                            break;
+                        }
+
+                        fileSystem.Directory.Delete(current, false);
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogWarning(ex, "Unable to remove empty qBittorrent job directory {CleanupPath}", current);
+                        break;
+                    }
+                }
+
+                var parent = fileSystem.Path.GetDirectoryName(current);
+
+                if (string.IsNullOrWhiteSpace(parent) || PathsEqual(parent, current))
+                {
+                    break;
+                }
+
+                current = NormalizeFullPath(parent);
+            }
+        }
+    }
+
+    private bool HasReparsePoint(string path, string boundary)
+    {
+        var current = path;
+
+        while (IsSameOrDescendant(current, boundary))
+        {
+            if (fileSystem.Directory.Exists(current))
+            {
+                try
+                {
+                    if (fileSystem.File.GetAttributes(current).HasFlag(FileAttributes.ReparsePoint))
+                    {
+                        return true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, "Unable to inspect qBittorrent cleanup path {CleanupPath}", current);
+                    return true;
+                }
+            }
+
+            if (PathsEqual(current, boundary))
+            {
+                break;
+            }
+
+            var parent = fileSystem.Path.GetDirectoryName(current);
+
+            if (string.IsNullOrWhiteSpace(parent) || PathsEqual(parent, current))
+            {
+                break;
+            }
+
+            current = NormalizeFullPath(parent);
+        }
+
+        return false;
+    }
+
+    private static string NormalizeFullPath(string path)
+    {
+        return Path.TrimEndingDirectorySeparator(Path.GetFullPath(path));
+    }
+
+    private static bool IsSameOrDescendant(string path, string root)
+    {
+        return PathsEqual(path, root) || IsStrictDescendant(path, root);
+    }
+
+    private static bool IsStrictDescendant(string path, string root)
+    {
+        var normalizedPath = NormalizeFullPath(path);
+        var normalizedRoot = NormalizeFullPath(root);
+        var rootPrefix = Path.EndsInDirectorySeparator(normalizedRoot)
+            ? normalizedRoot
+            : normalizedRoot + Path.DirectorySeparatorChar;
+
+        return normalizedPath.StartsWith(rootPrefix, PathComparison);
+    }
+
+    private static bool PathsEqual(string left, string right)
+    {
+        return string.Equals(NormalizeFullPath(left), NormalizeFullPath(right), PathComparison);
+    }
+
+    private static StringComparison PathComparison => OperatingSystem.IsWindows()
+        ? StringComparison.OrdinalIgnoreCase
+        : StringComparison.Ordinal;
+
+    private static StringComparer PathComparer => OperatingSystem.IsWindows()
+        ? StringComparer.OrdinalIgnoreCase
+        : StringComparer.Ordinal;
+
+    private sealed record EmptyDirectoryCleanupPlan(
+        string DownloadRoot,
+        string CategoryRoot,
+        IReadOnlyList<string> CandidateDirectories);
 
     private static Torrent CreateTorrent(string? category)
     {

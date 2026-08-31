@@ -1,9 +1,11 @@
 using System.IO.Abstractions.TestingHelpers;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using AdbClient.Data.Data;
 using AdbClient.Data.Enums;
 using AdbClient.Data.Models.Data;
+using AdbClient.Data.Models.TorrentClient;
 using AdbClient.Service.Services;
 using AdbClient.Service.Wrappers;
 using Microsoft.Data.Sqlite;
@@ -374,6 +376,324 @@ public class QBittorrentCompatibilityTest
         torrentData.Verify(value => value.Delete(torrentId), Times.Once);
     }
 
+    [Fact]
+    public async Task DeleteWithoutFiles_RemovesEmptySingleFileJobDirectoryAndPreservesRoots()
+    {
+        const string jobName = "[One Pace][303] Long Ring Long Land 00 [1080p][E85B9E9D].mkv";
+        var originalDownloadPath = Settings.Get.Paths.DownloadPath;
+        var downloadRoot = GetTestDownloadRoot();
+        var categoryRoot = Path.Combine(downloadRoot, "logpose");
+        var jobDirectory = Path.Combine(categoryRoot, jobName);
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddDirectory(jobDirectory);
+
+        try
+        {
+            Settings.Get.Paths.DownloadPath = downloadRoot;
+            var torrent = CreateDeletionTorrent(jobName, jobName);
+            var torrentData = CreateTorrentDataForDelete(torrent);
+            var compatibility = CreateCompatibility(torrentData: torrentData, fileSystem: fileSystem);
+
+            await compatibility.Delete(torrent.Hash, false);
+
+            Assert.False(fileSystem.Directory.Exists(jobDirectory));
+            Assert.True(fileSystem.Directory.Exists(categoryRoot));
+            Assert.True(fileSystem.Directory.Exists(downloadRoot));
+        }
+        finally
+        {
+            Settings.Get.Paths.DownloadPath = originalDownloadPath;
+        }
+    }
+
+    [Fact]
+    public async Task DeleteWithoutFiles_RemovesNestedEmptyPackDirectoriesBottomUp()
+    {
+        const string packName = "[One Pace][106-114] Whiskey Peak [480p]";
+        const string firstFile = "[One Pace][106-109] Whiskey Peak 01 [480p][AAAAAAAA].mkv";
+        const string secondFile = "[One Pace][110-114] Whiskey Peak 02 [480p][BBBBBBBB].mkv";
+        var originalDownloadPath = Settings.Get.Paths.DownloadPath;
+        var downloadRoot = GetTestDownloadRoot();
+        var categoryRoot = Path.Combine(downloadRoot, "logpose");
+        var jobDirectory = Path.Combine(categoryRoot, packName);
+        var nestedDirectory = Path.Combine(jobDirectory, packName);
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddDirectory(nestedDirectory);
+
+        try
+        {
+            Settings.Get.Paths.DownloadPath = downloadRoot;
+            var torrent = CreateDeletionTorrent(packName, firstFile);
+            torrent.Downloads.Add(new()
+            {
+                DownloadId = Guid.NewGuid(),
+                TorrentId = torrent.TorrentId,
+                FileName = secondFile,
+                Link = "https://example.test/second-file"
+            });
+            torrent.RdFiles = JsonSerializer.Serialize(new[]
+            {
+                new TorrentClientFile { Path = $"{packName}/{firstFile}" },
+                new TorrentClientFile { Path = $"{packName}/{secondFile}" }
+            });
+
+            var torrentData = CreateTorrentDataForDelete(torrent);
+            var compatibility = CreateCompatibility(torrentData: torrentData, fileSystem: fileSystem);
+
+            await compatibility.Delete(torrent.Hash, false);
+
+            Assert.False(fileSystem.Directory.Exists(nestedDirectory));
+            Assert.False(fileSystem.Directory.Exists(jobDirectory));
+            Assert.True(fileSystem.Directory.Exists(categoryRoot));
+            Assert.True(fileSystem.Directory.Exists(downloadRoot));
+        }
+        finally
+        {
+            Settings.Get.Paths.DownloadPath = originalDownloadPath;
+        }
+    }
+
+    [Fact]
+    public async Task DeleteWithoutFiles_PreservesNonEmptyJobDirectory()
+    {
+        const string jobName = "One Pace Episode 01";
+        var originalDownloadPath = Settings.Get.Paths.DownloadPath;
+        var downloadRoot = GetTestDownloadRoot();
+        var jobDirectory = Path.Combine(downloadRoot, "logpose", jobName);
+        var retainedFile = Path.Combine(jobDirectory, "keep.mkv");
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile(retainedFile, new MockFileData("media"));
+
+        try
+        {
+            Settings.Get.Paths.DownloadPath = downloadRoot;
+            var torrent = CreateDeletionTorrent(jobName, "episode.mkv");
+            var torrentData = CreateTorrentDataForDelete(torrent);
+            var compatibility = CreateCompatibility(torrentData: torrentData, fileSystem: fileSystem);
+
+            await compatibility.Delete(torrent.Hash, false);
+
+            Assert.True(fileSystem.Directory.Exists(jobDirectory));
+            Assert.True(fileSystem.File.Exists(retainedFile));
+        }
+        finally
+        {
+            Settings.Get.Paths.DownloadPath = originalDownloadPath;
+        }
+    }
+
+    [Fact]
+    public async Task DeleteWithoutFiles_PreservesDirectoryOutsideCategoryRoot()
+    {
+        var originalDownloadPath = Settings.Get.Paths.DownloadPath;
+        var downloadRoot = GetTestDownloadRoot();
+        var categoryRoot = Path.Combine(downloadRoot, "logpose");
+        var outsideDirectory = Path.Combine(downloadRoot, "outside-job");
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddDirectory(categoryRoot);
+        fileSystem.AddDirectory(outsideDirectory);
+
+        try
+        {
+            Settings.Get.Paths.DownloadPath = downloadRoot;
+            var torrent = CreateDeletionTorrent(Path.Combine("..", "outside-job"), "episode.mkv");
+            var torrentData = CreateTorrentDataForDelete(torrent);
+            var compatibility = CreateCompatibility(torrentData: torrentData, fileSystem: fileSystem);
+
+            await compatibility.Delete(torrent.Hash, false);
+
+            Assert.True(fileSystem.Directory.Exists(outsideDirectory));
+            Assert.True(fileSystem.Directory.Exists(categoryRoot));
+            Assert.True(fileSystem.Directory.Exists(downloadRoot));
+            torrentData.Verify(value => value.Delete(torrent.TorrentId), Times.Once);
+        }
+        finally
+        {
+            Settings.Get.Paths.DownloadPath = originalDownloadPath;
+        }
+    }
+
+    [Fact]
+    public async Task DeleteWithoutFiles_PreservesSiblingDirectoryOutsideJobRoot()
+    {
+        const string jobName = "One Pace Episode 01";
+        const string siblingName = "other-job";
+        const string fileName = "episode.mkv";
+        var originalDownloadPath = Settings.Get.Paths.DownloadPath;
+        var downloadRoot = GetTestDownloadRoot();
+        var categoryRoot = Path.Combine(downloadRoot, "logpose");
+        var jobDirectory = Path.Combine(categoryRoot, jobName);
+        var siblingDirectory = Path.Combine(categoryRoot, siblingName);
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddDirectory(jobDirectory);
+        fileSystem.AddDirectory(siblingDirectory);
+
+        try
+        {
+            Settings.Get.Paths.DownloadPath = downloadRoot;
+            var torrent = CreateDeletionTorrent(jobName, fileName);
+            torrent.RdFiles = JsonSerializer.Serialize(new[]
+            {
+                new TorrentClientFile { Path = $"../{siblingName}/{fileName}" }
+            });
+            var torrentData = CreateTorrentDataForDelete(torrent);
+            var compatibility = CreateCompatibility(torrentData: torrentData, fileSystem: fileSystem);
+
+            await compatibility.Delete(torrent.Hash, false);
+
+            Assert.True(fileSystem.Directory.Exists(jobDirectory));
+            Assert.True(fileSystem.Directory.Exists(siblingDirectory));
+            torrentData.Verify(value => value.Delete(torrent.TorrentId), Times.Once);
+        }
+        finally
+        {
+            Settings.Get.Paths.DownloadPath = originalDownloadPath;
+        }
+    }
+
+    [Theory]
+    [InlineData("job")]
+    [InlineData("category")]
+    [InlineData("download")]
+    public async Task DeleteWithoutFiles_PreservesJobWhenPathContainsReparsePoint(string reparseLocation)
+    {
+        const string jobName = "One Pace Episode 01";
+        var originalDownloadPath = Settings.Get.Paths.DownloadPath;
+        var downloadRoot = GetTestDownloadRoot();
+        var categoryRoot = Path.Combine(downloadRoot, "logpose");
+        var jobDirectory = Path.Combine(categoryRoot, jobName);
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddDirectory(jobDirectory);
+        var reparseDirectory = reparseLocation switch
+        {
+            "job" => jobDirectory,
+            "category" => categoryRoot,
+            "download" => downloadRoot,
+            _ => throw new ArgumentOutOfRangeException(nameof(reparseLocation))
+        };
+        fileSystem.File.SetAttributes(
+            reparseDirectory,
+            fileSystem.File.GetAttributes(reparseDirectory) | FileAttributes.ReparsePoint);
+
+        try
+        {
+            Settings.Get.Paths.DownloadPath = downloadRoot;
+            var torrent = CreateDeletionTorrent(jobName, "episode.mkv");
+            var torrentData = CreateTorrentDataForDelete(torrent);
+            var compatibility = CreateCompatibility(torrentData: torrentData, fileSystem: fileSystem);
+
+            await compatibility.Delete(torrent.Hash, false);
+
+            Assert.True(fileSystem.Directory.Exists(jobDirectory));
+        }
+        finally
+        {
+            Settings.Get.Paths.DownloadPath = originalDownloadPath;
+        }
+    }
+
+    [Fact]
+    public async Task DeleteWithoutFiles_WithoutCategoryPreservesDownloadRoot()
+    {
+        const string jobName = "One Pace Episode 01";
+        var originalDownloadPath = Settings.Get.Paths.DownloadPath;
+        var downloadRoot = GetTestDownloadRoot();
+        var jobDirectory = Path.Combine(downloadRoot, jobName);
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddDirectory(jobDirectory);
+
+        try
+        {
+            Settings.Get.Paths.DownloadPath = downloadRoot;
+            var torrent = CreateDeletionTorrent(jobName, "episode.mkv");
+            torrent.Category = null;
+            var torrentData = CreateTorrentDataForDelete(torrent);
+            var compatibility = CreateCompatibility(torrentData: torrentData, fileSystem: fileSystem);
+
+            await compatibility.Delete(torrent.Hash, false);
+
+            Assert.False(fileSystem.Directory.Exists(jobDirectory));
+            Assert.True(fileSystem.Directory.Exists(downloadRoot));
+            torrentData.Verify(value => value.Delete(torrent.TorrentId), Times.Once);
+        }
+        finally
+        {
+            Settings.Get.Paths.DownloadPath = originalDownloadPath;
+        }
+    }
+
+    [Fact]
+    public async Task DeleteWithoutFiles_RetryIsIdempotentWhenRecordAndDirectoryAreMissing()
+    {
+        const string jobName = "One Pace Episode 01";
+        var originalDownloadPath = Settings.Get.Paths.DownloadPath;
+        var downloadRoot = GetTestDownloadRoot();
+        var jobDirectory = Path.Combine(downloadRoot, "logpose", jobName);
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddDirectory(jobDirectory);
+
+        try
+        {
+            Settings.Get.Paths.DownloadPath = downloadRoot;
+            var torrent = CreateDeletionTorrent(jobName, "episode.mkv");
+            var torrentData = new Mock<ITorrentData>();
+            torrentData.SetupSequence(data => data.GetByHash(torrent.Hash))
+                       .ReturnsAsync(torrent)
+                       .ReturnsAsync((Torrent?)null);
+            torrentData.Setup(data => data.GetById(torrent.TorrentId)).ReturnsAsync(torrent);
+            var compatibility = CreateCompatibility(torrentData: torrentData, fileSystem: fileSystem);
+
+            await compatibility.Delete(torrent.Hash, false);
+            await compatibility.Delete(torrent.Hash, false);
+
+            Assert.False(fileSystem.Directory.Exists(jobDirectory));
+            torrentData.Verify(value => value.Delete(torrent.TorrentId), Times.Once);
+        }
+        finally
+        {
+            Settings.Get.Paths.DownloadPath = originalDownloadPath;
+        }
+    }
+
+    private static Torrent CreateDeletionTorrent(string rdName, string fileName)
+    {
+        var torrentId = Guid.NewGuid();
+
+        return new()
+        {
+            TorrentId = torrentId,
+            Hash = Guid.NewGuid().ToString("N"),
+            Category = "logpose",
+            RdName = rdName,
+            Downloads =
+            [
+                new()
+                {
+                    DownloadId = Guid.NewGuid(),
+                    TorrentId = torrentId,
+                    FileName = fileName,
+                    Link = "https://example.test/file"
+                }
+            ]
+        };
+    }
+
+    private static string GetTestDownloadRoot()
+    {
+        return Path.GetFullPath(Path.Combine(
+            Path.GetTempPath(),
+            "adbclient-qbittorrent-tests",
+            "downloads"));
+    }
+
+    private static Mock<ITorrentData> CreateTorrentDataForDelete(Torrent torrent)
+    {
+        var torrentData = new Mock<ITorrentData>();
+        torrentData.Setup(data => data.GetByHash(torrent.Hash)).ReturnsAsync(torrent);
+        torrentData.Setup(data => data.GetById(torrent.TorrentId)).ReturnsAsync(torrent);
+        return torrentData;
+    }
+
     private static QBittorrentCompatibility CreateCompatibility(
         Mock<ITorrentData>? torrentData = null,
         Mock<IDownloads>? downloads = null,
@@ -403,7 +723,8 @@ public class QBittorrentCompatibilityTest
             null!,
             settings!,
             torrents,
-            httpClientFactory.Object);
+            httpClientFactory.Object,
+            fileSystem);
     }
 
     private sealed class StubHttpMessageHandler(byte[] responseBytes) : HttpMessageHandler

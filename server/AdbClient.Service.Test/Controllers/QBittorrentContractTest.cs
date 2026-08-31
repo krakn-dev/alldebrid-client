@@ -134,6 +134,26 @@ public class QBittorrentContractTest
         Assert.Equal((searchUrl, "logpose"), compatibility.AddedTorrent);
     }
 
+    [Fact]
+    public async Task DeleteRetry_RemainsIdempotentForLogpose()
+    {
+        const string hash = "0123456789abcdef0123456789abcdef01234567";
+        var compatibility = new RecordingCompatibility();
+        await using var app = await StartApplication(compatibility);
+        using var client = CreateClient(app);
+
+        for (var attempt = 0; attempt < 2; attempt++)
+        {
+            using var delete = await client.PostAsync("api/v2/torrents/delete", Form(
+                ("hashes", hash),
+                ("deleteFiles", "false")));
+            Assert.Equal(HttpStatusCode.OK, delete.StatusCode);
+        }
+
+        Assert.Equal(2, compatibility.DeleteCount);
+        Assert.Equal((hash, false), compatibility.DeletedTorrent);
+    }
+
     private static FormUrlEncodedContent Form(params (string Key, string Value)[] values)
     {
         return new(values.Select(value => new KeyValuePair<string, string>(value.Key, value.Value)));
@@ -180,6 +200,7 @@ public class QBittorrentContractTest
         public (string Urls, string? Category)? AddedTorrent { get; private set; }
         public string? RequestedCategory { get; private set; }
         public (string Hashes, bool DeleteFiles)? DeletedTorrent { get; private set; }
+        public int DeleteCount { get; private set; }
 
         public Task<bool> Login(string userName, string password)
         {
@@ -207,6 +228,7 @@ public class QBittorrentContractTest
         public Task Delete(string hashes, bool deleteFiles)
         {
             DeletedTorrent = (hashes, deleteFiles);
+            DeleteCount++;
             return Task.CompletedTask;
         }
     }

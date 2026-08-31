@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Convert legacy One Pace `https://nyaa.si/?q=<info-hash>` metadata links to canonical magnets instead of attempting to parse Nyaa search HTML as a torrent file.
+- Remove empty per-job download directories after Logpose imports media and deletes its qBittorrent record, while preserving category roots, files, non-empty directories, and unsafe paths.
 
 ## [1.2.0](https://github.com/krakn-dev/alldebrid-client/compare/v1.1.0...v1.2.0) (2026-08-31)
 
