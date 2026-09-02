@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { SettingsService } from 'src/app/settings.service';
 import { Setting } from '../models/setting.model';
 import { NgClass, KeyValuePipe } from '@angular/common';
@@ -17,7 +17,6 @@ import { AuthService } from '../auth.service';
 export class SettingsComponent implements OnInit {
   private settingsService = inject(SettingsService);
   private authService = inject(AuthService);
-  private cdr = inject(ChangeDetectorRef);
 
   public activeTab = 0;
 
@@ -58,7 +57,6 @@ export class SettingsComponent implements OnInit {
       }
 
       this.settingMap = new Map(settings.map((s) => [s.key, s]));
-      this.cdr.detectChanges();
     });
   }
 
@@ -72,10 +70,9 @@ export class SettingsComponent implements OnInit {
     const settingsToSave = this.tabs.flatMap((m) => m.settings).filter((m) => m.type !== 'Object');
 
     this.settingsService.update(settingsToSave).subscribe({
-      next: () =>
-        setTimeout(() => {
-          this.saving = false;
-        }, 1000),
+      next: () => {
+        this.saving = false;
+      },
       error: (err) => {
         this.saving = false;
         this.error = err;

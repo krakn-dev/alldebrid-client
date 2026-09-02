@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../auth.service';
 import { Profile } from '../models/profile.model';
@@ -15,7 +15,6 @@ export class NavbarComponent implements OnInit {
   private settingsService = inject(SettingsService);
   private authService = inject(AuthService);
   private router = inject(Router);
-  private cdr = inject(ChangeDetectorRef);
 
   public showMobileMenu = false;
 
@@ -34,13 +33,10 @@ export class NavbarComponent implements OnInit {
   ngOnInit(): void {
     this.settingsService.getProfile().subscribe((result) => {
       this.profile = result;
-
-      this.cdr.detectChanges();
     });
 
     this.settingsService.getVersion().subscribe((result) => {
       this.version = result.version;
-      this.cdr.detectChanges();
     });
   }
 
