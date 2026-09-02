@@ -382,7 +382,7 @@ public class QBittorrentCompatibilityTest
     }
 
     [Fact]
-    public async Task DeleteWithoutFiles_RemovesClientRecord()
+    public async Task DeleteWithoutFiles_ReclassifiesAndPreservesLogposeRecord()
     {
         var torrentId = Guid.NewGuid();
         var torrent = new Torrent
@@ -396,14 +396,21 @@ public class QBittorrentCompatibilityTest
         var torrentData = new Mock<ITorrentData>();
         torrentData.Setup(data => data.GetByHash(torrent.Hash)).ReturnsAsync(torrent);
         torrentData.Setup(data => data.GetById(torrentId)).ReturnsAsync(torrent);
+        torrentData.Setup(data => data.Get()).ReturnsAsync([torrent]);
+        torrentData.Setup(data => data.UpdateCategory(torrentId, "logpose-retained"))
+                   .Callback(() => torrent.Category = "logpose-retained")
+                   .Returns(Task.CompletedTask);
 
         var downloads = new Mock<IDownloads>();
         var compatibility = CreateCompatibility(torrentData, downloads);
 
         await compatibility.Delete(torrent.Hash, false);
 
-        downloads.Verify(value => value.DeleteForTorrent(torrentId), Times.Once);
-        torrentData.Verify(value => value.Delete(torrentId), Times.Once);
+        Assert.Empty(await compatibility.GetTorrents("logpose"));
+        Assert.Equal("logpose-retained", Assert.Single(await compatibility.GetTorrents("all")).Category);
+        torrentData.Verify(value => value.UpdateCategory(torrentId, "logpose-retained"), Times.Once);
+        downloads.Verify(value => value.DeleteForTorrent(It.IsAny<Guid>()), Times.Never);
+        torrentData.Verify(value => value.Delete(It.IsAny<Guid>()), Times.Never);
     }
 
     [Fact]
@@ -560,7 +567,8 @@ public class QBittorrentCompatibilityTest
             Assert.True(fileSystem.Directory.Exists(outsideDirectory));
             Assert.True(fileSystem.Directory.Exists(categoryRoot));
             Assert.True(fileSystem.Directory.Exists(downloadRoot));
-            torrentData.Verify(value => value.Delete(torrent.TorrentId), Times.Once);
+            torrentData.Verify(value => value.UpdateCategory(torrent.TorrentId, "logpose-retained"), Times.Once);
+            torrentData.Verify(value => value.Delete(It.IsAny<Guid>()), Times.Never);
         }
         finally
         {
@@ -598,7 +606,8 @@ public class QBittorrentCompatibilityTest
 
             Assert.True(fileSystem.Directory.Exists(jobDirectory));
             Assert.True(fileSystem.Directory.Exists(siblingDirectory));
-            torrentData.Verify(value => value.Delete(torrent.TorrentId), Times.Once);
+            torrentData.Verify(value => value.UpdateCategory(torrent.TorrentId, "logpose-retained"), Times.Once);
+            torrentData.Verify(value => value.Delete(It.IsAny<Guid>()), Times.Never);
         }
         finally
         {
@@ -648,7 +657,7 @@ public class QBittorrentCompatibilityTest
     }
 
     [Fact]
-    public async Task DeleteWithoutFiles_WithoutCategoryPreservesDownloadRoot()
+    public async Task DeleteWithoutFiles_WithoutLogposeCategoryRemovesRecordAndPreservesDownloadRoot()
     {
         const string jobName = "One Pace Episode 01";
         var originalDownloadPath = Settings.Get.Paths.DownloadPath;
@@ -678,7 +687,7 @@ public class QBittorrentCompatibilityTest
     }
 
     [Fact]
-    public async Task DeleteWithoutFiles_RetryIsIdempotentWhenRecordAndDirectoryAreMissing()
+    public async Task DeleteWithoutFiles_RetryIsIdempotentForRetainedLogposeRecord()
     {
         const string jobName = "One Pace Episode 01";
         var originalDownloadPath = Settings.Get.Paths.DownloadPath;
@@ -692,9 +701,10 @@ public class QBittorrentCompatibilityTest
             Settings.Get.Paths.DownloadPath = downloadRoot;
             var torrent = CreateDeletionTorrent(jobName, "episode.mkv");
             var torrentData = new Mock<ITorrentData>();
-            torrentData.SetupSequence(data => data.GetByHash(torrent.Hash))
-                       .ReturnsAsync(torrent)
-                       .ReturnsAsync((Torrent?)null);
+            torrentData.Setup(data => data.GetByHash(torrent.Hash)).ReturnsAsync(torrent);
+            torrentData.Setup(data => data.UpdateCategory(torrent.TorrentId, "logpose-retained"))
+                       .Callback(() => torrent.Category = "logpose-retained")
+                       .Returns(Task.CompletedTask);
             torrentData.Setup(data => data.GetById(torrent.TorrentId)).ReturnsAsync(torrent);
             var compatibility = CreateCompatibility(torrentData: torrentData, fileSystem: fileSystem);
 
@@ -702,7 +712,8 @@ public class QBittorrentCompatibilityTest
             await compatibility.Delete(torrent.Hash, false);
 
             Assert.False(fileSystem.Directory.Exists(jobDirectory));
-            torrentData.Verify(value => value.Delete(torrent.TorrentId), Times.Once);
+            torrentData.Verify(value => value.UpdateCategory(torrent.TorrentId, "logpose-retained"), Times.Once);
+            torrentData.Verify(value => value.Delete(It.IsAny<Guid>()), Times.Never);
         }
         finally
         {

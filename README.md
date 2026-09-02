@@ -87,7 +87,7 @@ qbittorrent:
   password: "your-alldebrid-client-password"
 ```
 
-Use the AllDebrid Client login when username/password authentication is enabled. When authentication is disabled, the values may be blank. Logpose creates and uses the `logpose` category automatically, and files are downloaded under `<Download path>/logpose`. These jobs use the regular exposed AllDebrid Client download defaults, including file selection, host-download action, filters, retries, finished action, retention, and priority. After importing, Logpose removes the completed client/provider job with `deleteFiles=false`; the imported media remains in the library, and only safe empty staging directories are cleaned up.
+Use the AllDebrid Client login when username/password authentication is enabled. When authentication is disabled, the values may be blank. Logpose creates and uses the `logpose` category automatically, and files are downloaded under `<Download path>/logpose`. These jobs use the regular exposed AllDebrid Client download defaults, including file selection, host-download action, filters, retries, finished action, retention, and priority. After importing, Logpose's `deleteFiles=false` callback moves the job to `logpose-retained`, where it remains in AllDebrid Client and on the provider until the configured retention policy or the user removes it. This takes the completed job out of Logpose's active queue without deleting imported media; only safe empty staging directories are cleaned up.
 
 ---
 

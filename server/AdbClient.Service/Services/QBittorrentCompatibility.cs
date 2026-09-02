@@ -16,6 +16,8 @@ public sealed class QBittorrentCompatibility(
     IFileSystem fileSystem) : IQBittorrentCompatibility
 {
     private const long UnknownEta = 8_640_000;
+    private const string LogposeCategory = "logpose";
+    private const string LogposeRetainedCategory = "logpose-retained";
 
     public async Task<bool> Login(string userName, string password)
     {
@@ -138,10 +140,33 @@ public sealed class QBittorrentCompatibility(
                 continue;
             }
 
-            var cleanupPlan = deleteFiles ? null : CreateEmptyDirectoryCleanupPlan(torrent);
+            var retainLogposeJob = !deleteFiles && IsLogposeManagedCategory(torrent.Category);
+            var cleanupPlan = deleteFiles
+                ? null
+                : CreateEmptyDirectoryCleanupPlan(
+                    torrent,
+                    string.Equals(torrent.Category, LogposeRetainedCategory, StringComparison.OrdinalIgnoreCase)
+                        ? LogposeCategory
+                        : null);
 
-            // qBittorrent removes the client entry in both cases. Logpose passes
-            // deleteFiles=false after importing, so the media stays in the library.
+            if (retainLogposeJob)
+            {
+                // Logpose uses deleteFiles=false after a successful import. Move the job out
+                // of its active category so Logpose can finish, while leaving ADC and the
+                // provider record under the user's configured retention policy.
+                if (!string.Equals(torrent.Category, LogposeRetainedCategory, StringComparison.OrdinalIgnoreCase))
+                {
+                    await torrents.UpdateCategory(hash, LogposeRetainedCategory);
+                }
+
+                if (cleanupPlan != null)
+                {
+                    CleanupEmptyJobDirectories(cleanupPlan);
+                }
+
+                continue;
+            }
+
             await torrents.Delete(torrent.TorrentId, true, true, deleteFiles);
 
             if (cleanupPlan != null)
@@ -151,7 +176,15 @@ public sealed class QBittorrentCompatibility(
         }
     }
 
-    private EmptyDirectoryCleanupPlan? CreateEmptyDirectoryCleanupPlan(Torrent torrent)
+    private static bool IsLogposeManagedCategory(string? category)
+    {
+        return string.Equals(category, LogposeCategory, StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(category, LogposeRetainedCategory, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private EmptyDirectoryCleanupPlan? CreateEmptyDirectoryCleanupPlan(
+        Torrent torrent,
+        string? categoryOverride = null)
     {
         if (string.IsNullOrWhiteSpace(Settings.Get.Paths.DownloadPath) ||
             string.IsNullOrWhiteSpace(torrent.RdName))
@@ -162,9 +195,10 @@ public sealed class QBittorrentCompatibility(
         try
         {
             var downloadRoot = NormalizeFullPath(Settings.Get.Paths.DownloadPath);
-            var categoryRoot = string.IsNullOrWhiteSpace(torrent.Category)
+            var cleanupCategory = categoryOverride ?? torrent.Category;
+            var categoryRoot = string.IsNullOrWhiteSpace(cleanupCategory)
                 ? downloadRoot
-                : NormalizeFullPath(fileSystem.Path.Combine(downloadRoot, torrent.Category));
+                : NormalizeFullPath(fileSystem.Path.Combine(downloadRoot, cleanupCategory));
 
             if (!IsSameOrDescendant(categoryRoot, downloadRoot))
             {
