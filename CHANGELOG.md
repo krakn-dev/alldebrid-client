@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0](https://github.com/krakn-dev/alldebrid-client/compare/v1.2.0...v1.3.0) (2026-09-02)
+
+
+### Features
+
+* **logpose:** add native qBittorrent compatibility ([a3edfbb](https://github.com/krakn-dev/alldebrid-client/commit/a3edfbba3b64b41e8f948198fc9876900e6bfc34))
+
+
+### Bug Fixes
+
+* **logpose:** remove empty imported job directories ([5922ab7](https://github.com/krakn-dev/alldebrid-client/commit/5922ab736aa4fd63f5471e30b1ae5717a1419a25))
+* **logpose:** support legacy Nyaa infohash URLs ([947c2cc](https://github.com/krakn-dev/alldebrid-client/commit/947c2ccc47ce887f8cc5f6079c9c4e86aa79062a))
+* **qbittorrent:** honor download retention settings ([01caafa](https://github.com/krakn-dev/alldebrid-client/commit/01caafa4a3758e82027d6d82d7ec7909b0ef7772))
+
 ## [Unreleased]
 
 ### Added
