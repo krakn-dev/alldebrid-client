@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0](https://github.com/krakn-dev/alldebrid-client/compare/v1.3.1...v1.4.0) (2026-09-02)
+
+
+### Features
+
+* **downloads:** replace the legacy transfer engine ([c8a9294](https://github.com/krakn-dev/alldebrid-client/commit/c8a9294b96480d79da85b848d2b852596e3e6515))
+
+
+### Bug Fixes
+
+* **logpose:** retain completed provider jobs ([5275e36](https://github.com/krakn-dev/alldebrid-client/commit/5275e366c516ff0a16442ba6c65f33e2f91dd6a5))
+* **qbittorrent:** restore post-import cleanup ([afb7cb9](https://github.com/krakn-dev/alldebrid-client/commit/afb7cb908d0cf9067cfd69ce746a5a8858d32679))
+
 ## [1.3.1](https://github.com/krakn-dev/alldebrid-client/compare/v1.3.0...v1.3.1) (2026-09-02)
 
 
