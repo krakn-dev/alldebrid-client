@@ -138,16 +138,20 @@ public sealed class QBittorrentCompatibility(
                 continue;
             }
 
-            var cleanupPlan = deleteFiles ? null : CreateEmptyDirectoryCleanupPlan(torrent);
-
-            // qBittorrent always removes the client entry. Logpose passes deleteFiles=false
-            // after importing, so the local media remains available at its destination.
-            await torrents.Delete(torrent.TorrentId, true, true, deleteFiles);
-
-            if (cleanupPlan != null)
+            if (!deleteFiles)
             {
-                CleanupEmptyJobDirectories(cleanupPlan);
+                // Logpose calls this after importing the media. Preserve the ADC record and
+                // provider torrent so the user's configured retention policy remains in control.
+                var cleanupPlan = CreateEmptyDirectoryCleanupPlan(torrent);
+                if (cleanupPlan != null)
+                {
+                    CleanupEmptyJobDirectories(cleanupPlan);
+                }
+
+                continue;
             }
+
+            await torrents.Delete(torrent.TorrentId, true, true, true);
         }
     }
 
@@ -366,15 +370,17 @@ public sealed class QBittorrentCompatibility(
 
         return new()
         {
-            Category = string.IsNullOrWhiteSpace(category) ? null : category.Trim(),
+            Category = string.IsNullOrWhiteSpace(category) ? defaults.Category : category.Trim(),
             DownloadClient = Data.Enums.DownloadClient.Internal,
-            DownloadAction = TorrentDownloadAction.DownloadAll,
-            HostDownloadAction = TorrentHostDownloadAction.DownloadAll,
-            FinishedAction = TorrentFinishedAction.None,
-            FinishedActionDelay = 0,
-            DownloadMinSize = 0,
-            IncludeRegex = null,
-            ExcludeRegex = null,
+            DownloadAction = defaults.OnlyDownloadAvailableFiles
+                ? TorrentDownloadAction.DownloadAvailableFiles
+                : TorrentDownloadAction.DownloadAll,
+            HostDownloadAction = defaults.HostDownloadAction,
+            FinishedAction = defaults.FinishedAction,
+            FinishedActionDelay = defaults.FinishedActionDelay,
+            DownloadMinSize = defaults.MinFileSize,
+            IncludeRegex = defaults.IncludeRegex,
+            ExcludeRegex = defaults.ExcludeRegex,
             TorrentRetryAttempts = defaults.TorrentRetryAttempts,
             DownloadRetryAttempts = defaults.DownloadRetryAttempts,
             DeleteOnError = defaults.DeleteOnError,
