@@ -382,7 +382,7 @@ public class QBittorrentCompatibilityTest
     }
 
     [Fact]
-    public async Task DeleteWithoutFiles_PreservesClientRecord()
+    public async Task DeleteWithoutFiles_RemovesClientRecord()
     {
         var torrentId = Guid.NewGuid();
         var torrent = new Torrent
@@ -402,8 +402,8 @@ public class QBittorrentCompatibilityTest
 
         await compatibility.Delete(torrent.Hash, false);
 
-        downloads.Verify(value => value.DeleteForTorrent(It.IsAny<Guid>()), Times.Never);
-        torrentData.Verify(value => value.Delete(It.IsAny<Guid>()), Times.Never);
+        downloads.Verify(value => value.DeleteForTorrent(torrentId), Times.Once);
+        torrentData.Verify(value => value.Delete(torrentId), Times.Once);
     }
 
     [Fact]
@@ -560,7 +560,7 @@ public class QBittorrentCompatibilityTest
             Assert.True(fileSystem.Directory.Exists(outsideDirectory));
             Assert.True(fileSystem.Directory.Exists(categoryRoot));
             Assert.True(fileSystem.Directory.Exists(downloadRoot));
-            torrentData.Verify(value => value.Delete(It.IsAny<Guid>()), Times.Never);
+            torrentData.Verify(value => value.Delete(torrent.TorrentId), Times.Once);
         }
         finally
         {
@@ -598,7 +598,7 @@ public class QBittorrentCompatibilityTest
 
             Assert.True(fileSystem.Directory.Exists(jobDirectory));
             Assert.True(fileSystem.Directory.Exists(siblingDirectory));
-            torrentData.Verify(value => value.Delete(It.IsAny<Guid>()), Times.Never);
+            torrentData.Verify(value => value.Delete(torrent.TorrentId), Times.Once);
         }
         finally
         {
@@ -669,7 +669,7 @@ public class QBittorrentCompatibilityTest
 
             Assert.False(fileSystem.Directory.Exists(jobDirectory));
             Assert.True(fileSystem.Directory.Exists(downloadRoot));
-            torrentData.Verify(value => value.Delete(It.IsAny<Guid>()), Times.Never);
+            torrentData.Verify(value => value.Delete(torrent.TorrentId), Times.Once);
         }
         finally
         {
@@ -678,7 +678,7 @@ public class QBittorrentCompatibilityTest
     }
 
     [Fact]
-    public async Task DeleteWithoutFiles_RetryIsIdempotentAndPreservesRecord()
+    public async Task DeleteWithoutFiles_RetryIsIdempotentWhenRecordAndDirectoryAreMissing()
     {
         const string jobName = "One Pace Episode 01";
         var originalDownloadPath = Settings.Get.Paths.DownloadPath;
@@ -692,7 +692,9 @@ public class QBittorrentCompatibilityTest
             Settings.Get.Paths.DownloadPath = downloadRoot;
             var torrent = CreateDeletionTorrent(jobName, "episode.mkv");
             var torrentData = new Mock<ITorrentData>();
-            torrentData.Setup(data => data.GetByHash(torrent.Hash)).ReturnsAsync(torrent);
+            torrentData.SetupSequence(data => data.GetByHash(torrent.Hash))
+                       .ReturnsAsync(torrent)
+                       .ReturnsAsync((Torrent?)null);
             torrentData.Setup(data => data.GetById(torrent.TorrentId)).ReturnsAsync(torrent);
             var compatibility = CreateCompatibility(torrentData: torrentData, fileSystem: fileSystem);
 
@@ -700,7 +702,7 @@ public class QBittorrentCompatibilityTest
             await compatibility.Delete(torrent.Hash, false);
 
             Assert.False(fileSystem.Directory.Exists(jobDirectory));
-            torrentData.Verify(value => value.Delete(It.IsAny<Guid>()), Times.Never);
+            torrentData.Verify(value => value.Delete(torrent.TorrentId), Times.Once);
         }
         finally
         {

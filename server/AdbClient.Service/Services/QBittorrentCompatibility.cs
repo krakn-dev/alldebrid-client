@@ -138,20 +138,16 @@ public sealed class QBittorrentCompatibility(
                 continue;
             }
 
-            if (!deleteFiles)
+            var cleanupPlan = deleteFiles ? null : CreateEmptyDirectoryCleanupPlan(torrent);
+
+            // qBittorrent removes the client entry in both cases. Logpose passes
+            // deleteFiles=false after importing, so the media stays in the library.
+            await torrents.Delete(torrent.TorrentId, true, true, deleteFiles);
+
+            if (cleanupPlan != null)
             {
-                // Logpose calls this after importing the media. Preserve the ADC record and
-                // provider torrent so the user's configured retention policy remains in control.
-                var cleanupPlan = CreateEmptyDirectoryCleanupPlan(torrent);
-                if (cleanupPlan != null)
-                {
-                    CleanupEmptyJobDirectories(cleanupPlan);
-                }
-
-                continue;
+                CleanupEmptyJobDirectories(cleanupPlan);
             }
-
-            await torrents.Delete(torrent.TorrentId, true, true, true);
         }
     }
 
