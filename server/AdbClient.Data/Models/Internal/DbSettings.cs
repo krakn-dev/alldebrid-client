@@ -82,20 +82,12 @@ public class DbSettingsDownloadClient
     public int MaxSpeed { get; set; } = 0;
 
     [DisplayName("Parallel connections per download")]
-    [Description("Parallel threads per file. 0 disables parallelism. Internal downloader only.")]
+    [Description("Connections per file (maximum 16). 0 disables parallelism. Internal downloader only.")]
     public int ParallelCount { get; set; } = 8;
 
-    [DisplayName("Chunk size (MB)")]
-    [Description("Size in MB of each download chunk. 0 = default (50 MB). Smaller values reduce memory usage.")]
-    public int ChunkCount { get; set; } = 0;
-
-    [DisplayName("Buffer size (bytes)")]
-    [Description("Internal read/write buffer size in bytes.")]
-    public int BufferSize { get; set; } = 4 * 1024 * 1024;
-
-    [DisplayName("Log level")]
-    [Description("Verbose download logging for debugging only — generates a lot of output.")]
-    public DownloadClientLogLevel LogLevel { get; set; } = DownloadClientLogLevel.None;
+    [DisplayName("Parallel chunks per download")]
+    [Description("Number of chunks used to split each download (maximum 128). 0 = default (8). Internal downloader only.")]
+    public int ParallelChunkCount { get; set; } = 0;
 
     [DisplayName("Auto-import from provider")]
     [Description("Import torrents added directly to your debrid provider, not via this client.")]

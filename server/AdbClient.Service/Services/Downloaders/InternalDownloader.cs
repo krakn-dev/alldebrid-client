@@ -1,171 +1,420 @@
-﻿using Serilog;
+using System.ComponentModel;
+using System.Net;
+using AdbClient.Data.Models.Internal;
+using AdbClient.Service.Helpers;
+using Downloader;
+using Serilog;
 
 namespace AdbClient.Service.Services.Downloaders;
 
 public class InternalDownloader : IDownloader
 {
-    public event EventHandler<DownloadCompleteEventArgs>? DownloadComplete;
-    public event EventHandler<DownloadProgressEventArgs>? DownloadProgress;
+    internal const long MaximumMemoryBufferBytes = 10L * 1024 * 1024;
+    internal const int MaximumParallelConnections = 16;
+    internal const int MaximumChunkCount = 128;
 
-    private readonly DownloaderNET.Downloader _downloadService;
-    private readonly DownloaderNET.Settings _downloadConfiguration;
+    private const int BufferBlockSizeBytes = 64 * 1024;
+    private const int DefaultChunkCount = 8;
+    private const int BlockTimeoutMilliseconds = 5000;
+    private const int HttpClientTimeoutMilliseconds = 30000;
+    private const int LifecycleReady = 0;
+    private const int LifecycleRunning = 1;
+    private const int LifecycleCancelledBeforeStart = 2;
 
+    private readonly CancellationTokenSource _downloadCancellation = new();
+    private readonly Lock _downloadCancellationLock = new();
+    private readonly DownloadConfiguration _downloadConfiguration;
+    private readonly string _downloadId = Guid.NewGuid().ToString();
+    private readonly DownloadService _downloadService;
     private readonly string _filePath;
+    private readonly Lock _lifecycleLock = new();
+    private readonly ILogger _logger;
+    private readonly CancellationTokenSource _settingsCancellation = new();
+    private readonly bool _updateDynamicSettings;
     private readonly string _uri;
 
-    private readonly ILogger _logger;
-
-    private readonly CancellationTokenSource _cancellationToken = new();
-
-    private bool _finished;
+    private Task? _downloadTask;
+    private Task? _settingsTask;
+    private int _disposed;
+    private int _lifecycleState;
+    private int _terminalSignaled;
+    private int _terminalSucceeded;
 
     public InternalDownloader(string uri, string filePath)
+        : this(
+            uri,
+            filePath,
+            CreateDownloadConfiguration(
+                Settings.Get.DownloadClient,
+                TorrentRunner.ActiveDownloadClients.Count),
+            true)
+    {
+    }
+
+    internal InternalDownloader(
+        string uri,
+        string filePath,
+        DownloadConfiguration downloadConfiguration)
+        : this(uri, filePath, downloadConfiguration, false)
+    {
+    }
+
+    private InternalDownloader(
+        string uri,
+        string filePath,
+        DownloadConfiguration downloadConfiguration,
+        bool updateDynamicSettings)
     {
         _logger = Log.ForContext<InternalDownloader>();
-        _logger.Debug($"Instantiated new Internal Downloader for URI {uri} to filePath {filePath}");
+        _logger.Debug("Instantiated new Internal Downloader for URI {Uri} to filePath {FilePath}", uri, filePath);
 
         _uri = uri;
         _filePath = filePath;
+        _downloadConfiguration = downloadConfiguration;
+        _updateDynamicSettings = updateDynamicSettings;
+        _downloadService = new(_downloadConfiguration);
 
-        _downloadConfiguration = new();
-
-        SetSettings();
-
-        _downloadService = new(_uri, _filePath, _downloadConfiguration);
-
-        _downloadService.OnLog += (message, level) =>
-        {
-            if (message.Exception != null || level == 4)
-            {
-                _logger.Error(message.Exception, message.Message);
-            }
-
-            switch (level)
-            {
-                case 0:
-                    _logger.Verbose(message.Message);
-                    break;
-                case 1:
-                    _logger.Debug(message.Message);
-                    break;
-                case 2:
-                    _logger.Information(message.Message);
-                    break;
-                case 3:
-                    _logger.Warning(message.Message);
-                    break;
-            }
-        };
-
-        _downloadService.OnProgress += (chunks, _) =>
-        {
-            if (DownloadProgress == null)
-            {
-                return;
-            }
-
-            DownloadProgress.Invoke(this,
-                                     new()
-                                     {
-                                         Speed = (long)chunks.Where(m => m.IsActive).Sum(m => m.Speed),
-                                         BytesDone = chunks.Sum(m => m.DownloadBytes),
-                                         BytesTotal = chunks.Sum(m => m.LengthBytes)
-                                     });
-        };
-
-        _downloadService.OnComplete += (_, error) =>
-        {
-            DownloadComplete?.Invoke(this,
-                                     new()
-                                     {
-                                         Error = error?.Message
-                                     });
-
-            _finished = true;
-
-            return Task.CompletedTask;
-        };
+        _downloadService.DownloadProgressChanged += OnDownloadProgressChanged;
+        _downloadService.DownloadFileCompleted += OnDownloadFileCompleted;
     }
 
-    public async Task<string> Download()
+    public event EventHandler<DownloadCompleteEventArgs>? DownloadComplete;
+    public event EventHandler<DownloadProgressEventArgs>? DownloadProgress;
+
+    public Task<string> Download()
     {
-        _logger.Debug($"Starting download of {_uri}, writing to path: {_filePath}");
+        lock (_lifecycleLock)
+        {
+            if (_lifecycleState != LifecycleReady || Volatile.Read(ref _terminalSignaled) != 0)
+            {
+                return Task.FromResult(_downloadId);
+            }
 
-        await _downloadService.Download(_cancellationToken.Token);
-        _ = Task.Run(StartTimer);
+            _lifecycleState = LifecycleRunning;
+            _logger.Debug("Starting download of {Uri}, writing to path: {FilePath}", _uri, _filePath);
 
-        return Guid.NewGuid().ToString();
+            _settingsTask = _updateDynamicSettings ? StartSettingsTimer() : Task.CompletedTask;
+            _downloadTask = RunDownloadAsync();
+        }
+
+        return Task.FromResult(_downloadId);
     }
 
-    public Task Cancel()
+    public async Task Cancel()
     {
-        _logger.Debug($"Cancelling download {_uri}");
+        _logger.Debug("Cancelling download {Uri}", _uri);
 
-        _cancellationToken.Cancel(false);
+        Task? downloadTask;
+        var cancelBeforeStart = false;
+        var cancelRunning = false;
 
-        return Task.CompletedTask;
+        lock (_lifecycleLock)
+        {
+            downloadTask = _downloadTask;
+
+            if (Volatile.Read(ref _terminalSignaled) == 0)
+            {
+                if (_lifecycleState == LifecycleReady)
+                {
+                    _lifecycleState = LifecycleCancelledBeforeStart;
+                    cancelBeforeStart = true;
+                }
+                else if (_lifecycleState == LifecycleRunning)
+                {
+                    cancelRunning = true;
+                }
+            }
+        }
+
+        if (cancelBeforeStart)
+        {
+            CancelDownloadSource();
+            CompleteOnce("The download was cancelled");
+            await DisposeTerminalResourcesAsync().ConfigureAwait(false);
+            return;
+        }
+
+        if (!cancelRunning)
+        {
+            if (downloadTask != null)
+            {
+                await downloadTask.ConfigureAwait(false);
+            }
+
+            return;
+        }
+
+        CancelDownloadSource();
+
+        try
+        {
+            await _downloadService.CancelTaskAsync().ConfigureAwait(false);
+        }
+        catch (ObjectDisposedException) when (Volatile.Read(ref _terminalSignaled) != 0)
+        {
+        }
+        catch (Exception ex)
+        {
+            _logger.Warning(ex, "Unable to wait for downloader cancellation for {Uri}", _uri);
+        }
+
+        if (downloadTask != null)
+        {
+            await downloadTask.ConfigureAwait(false);
+        }
     }
 
     public Task Pause()
     {
+        if (Volatile.Read(ref _lifecycleState) == LifecycleRunning && Volatile.Read(ref _terminalSignaled) == 0)
+        {
+            _logger.Debug("Pausing download {Uri}", _uri);
+            _downloadService.Pause();
+        }
+
         return Task.CompletedTask;
     }
 
     public Task Resume()
     {
+        if (Volatile.Read(ref _lifecycleState) == LifecycleRunning && Volatile.Read(ref _terminalSignaled) == 0)
+        {
+            _logger.Debug("Resuming download {Uri}", _uri);
+            _downloadService.Resume();
+        }
+
         return Task.CompletedTask;
     }
 
-    private void SetSettings()
+    internal static DownloadConfiguration CreateDownloadConfiguration(
+        DbSettingsDownloadClient settings,
+        int activeDownloadCount)
     {
-        var settingBufferSize = Settings.Get.DownloadClient.BufferSize;
-
-        if (settingBufferSize <= 4096)
+        var chunkCount = Math.Clamp(
+            settings.ParallelChunkCount > 0 ? settings.ParallelChunkCount : DefaultChunkCount,
+            1,
+            MaximumChunkCount);
+        var parallelCount = Math.Min(
+            Math.Clamp(settings.ParallelCount, 1, MaximumParallelConnections),
+            chunkCount);
+        var configuration = new DownloadConfiguration
         {
-            settingBufferSize = 4096;
-        }
+            MaxTryAgainOnFailure = 5,
+            RangeDownload = false,
+            ClearPackageOnCompletionWithFailure = true,
+            CheckDiskSizeBeforeDownload = false,
+            MaximumMemoryBufferBytes = MaximumMemoryBufferBytes,
+            BufferBlockSize = BufferBlockSizeBytes,
+            BlockTimeout = BlockTimeoutMilliseconds,
+            HttpClientTimeout = HttpClientTimeoutMilliseconds,
+            ParallelDownload = parallelCount > 1,
+            ParallelCount = parallelCount,
+            ChunkCount = chunkCount,
+            RequestConfiguration =
+            {
+                Accept = "*/*",
+                UserAgent = "alldebrid-client",
+                ProtocolVersion = HttpVersion.Version11,
+                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                KeepAlive = true,
+                UseDefaultCredentials = false
+            }
+        };
 
-        var settingDownloadParallelCount = Settings.Get.DownloadClient.ParallelCount;
+        ApplySpeedLimit(configuration, settings.MaxSpeed, activeDownloadCount);
 
-        if (settingDownloadParallelCount <= 0)
-        {
-            settingDownloadParallelCount = 1;
-        }
-
-        var settingDownloadMaxSpeed = Settings.Get.DownloadClient.MaxSpeed;
-
-        if (settingDownloadMaxSpeed <= 0)
-        {
-            settingDownloadMaxSpeed = 0;
-        }
-        settingDownloadMaxSpeed /= Math.Max(TorrentRunner.ActiveDownloadClients.Count, 1);
-        settingDownloadMaxSpeed = settingDownloadMaxSpeed * 1024 * 1024;
-
-        var settingChunkSize = Settings.Get.DownloadClient.ChunkCount > 0
-            ? Settings.Get.DownloadClient.ChunkCount * 1024 * 1024
-            : 50 * 1024 * 1024;
-
-        _downloadConfiguration.BufferSize = settingBufferSize;
-        _downloadConfiguration.LogLevel = (int)Settings.Get.DownloadClient.LogLevel;
-        _downloadConfiguration.Parallel = settingDownloadParallelCount;
-        _downloadConfiguration.MaximumBytesPerSecond = settingDownloadMaxSpeed;
-        _downloadConfiguration.ChunkSize = settingChunkSize;
-        _downloadConfiguration.Timeout = 5000;
-        _downloadConfiguration.RetryCount = 5;
+        return configuration;
     }
 
-    private async Task StartTimer()
+    internal static void ApplySpeedLimit(
+        DownloadConfiguration configuration,
+        int maximumMegabytesPerSecond,
+        int activeDownloadCount)
+    {
+        var maximumBytesPerSecond = Math.Max(maximumMegabytesPerSecond, 0) * 1024L * 1024L;
+
+        if (maximumBytesPerSecond > 0)
+        {
+            maximumBytesPerSecond /= Math.Max(activeDownloadCount, 1);
+        }
+
+        configuration.MaximumBytesPerSecond = maximumBytesPerSecond;
+    }
+
+    private void OnDownloadProgressChanged(object? sender, Downloader.DownloadProgressChangedEventArgs args)
+    {
+        DownloadProgress?.Invoke(this,
+                                 new()
+                                 {
+                                     Speed = (long)args.BytesPerSecondSpeed,
+                                     BytesDone = args.ReceivedBytesSize,
+                                     BytesTotal = args.TotalBytesToReceive
+                                 });
+    }
+
+    private void OnDownloadFileCompleted(object? sender, AsyncCompletedEventArgs args)
+    {
+        string? error = null;
+
+        if (args.Cancelled)
+        {
+            error = "The download was cancelled";
+        }
+        else if (args.Error != null)
+        {
+            error = args.Error.Message;
+        }
+
+        CompleteOnce(error);
+    }
+
+    private async Task RunDownloadAsync()
+    {
+        try
+        {
+            await _downloadService.DownloadFileTaskAsync(
+                _uri,
+                _filePath,
+                _downloadCancellation.Token).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (_downloadCancellation.IsCancellationRequested)
+        {
+            CompleteOnce("The download was cancelled");
+        }
+        catch (Exception ex)
+        {
+            CompleteOnce(ex.Message);
+        }
+        finally
+        {
+            if (Volatile.Read(ref _terminalSignaled) == 0)
+            {
+                var error = _downloadService.Status == DownloadStatus.Completed
+                    ? null
+                    : $"The download ended without a completion signal (status: {_downloadService.Status}).";
+                CompleteOnce(error);
+            }
+
+            await DisposeTerminalResourcesAsync().ConfigureAwait(false);
+        }
+    }
+
+    private void CompleteOnce(string? error)
+    {
+        if (Interlocked.CompareExchange(ref _terminalSignaled, 1, 0) != 0)
+        {
+            return;
+        }
+
+        if (error == null)
+        {
+            Volatile.Write(ref _terminalSucceeded, 1);
+        }
+
+        _settingsCancellation.Cancel(false);
+
+        try
+        {
+            DownloadComplete?.Invoke(this, new() { Error = error });
+        }
+        catch (Exception ex)
+        {
+            _logger.Error(ex, "A download completion subscriber failed for {Uri}", _uri);
+        }
+    }
+
+    private void CancelDownloadSource()
+    {
+        lock (_downloadCancellationLock)
+        {
+            if (Volatile.Read(ref _disposed) == 0)
+            {
+                _downloadCancellation.Cancel(false);
+            }
+        }
+    }
+
+    private async Task DisposeTerminalResourcesAsync()
+    {
+        if (Interlocked.CompareExchange(ref _disposed, 1, 0) != 0)
+        {
+            return;
+        }
+
+        _settingsCancellation.Cancel(false);
+
+        try
+        {
+            if (_settingsTask != null)
+            {
+                try
+                {
+                    await _settingsTask.ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Warning(ex, "Unable to finish the download settings timer for {Uri}", _uri);
+                }
+            }
+
+            _downloadService.DownloadProgressChanged -= OnDownloadProgressChanged;
+            _downloadService.DownloadFileCompleted -= OnDownloadFileCompleted;
+
+            try
+            {
+                await _downloadService.DisposeAsync().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.Warning(ex, "Unable to dispose downloader resources for {Uri}", _uri);
+            }
+
+            if (Volatile.Read(ref _terminalSucceeded) == 0)
+            {
+                await DeleteTemporaryFile().ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            lock (_downloadCancellationLock)
+            {
+                _downloadCancellation.Dispose();
+            }
+
+            _settingsCancellation.Dispose();
+        }
+    }
+
+    private async Task DeleteTemporaryFile()
+    {
+        var temporaryFilePath = _filePath + _downloadConfiguration.DownloadFileExtension;
+
+        try
+        {
+            await FileHelper.Delete(temporaryFilePath).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.Warning(ex, "Unable to remove incomplete download file {FilePath}", temporaryFilePath);
+        }
+    }
+
+    private async Task StartSettingsTimer()
     {
         using var timer = new PeriodicTimer(TimeSpan.FromSeconds(5));
 
-        while (await timer.WaitForNextTickAsync())
+        try
         {
-            if (_finished)
+            while (await timer.WaitForNextTickAsync(_settingsCancellation.Token).ConfigureAwait(false))
             {
-                return;
+                ApplySpeedLimit(
+                    _downloadConfiguration,
+                    Settings.Get.DownloadClient.MaxSpeed,
+                    TorrentRunner.ActiveDownloadClients.Count);
             }
-
-            SetSettings();
+        }
+        catch (OperationCanceledException) when (_settingsCancellation.IsCancellationRequested)
+        {
         }
     }
 }
