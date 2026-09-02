@@ -19,18 +19,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * **logpose:** support legacy Nyaa infohash URLs ([947c2cc](https://github.com/krakn-dev/alldebrid-client/commit/947c2ccc47ce887f8cc5f6079c9c4e86aa79062a))
 * **qbittorrent:** honor download retention settings ([01caafa](https://github.com/krakn-dev/alldebrid-client/commit/01caafa4a3758e82027d6d82d7ec7909b0ef7772))
 
-## [Unreleased]
-
-### Added
-
-- Native Logpose support through the exact qBittorrent Web API operations it uses: SID login, version probing, category creation, magnet and torrent-file adds, progress/path reporting, and post-import staging cleanup.
-
-### Fixed
-
-- Convert legacy One Pace `https://nyaa.si/?q=<info-hash>` metadata links to canonical magnets instead of attempting to parse Nyaa search HTML as a torrent file.
-- Apply the regular exposed download defaults to qBittorrent-compatible jobs instead of hidden Logpose-specific lifecycle, filtering, and retention overrides.
-- Treat Logpose's `deleteFiles=false` callback as non-destructive: preserve the AllDebrid Client and provider records while removing only safe empty per-job staging directories.
-
 ## [1.2.0](https://github.com/krakn-dev/alldebrid-client/compare/v1.1.0...v1.2.0) (2026-08-31)
 
 
