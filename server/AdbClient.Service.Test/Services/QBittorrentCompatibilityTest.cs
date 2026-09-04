@@ -121,6 +121,104 @@ public class QBittorrentCompatibilityTest
         Assert.Equal(0, info.Eta);
     }
 
+    [Theory]
+    [InlineData("release.zip")]
+    [InlineData("release.RAR")]
+    public async Task GetTorrents_ReportsJobDirectoryForSingleArchive(string fileName)
+    {
+        var originalMappedPath = Settings.Get.Paths.MappedPath;
+
+        try
+        {
+            Settings.Get.Paths.MappedPath = "/media/downloads";
+            var torrent = new Torrent
+            {
+                TorrentId = Guid.NewGuid(),
+                Hash = "0123456789abcdef0123456789abcdef01234567",
+                Category = "radarr",
+                RdName = "Movie.Release",
+                RdStatus = TorrentStatus.Finished,
+                Completed = DateTimeOffset.UtcNow,
+                Downloads =
+                [
+                    new()
+                    {
+                        FileName = fileName,
+                        Link = $"https://example.test/{fileName}",
+                        UnpackingFinished = DateTimeOffset.UtcNow,
+                        Completed = DateTimeOffset.UtcNow
+                    }
+                ]
+            };
+            var torrentData = new Mock<ITorrentData>();
+            torrentData.Setup(data => data.Get()).ReturnsAsync([torrent]);
+            var compatibility = CreateCompatibility(torrentData: torrentData);
+
+            var info = Assert.Single(await compatibility.GetTorrents("radarr"));
+
+            Assert.Equal("/media/downloads/radarr/Movie.Release", info.ContentPath);
+        }
+        finally
+        {
+            Settings.Get.Paths.MappedPath = originalMappedPath;
+        }
+    }
+
+    [Fact]
+    public async Task GetTorrents_FallsBackToJobDirectoryWhenSingleDownloadHasNoFileName()
+    {
+        var originalMappedPath = Settings.Get.Paths.MappedPath;
+
+        try
+        {
+            Settings.Get.Paths.MappedPath = "/media/downloads";
+            var torrent = new Torrent
+            {
+                TorrentId = Guid.NewGuid(),
+                Hash = "0123456789abcdef0123456789abcdef01234567",
+                Category = "sonarr",
+                RdName = "Series.Release",
+                Downloads =
+                [
+                    new() { Link = "https://example.test/" }
+                ]
+            };
+            var torrentData = new Mock<ITorrentData>();
+            torrentData.Setup(data => data.Get()).ReturnsAsync([torrent]);
+            var compatibility = CreateCompatibility(torrentData: torrentData);
+
+            var info = Assert.Single(await compatibility.GetTorrents("sonarr"));
+
+            Assert.Equal("/media/downloads/sonarr/Series.Release", info.ContentPath);
+        }
+        finally
+        {
+            Settings.Get.Paths.MappedPath = originalMappedPath;
+        }
+    }
+
+    [Fact]
+    public async Task GetTorrents_KeepsProviderUploadingInDownloadPhase()
+    {
+        var torrent = new Torrent
+        {
+            TorrentId = Guid.NewGuid(),
+            Hash = "0123456789abcdef0123456789abcdef01234567",
+            Category = "radarr",
+            RdName = "Movie",
+            RdProgress = 100,
+            RdStatus = TorrentStatus.Uploading
+        };
+        var torrentData = new Mock<ITorrentData>();
+        torrentData.Setup(data => data.Get()).ReturnsAsync([torrent]);
+        var compatibility = CreateCompatibility(torrentData: torrentData);
+
+        var info = Assert.Single(await compatibility.GetTorrents("radarr"));
+
+        Assert.Equal("downloading", info.State);
+        Assert.True(info.Progress < 1d);
+    }
+
     [Fact]
     public async Task AddMagnet_UsesExposedDownloadDefaults()
     {
@@ -195,6 +293,28 @@ public class QBittorrentCompatibilityTest
         {
             Settings.Get.DownloadClient.Default = originalDefaults;
         }
+    }
+
+    [Fact]
+    public async Task AddMagnet_RejectsInvalidMetadataBeforeEnrichment()
+    {
+        const string invalidMagnet = "magnet:?xt=urn:btih:not-a-valid-hash";
+        var torrentData = new Mock<ITorrentData>();
+        var enricher = new Mock<IEnricher>();
+        var compatibility = CreateCompatibility(torrentData: torrentData, enricher: enricher);
+
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            compatibility.Add(invalidMagnet, "radarr"));
+
+        Assert.Equal("Invalid magnet link.", exception.Message);
+        enricher.Verify(value => value.EnrichMagnetLink(It.IsAny<string>()), Times.Never);
+        torrentData.Verify(data => data.Add(
+            It.IsAny<string?>(),
+            It.IsAny<string>(),
+            It.IsAny<string?>(),
+            It.IsAny<bool>(),
+            It.IsAny<DownloadClientKind>(),
+            It.IsAny<Torrent>()), Times.Never);
     }
 
     [Theory]
@@ -294,6 +414,196 @@ public class QBittorrentCompatibilityTest
     }
 
     [Fact]
+    public async Task AddRetry_RejectsAssigningCategoryToExistingUncategorizedTorrent()
+    {
+        const string hash = "0123456789abcdef0123456789abcdef01234567";
+        const string magnet = $"magnet:?xt=urn:btih:{hash}";
+        var existingTorrent = new Torrent
+        {
+            TorrentId = Guid.NewGuid(),
+            Hash = hash,
+            RdStatus = TorrentStatus.Queued
+        };
+        var torrentData = new Mock<ITorrentData>();
+        torrentData.Setup(data => data.GetByHash(It.Is<string>(value =>
+                       value.Equals(hash, StringComparison.OrdinalIgnoreCase))))
+                   .ReturnsAsync(existingTorrent);
+        var enricher = new Mock<IEnricher>();
+        enricher.Setup(value => value.EnrichMagnetLink(magnet)).ReturnsAsync(magnet);
+        var compatibility = CreateCompatibility(torrentData: torrentData, enricher: enricher);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            compatibility.Add(magnet, "radarr"));
+
+        Assert.Contains("different category", exception.Message, StringComparison.Ordinal);
+        torrentData.Verify(data => data.UpdateCategory(It.IsAny<Guid>(), It.IsAny<string?>()), Times.Never);
+        torrentData.Verify(data => data.Add(
+            It.IsAny<string?>(),
+            It.IsAny<string>(),
+            It.IsAny<string?>(),
+            It.IsAny<bool>(),
+            It.IsAny<DownloadClientKind>(),
+            It.IsAny<Torrent>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AddRetry_RejectsExistingTorrentInDifferentCategory()
+    {
+        const string hash = "0123456789abcdef0123456789abcdef01234567";
+        const string magnet = $"magnet:?xt=urn:btih:{hash}";
+        var existingTorrent = new Torrent
+        {
+            TorrentId = Guid.NewGuid(),
+            Hash = hash,
+            Category = "sonarr",
+            RdStatus = TorrentStatus.Queued
+        };
+        var torrentData = new Mock<ITorrentData>();
+        torrentData.Setup(data => data.GetByHash(It.Is<string>(value =>
+                       value.Equals(hash, StringComparison.OrdinalIgnoreCase))))
+                   .ReturnsAsync(existingTorrent);
+        var enricher = new Mock<IEnricher>();
+        enricher.Setup(value => value.EnrichMagnetLink(magnet)).ReturnsAsync(magnet);
+        var compatibility = CreateCompatibility(torrentData: torrentData, enricher: enricher);
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            compatibility.Add(magnet, "radarr"));
+
+        Assert.Contains("different category", exception.Message, StringComparison.Ordinal);
+        torrentData.Verify(data => data.UpdateCategory(It.IsAny<Guid>(), It.IsAny<string?>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AddRetry_WithoutCategoryUsesExistingCategorizedTorrent()
+    {
+        const string hash = "0123456789abcdef0123456789abcdef01234567";
+        const string magnet = $"magnet:?xt=urn:btih:{hash}";
+        var originalDefaultCategory = Settings.Get.DownloadClient.Default.Category;
+        var existingTorrent = new Torrent
+        {
+            TorrentId = Guid.NewGuid(),
+            Hash = hash,
+            Category = "radarr",
+            RdStatus = TorrentStatus.Queued
+        };
+        var torrentData = new Mock<ITorrentData>();
+        torrentData.Setup(data => data.GetByHash(It.Is<string>(value =>
+                       value.Equals(hash, StringComparison.OrdinalIgnoreCase))))
+                   .ReturnsAsync(existingTorrent);
+        var enricher = new Mock<IEnricher>();
+        enricher.Setup(value => value.EnrichMagnetLink(magnet)).ReturnsAsync(magnet);
+        var compatibility = CreateCompatibility(torrentData: torrentData, enricher: enricher);
+
+        try
+        {
+            Settings.Get.DownloadClient.Default.Category = null;
+
+            await compatibility.Add(magnet, null);
+        }
+        finally
+        {
+            Settings.Get.DownloadClient.Default.Category = originalDefaultCategory;
+        }
+
+        torrentData.Verify(data => data.UpdateCategory(It.IsAny<Guid>(), It.IsAny<string?>()), Times.Never);
+        torrentData.Verify(data => data.Add(
+            It.IsAny<string?>(),
+            It.IsAny<string>(),
+            It.IsAny<string?>(),
+            It.IsAny<bool>(),
+            It.IsAny<DownloadClientKind>(),
+            It.IsAny<Torrent>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ConcurrentIdenticalAdds_CreateOneTorrentRecord()
+    {
+        const string hash = "0123456789abcdef0123456789abcdef01234567";
+        const string magnet = $"magnet:?xt=urn:btih:{hash}";
+        Torrent? storedTorrent = null;
+        var torrentData = new Mock<ITorrentData>();
+        torrentData.Setup(data => data.GetByHash(It.Is<string>(value =>
+                       value.Equals(hash, StringComparison.OrdinalIgnoreCase))))
+                   .ReturnsAsync(() => storedTorrent);
+        torrentData.Setup(data => data.Add(
+                       It.IsAny<string?>(),
+                       It.Is<string>(value => value.Equals(hash, StringComparison.OrdinalIgnoreCase)),
+                       It.IsAny<string?>(),
+                       false,
+                       DownloadClientKind.Internal,
+                       It.IsAny<Torrent>()))
+                   .Returns(async (string? _, string _, string? _, bool _, DownloadClientKind _, Torrent torrent) =>
+                   {
+                       await Task.Delay(25);
+                       torrent.Hash = hash;
+                       storedTorrent = torrent;
+                       return torrent;
+                   });
+        var enricher = new Mock<IEnricher>();
+        enricher.Setup(value => value.EnrichMagnetLink(magnet)).ReturnsAsync(magnet);
+        var compatibility = CreateCompatibility(torrentData: torrentData, enricher: enricher);
+
+        await Task.WhenAll(
+            compatibility.Add(magnet, "radarr"),
+            compatibility.Add(magnet, "radarr"));
+
+        torrentData.Verify(data => data.Add(
+            It.IsAny<string?>(),
+            It.Is<string>(value => value.Equals(hash, StringComparison.OrdinalIgnoreCase)),
+            It.IsAny<string?>(),
+            false,
+            DownloadClientKind.Internal,
+            It.IsAny<Torrent>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ConcurrentIdenticalAddsWithDifferentCategories_CreateOneCategorizedRecordAndRejectConflict()
+    {
+        const string hash = "0123456789abcdef0123456789abcdef01234567";
+        const string magnet = $"magnet:?xt=urn:btih:{hash}";
+        Torrent? storedTorrent = null;
+        var torrentData = new Mock<ITorrentData>();
+        torrentData.Setup(data => data.GetByHash(It.Is<string>(value =>
+                       value.Equals(hash, StringComparison.OrdinalIgnoreCase))))
+                   .ReturnsAsync(() => storedTorrent);
+        torrentData.Setup(data => data.Add(
+                       It.IsAny<string?>(),
+                       It.Is<string>(value => value.Equals(hash, StringComparison.OrdinalIgnoreCase)),
+                       It.IsAny<string?>(),
+                       false,
+                       DownloadClientKind.Internal,
+                       It.IsAny<Torrent>()))
+                   .Returns(async (string? _, string _, string? _, bool _, DownloadClientKind _, Torrent torrent) =>
+                   {
+                       await Task.Delay(25);
+                       torrent.Hash = hash;
+                       storedTorrent = torrent;
+                       return torrent;
+                   });
+        var enricher = new Mock<IEnricher>();
+        enricher.Setup(value => value.EnrichMagnetLink(magnet)).ReturnsAsync(magnet);
+        var compatibility = CreateCompatibility(torrentData: torrentData, enricher: enricher);
+
+        var outcomes = await Task.WhenAll(
+            Record.ExceptionAsync(() => compatibility.Add(magnet, "radarr")),
+            Record.ExceptionAsync(() => compatibility.Add(magnet, "sonarr")));
+
+        Assert.Equal(1, outcomes.Count(exception => exception == null));
+        var conflict = Assert.Single(outcomes.OfType<InvalidOperationException>());
+        Assert.Contains("different category", conflict.Message, StringComparison.Ordinal);
+        Assert.NotNull(storedTorrent);
+        Assert.Contains(storedTorrent.Category, new[] { "radarr", "sonarr" });
+        torrentData.Verify(data => data.Add(
+            It.IsAny<string?>(),
+            It.Is<string>(value => value.Equals(hash, StringComparison.OrdinalIgnoreCase)),
+            It.IsAny<string?>(),
+            false,
+            DownloadClientKind.Internal,
+            It.Is<Torrent>(torrent => torrent.Category == "radarr" || torrent.Category == "sonarr")), Times.Once);
+        torrentData.Verify(data => data.UpdateCategory(It.IsAny<Guid>(), It.IsAny<string?>()), Times.Never);
+    }
+
+    [Fact]
     public async Task AddTorrentUrlOnOtherHost_DownloadsAndAddsTorrentFile()
     {
         const string torrentUrl = "https://example.test/?q=a031cac6baf81b804c4d034dfaef0e5e4a671145";
@@ -341,7 +651,297 @@ public class QBittorrentCompatibilityTest
     }
 
     [Fact]
-    public async Task CreateCategory_PersistsNewCategoryWithoutCaseDuplicates()
+    public async Task AddTorrentFile_UsesDownloadDefaults()
+    {
+        var torrentBytes = Encoding.Latin1.GetBytes(
+            "d4:infod6:lengthi1e4:name11:episode.mkv12:piece lengthi16384e6:pieces20:00000000000000000000ee");
+        var originalDefaults = Settings.Get.DownloadClient.Default;
+        Settings.Get.DownloadClient.Default = new DbSettingsDefaultsWithCategory
+        {
+            Category = "default",
+            OnlyDownloadAvailableFiles = false,
+            HostDownloadAction = TorrentHostDownloadAction.DownloadAll,
+            FinishedAction = TorrentFinishedAction.None,
+            FinishedActionDelay = 4,
+            MinFileSize = 512,
+            TorrentRetryAttempts = 2,
+            DownloadRetryAttempts = 3,
+            Priority = 9
+        };
+
+        try
+        {
+            var torrentData = new Mock<ITorrentData>();
+            torrentData.Setup(data => data.GetByHash(It.IsAny<string>())).ReturnsAsync((Torrent?)null);
+            torrentData.Setup(data => data.Add(
+                           It.IsAny<string?>(),
+                           It.IsAny<string>(),
+                           It.IsAny<string?>(),
+                           It.IsAny<bool>(),
+                           It.IsAny<DownloadClientKind>(),
+                           It.IsAny<Torrent>()))
+                       .ReturnsAsync((string? _, string hash, string? _, bool _, DownloadClientKind _, Torrent torrent) =>
+                       {
+                           torrent.Hash = hash;
+                           return torrent;
+                       });
+            var enricher = new Mock<IEnricher>();
+            enricher.Setup(value => value.EnrichTorrentBytes(torrentBytes)).ReturnsAsync(torrentBytes);
+            var compatibility = CreateCompatibility(torrentData: torrentData, enricher: enricher);
+
+            await compatibility.Add(torrentBytes, "radarr");
+
+            torrentData.Verify(data => data.Add(
+                null,
+                It.IsAny<string>(),
+                Convert.ToBase64String(torrentBytes),
+                true,
+                DownloadClientKind.Internal,
+                It.Is<Torrent>(torrent =>
+                    torrent.Category == "radarr" &&
+                    torrent.DownloadAction == TorrentDownloadAction.DownloadAll &&
+                    torrent.HostDownloadAction == TorrentHostDownloadAction.DownloadAll &&
+                    torrent.FinishedAction == TorrentFinishedAction.None &&
+                    torrent.FinishedActionDelay == 4 &&
+                    torrent.DownloadMinSize == 512 &&
+                    torrent.TorrentRetryAttempts == 2 &&
+                    torrent.DownloadRetryAttempts == 3 &&
+                    torrent.Priority == 9)), Times.Once);
+        }
+        finally
+        {
+            Settings.Get.DownloadClient.Default = originalDefaults;
+        }
+    }
+
+    [Fact]
+    public async Task AddTorrentFile_RejectsInvalidMetadataWithoutPersistingIt()
+    {
+        var invalidBytes = Encoding.UTF8.GetBytes("not a torrent");
+        var torrentData = new Mock<ITorrentData>();
+        var enricher = new Mock<IEnricher>();
+        enricher.Setup(value => value.EnrichTorrentBytes(invalidBytes)).ReturnsAsync(invalidBytes);
+        var compatibility = CreateCompatibility(torrentData: torrentData, enricher: enricher);
+
+        var exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            compatibility.Add(invalidBytes, "radarr"));
+
+        Assert.Equal("Invalid torrent file.", exception.Message);
+        torrentData.Verify(data => data.Add(
+            It.IsAny<string?>(),
+            It.IsAny<string>(),
+            It.IsAny<string?>(),
+            It.IsAny<bool>(),
+            It.IsAny<DownloadClientKind>(),
+            It.IsAny<Torrent>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task PreferencesAndCategories_UseMappedDownloadPaths()
+    {
+        var originalMappedPath = Settings.Get.Paths.MappedPath;
+        var originalCategories = Settings.Get.General.Categories;
+
+        try
+        {
+            Settings.Get.Paths.MappedPath = "/media/downloads";
+            Settings.Get.General.Categories = "radarr,sonarr";
+            var torrentData = new Mock<ITorrentData>();
+            torrentData.Setup(data => data.Get()).ReturnsAsync(
+            [
+                new Torrent
+                {
+                    TorrentId = Guid.NewGuid(),
+                    Hash = "0123456789abcdef0123456789abcdef01234567",
+                    Category = "logpose-retained"
+                }
+            ]);
+            var compatibility = CreateCompatibility(torrentData: torrentData);
+
+            var preferences = compatibility.GetPreferences();
+            var categories = await compatibility.GetCategories();
+
+            Assert.Equal("/media/downloads", preferences.SavePath);
+            Assert.True(preferences.DhtEnabled);
+            Assert.True(preferences.QueueingEnabled);
+            Assert.False(preferences.MaxRatioEnabled);
+            Assert.Equal("/media/downloads/radarr", categories["radarr"].SavePath);
+            Assert.Equal("/media/downloads/sonarr", categories["sonarr"].SavePath);
+            Assert.Equal("/media/downloads/logpose-retained", categories["logpose-retained"].SavePath);
+        }
+        finally
+        {
+            Settings.Get.Paths.MappedPath = originalMappedPath;
+            Settings.Get.General.Categories = originalCategories;
+        }
+    }
+
+    [Theory]
+    [InlineData(@"D:\", @"D:\", @"D:\radarr")]
+    [InlineData("/", "/", "/radarr")]
+    public async Task PreferencesAndCategories_PreserveMappedRoot(
+        string mappedPath,
+        string expectedRoot,
+        string expectedCategoryPath)
+    {
+        var originalMappedPath = Settings.Get.Paths.MappedPath;
+        var originalCategories = Settings.Get.General.Categories;
+
+        try
+        {
+            Settings.Get.Paths.MappedPath = mappedPath;
+            Settings.Get.General.Categories = "radarr";
+            var torrentData = new Mock<ITorrentData>();
+            torrentData.Setup(data => data.Get()).ReturnsAsync([]);
+            var compatibility = CreateCompatibility(torrentData: torrentData);
+
+            Assert.Equal(expectedRoot, compatibility.GetPreferences().SavePath);
+            Assert.Equal(expectedCategoryPath, (await compatibility.GetCategories())["radarr"].SavePath);
+        }
+        finally
+        {
+            Settings.Get.Paths.MappedPath = originalMappedPath;
+            Settings.Get.General.Categories = originalCategories;
+        }
+    }
+
+    [Fact]
+    public async Task PropertiesAndFiles_DescribeTheDownloadedPayload()
+    {
+        var originalMappedPath = Settings.Get.Paths.MappedPath;
+
+        try
+        {
+            Settings.Get.Paths.MappedPath = "/media/downloads";
+            var torrent = new Torrent
+            {
+                TorrentId = Guid.NewGuid(),
+                Hash = "0123456789abcdef0123456789abcdef01234567",
+                Category = "sonarr",
+                RdName = "Series.S01",
+                RdFiles = JsonSerializer.Serialize(new List<TorrentClientFile>
+                {
+                    new()
+                    {
+                        Id = 1,
+                        Path = "Season 01/episode.mkv",
+                        Bytes = 1_000,
+                        Selected = true
+                    }
+                }),
+                Downloads =
+                [
+                    new()
+                    {
+                        FileName = "episode.mkv",
+                        Link = "https://example.test/episode.mkv"
+                    }
+                ]
+            };
+            var torrentData = new Mock<ITorrentData>();
+            torrentData.Setup(data => data.GetByHash(torrent.Hash)).ReturnsAsync(torrent);
+            var compatibility = CreateCompatibility(torrentData: torrentData);
+
+            var properties = await compatibility.GetProperties(torrent.Hash);
+            var files = await compatibility.GetFiles(torrent.Hash);
+
+            Assert.NotNull(properties);
+            Assert.Equal(torrent.Hash, properties.Hash);
+            Assert.Equal("/media/downloads/sonarr", properties.SavePath);
+            Assert.Equal("Series.S01/Season 01/episode.mkv", Assert.Single(files!).Name);
+        }
+        finally
+        {
+            Settings.Get.Paths.MappedPath = originalMappedPath;
+        }
+    }
+
+    [Fact]
+    public async Task PropertiesAndFiles_ReturnNullForUnknownHash()
+    {
+        var torrentData = new Mock<ITorrentData>();
+        torrentData.Setup(data => data.GetByHash(It.IsAny<string>())).ReturnsAsync((Torrent?)null);
+        var compatibility = CreateCompatibility(torrentData: torrentData);
+
+        Assert.Null(await compatibility.GetProperties("missing"));
+        Assert.Null(await compatibility.GetFiles("missing"));
+    }
+
+    [Theory]
+    [InlineData("../outside")]
+    [InlineData("radarr/../outside")]
+    [InlineData("radarr//movies")]
+    [InlineData("radarr\\movies")]
+    [InlineData("C:/outside")]
+    [InlineData("radarr/<movies>")]
+    [InlineData("radarr,movies")]
+    public async Task Add_RejectsUnsafeCategoryPaths(string category)
+    {
+        const string magnet = "magnet:?xt=urn:btih:0123456789abcdef0123456789abcdef01234567&dn=Movie";
+        var compatibility = CreateCompatibility();
+
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => compatibility.Add(magnet, category));
+
+        Assert.Contains("Invalid torrent category", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task SetCategory_RejectsChangesAfterLocalDownloadStarts()
+    {
+        const string hash = "0123456789abcdef0123456789abcdef01234567";
+        var torrent = new Torrent
+        {
+            TorrentId = Guid.NewGuid(),
+            Hash = hash,
+            Downloads = [new() { DownloadId = Guid.NewGuid(), Link = "https://example.test/movie.mkv" }]
+        };
+        var torrentData = new Mock<ITorrentData>();
+        torrentData.Setup(data => data.GetByHash(hash)).ReturnsAsync(torrent);
+        var compatibility = CreateCompatibility(torrentData: torrentData);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => compatibility.SetCategory(hash, "imported"));
+        torrentData.Verify(
+            data => data.UpdateCategory(It.IsAny<Guid>(), It.IsAny<string?>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task CategoryAndPriorityActions_UpdateEveryRequestedTorrent()
+    {
+        const string firstHash = "0123456789abcdef0123456789abcdef01234567";
+        const string secondHash = "fedcba9876543210fedcba9876543210fedcba98";
+        var torrentData = new Mock<ITorrentData>();
+        torrentData.Setup(data => data.GetByHash(firstHash)).ReturnsAsync(new Torrent
+        {
+            TorrentId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+            Hash = firstHash
+        });
+        torrentData.Setup(data => data.GetByHash(secondHash)).ReturnsAsync(new Torrent
+        {
+            TorrentId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+            Hash = secondHash
+        });
+        var compatibility = CreateCompatibility(torrentData: torrentData);
+
+        await compatibility.SetCategory($"{firstHash}|{secondHash}", "sonarr-imported");
+        await compatibility.SetTopPriority($"{firstHash}|{secondHash}");
+
+        torrentData.Verify(data => data.UpdateCategory(
+            Guid.Parse("11111111-1111-1111-1111-111111111111"),
+            "sonarr-imported"), Times.Once);
+        torrentData.Verify(data => data.UpdateCategory(
+            Guid.Parse("22222222-2222-2222-2222-222222222222"),
+            "sonarr-imported"), Times.Once);
+        torrentData.Verify(data => data.UpdatePriority(
+            Guid.Parse("11111111-1111-1111-1111-111111111111"),
+            1), Times.Once);
+        torrentData.Verify(data => data.UpdatePriority(
+            Guid.Parse("22222222-2222-2222-2222-222222222222"),
+            1), Times.Once);
+    }
+
+    [Fact]
+    public async Task CreateCategory_PersistsNewCategoryAndRequestedCasing()
     {
         var originalCategories = Settings.Get.General.Categories;
 
@@ -373,7 +973,7 @@ public class QBittorrentCompatibilityTest
 
             var stored = await dataContext.Settings.AsNoTracking()
                                           .SingleAsync(setting => setting.SettingId == "General:Categories");
-            Assert.Equal("movies,logpose,anime", stored.Value);
+            Assert.Equal("movies,LOGPOSE,anime", stored.Value);
         }
         finally
         {
@@ -422,7 +1022,8 @@ public class QBittorrentCompatibilityTest
             TorrentId = torrentId,
             Hash = "0123456789abcdef0123456789abcdef01234567",
             Category = "logpose",
-            RdName = null
+            RdName = null,
+            FinishedAction = TorrentFinishedAction.RemoveAllTorrents
         };
 
         var torrentData = new Mock<ITorrentData>();
@@ -436,6 +1037,115 @@ public class QBittorrentCompatibilityTest
 
         downloads.Verify(value => value.DeleteForTorrent(torrentId), Times.Once);
         torrentData.Verify(value => value.Delete(torrentId), Times.Once);
+    }
+
+    [Fact]
+    public async Task DeleteWithFiles_RemovesSafeJobDirectoryAndPreservesRoots()
+    {
+        var originalDownloadPath = Settings.Get.Paths.DownloadPath;
+        var downloadRoot = GetTestDownloadRoot();
+        var categoryRoot = Path.Combine(downloadRoot, "radarr");
+        var jobDirectory = Path.Combine(categoryRoot, "Movie");
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile(Path.Combine(jobDirectory, "movie.mkv"), new MockFileData("media"));
+
+        try
+        {
+            Settings.Get.Paths.DownloadPath = downloadRoot;
+            var torrent = CreateDeletionTorrent("Movie", "movie.mkv");
+            torrent.Category = "radarr";
+            torrent.FinishedAction = TorrentFinishedAction.RemoveAllTorrents;
+            var torrentData = CreateTorrentDataForDelete(torrent);
+            var compatibility = CreateCompatibility(torrentData: torrentData, fileSystem: fileSystem);
+
+            await compatibility.Delete(torrent.Hash, true);
+
+            Assert.False(fileSystem.Directory.Exists(jobDirectory));
+            Assert.True(fileSystem.Directory.Exists(categoryRoot));
+            Assert.True(fileSystem.Directory.Exists(downloadRoot));
+            torrentData.Verify(data => data.Delete(torrent.TorrentId), Times.Once);
+        }
+        finally
+        {
+            Settings.Get.Paths.DownloadPath = originalDownloadPath;
+        }
+    }
+
+    [Fact]
+    public async Task DeleteWithFiles_RejectsCategoryOutsideDownloadRootBeforeMutation()
+    {
+        var originalDownloadPath = Settings.Get.Paths.DownloadPath;
+        var downloadRoot = GetTestDownloadRoot();
+        var outsideDirectory = Path.GetFullPath(Path.Combine(downloadRoot, "..", "outside-category", "Movie"));
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile(Path.Combine(outsideDirectory, "movie.mkv"), new MockFileData("media"));
+
+        try
+        {
+            Settings.Get.Paths.DownloadPath = downloadRoot;
+            var torrent = CreateDeletionTorrent("Movie", "movie.mkv");
+            torrent.Category = "../outside-category";
+            torrent.FinishedAction = TorrentFinishedAction.RemoveAllTorrents;
+            var torrentData = CreateTorrentDataForDelete(torrent);
+            var compatibility = CreateCompatibility(torrentData: torrentData, fileSystem: fileSystem);
+
+            await Assert.ThrowsAsync<InvalidDataException>(() => compatibility.Delete(torrent.Hash, true));
+
+            Assert.True(fileSystem.Directory.Exists(outsideDirectory));
+            torrentData.Verify(data => data.UpdateComplete(
+                It.IsAny<Guid>(),
+                It.IsAny<string?>(),
+                It.IsAny<DateTimeOffset?>(),
+                It.IsAny<bool>()), Times.Never);
+            torrentData.Verify(data => data.Delete(It.IsAny<Guid>()), Times.Never);
+        }
+        finally
+        {
+            Settings.Get.Paths.DownloadPath = originalDownloadPath;
+        }
+    }
+
+    [Theory]
+    [InlineData("job")]
+    [InlineData("category")]
+    [InlineData("download")]
+    public async Task DeleteWithFiles_RejectsReparsePointBeforeMutation(string reparseLocation)
+    {
+        var originalDownloadPath = Settings.Get.Paths.DownloadPath;
+        var downloadRoot = GetTestDownloadRoot();
+        var categoryRoot = Path.Combine(downloadRoot, "radarr");
+        var jobDirectory = Path.Combine(categoryRoot, "Movie");
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile(Path.Combine(jobDirectory, "movie.mkv"), new MockFileData("media"));
+        var reparseDirectory = reparseLocation switch
+        {
+            "job" => jobDirectory,
+            "category" => categoryRoot,
+            "download" => downloadRoot,
+            _ => throw new ArgumentOutOfRangeException(nameof(reparseLocation))
+        };
+        fileSystem.File.SetAttributes(
+            reparseDirectory,
+            fileSystem.File.GetAttributes(reparseDirectory) | FileAttributes.ReparsePoint);
+
+        try
+        {
+            Settings.Get.Paths.DownloadPath = downloadRoot;
+            var torrent = CreateDeletionTorrent("Movie", "movie.mkv");
+            torrent.Category = "radarr";
+            torrent.FinishedAction = TorrentFinishedAction.RemoveAllTorrents;
+            var torrentData = CreateTorrentDataForDelete(torrent);
+            var compatibility = CreateCompatibility(torrentData: torrentData, fileSystem: fileSystem);
+
+            await Assert.ThrowsAsync<InvalidDataException>(() => compatibility.Delete(torrent.Hash, true));
+
+            Assert.True(fileSystem.Directory.Exists(jobDirectory));
+            torrentData.Verify(data => data.Delete(It.IsAny<Guid>()), Times.Never);
+        }
+        finally
+        {
+            Settings.Get.Paths.DownloadPath = originalDownloadPath;
+        }
     }
 
     [Fact]
@@ -577,7 +1287,7 @@ public class QBittorrentCompatibilityTest
     }
 
     [Fact]
-    public async Task DeleteWithoutFiles_PreservesSiblingDirectoryOutsideJobRoot()
+    public async Task DeleteWithoutFiles_SanitizesMetadataTraversalAndPreservesSiblingDirectory()
     {
         const string jobName = "One Pace Episode 01";
         const string siblingName = "other-job";
@@ -604,7 +1314,7 @@ public class QBittorrentCompatibilityTest
 
             await compatibility.Delete(torrent.Hash, false);
 
-            Assert.True(fileSystem.Directory.Exists(jobDirectory));
+            Assert.False(fileSystem.Directory.Exists(jobDirectory));
             Assert.True(fileSystem.Directory.Exists(siblingDirectory));
             torrentData.Verify(value => value.UpdateCategory(torrent.TorrentId, "logpose-retained"), Times.Once);
             torrentData.Verify(value => value.Delete(It.IsAny<Guid>()), Times.Never);
@@ -671,6 +1381,7 @@ public class QBittorrentCompatibilityTest
             Settings.Get.Paths.DownloadPath = downloadRoot;
             var torrent = CreateDeletionTorrent(jobName, "episode.mkv");
             torrent.Category = null;
+            torrent.FinishedAction = TorrentFinishedAction.RemoveAllTorrents;
             var torrentData = CreateTorrentDataForDelete(torrent);
             var compatibility = CreateCompatibility(torrentData: torrentData, fileSystem: fileSystem);
 
@@ -684,6 +1395,33 @@ public class QBittorrentCompatibilityTest
         {
             Settings.Get.Paths.DownloadPath = originalDownloadPath;
         }
+    }
+
+    [Fact]
+    public async Task Delete_RetainsNonLogposeJobWhenItsConfiguredActionIsNone()
+    {
+        var torrent = CreateDeletionTorrent("Movie", "movie.mkv");
+        torrent.Category = "radarr";
+        torrent.FinishedAction = TorrentFinishedAction.None;
+        var torrentData = CreateTorrentDataForDelete(torrent);
+        var downloads = new Mock<IDownloads>();
+        var compatibility = CreateCompatibility(torrentData: torrentData, downloads: downloads);
+
+        await compatibility.Delete(torrent.Hash, true);
+
+        torrentData.Verify(data => data.Delete(It.IsAny<Guid>()), Times.Never);
+        downloads.Verify(data => data.DeleteForTorrent(It.IsAny<Guid>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task DeleteAll_IsRejectedBeforeTorrentLookup()
+    {
+        var torrentData = new Mock<ITorrentData>();
+        var compatibility = CreateCompatibility(torrentData: torrentData);
+
+        await Assert.ThrowsAsync<ArgumentException>(() => compatibility.Delete("all", true));
+
+        torrentData.Verify(data => data.GetByHash(It.IsAny<string>()), Times.Never);
     }
 
     [Fact]

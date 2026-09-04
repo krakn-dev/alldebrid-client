@@ -8,6 +8,39 @@ namespace AdbClient.Service.Test.Helpers;
 
 public class DownloadHelperTest
 {
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    public void GetCategoryPath_RejectsEmptyDownloadRoot(string downloadRoot)
+    {
+        Assert.Throws<InvalidDataException>(() =>
+            DownloadHelper.GetCategoryPath(downloadRoot, "radarr", new MockFileSystem()));
+    }
+
+    [Fact]
+    public void GetCategoryPath_RejectsTraversalOutsideDownloadRoot()
+    {
+        var downloadRoot = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "adbclient-download-path-tests"));
+
+        Assert.Throws<InvalidDataException>(() =>
+            DownloadHelper.GetCategoryPath(downloadRoot, "../outside", new MockFileSystem()));
+    }
+
+    [Fact]
+    public void GetCategoryPath_RejectsExistingReparsePoint()
+    {
+        var downloadRoot = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "adbclient-download-path-tests"));
+        var categoryPath = Path.Combine(downloadRoot, "radarr");
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddDirectory(categoryPath);
+        fileSystem.File.SetAttributes(
+            categoryPath,
+            fileSystem.File.GetAttributes(categoryPath) | FileAttributes.ReparsePoint);
+
+        Assert.Throws<InvalidDataException>(() =>
+            DownloadHelper.GetCategoryPath(downloadRoot, "radarr", fileSystem));
+    }
+
     [Fact]
     public void GetDownloadPath_WithPath_WhenRdNameNull_ReturnsNull()
     {
@@ -244,9 +277,8 @@ public class DownloadHelperTest
         Assert.Equal(expectedPath, path);
     }
 
-    // This is probably a bug
     [Fact]
-    public void GetDownloadPath_WithPath_WhenNoUriSegmentsOrFileName_ReturnsTorrentDirectory()
+    public void GetDownloadPath_WithPath_WhenNoFileNameCanBeResolved_ReturnsNull()
     {
         // Arrange
         var download = new Download
@@ -266,7 +298,103 @@ public class DownloadHelperTest
         var path = DownloadHelper.GetDownloadPath("/data/downloads", torrent, download, fileSystem);
 
         // Assert
-        var expectedPath = Path.Combine("/data/downloads", torrent.RdName);
-        Assert.Equal(expectedPath, path);
+        Assert.Null(path);
+    }
+
+    [Fact]
+    public void GetDownloadPath_SanitizesTorrentMetadataWithinDownloadRoot()
+    {
+        var downloadRoot = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "adbclient-download-path-tests"));
+        var download = new Download
+        {
+            Link = "https://fake.url/episode.mkv",
+            FileName = "episode?.mkv"
+        };
+        var torrent = new Torrent
+        {
+            Hash = "0123456789abcdef0123456789abcdef01234567",
+            RdName = "../outside",
+            RdFiles = JsonSerializer.Serialize(new[]
+            {
+                new TorrentClientFile { Path = "../../outside/episode?.mkv" }
+            })
+        };
+        var fileSystem = new MockFileSystem();
+
+        var path = DownloadHelper.GetDownloadPath(downloadRoot, torrent, download, fileSystem);
+
+        Assert.NotNull(path);
+        Assert.StartsWith(
+            downloadRoot + Path.DirectorySeparatorChar,
+            Path.GetFullPath(path),
+            OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+        Assert.DoesNotContain($"{Path.DirectorySeparatorChar}..{Path.DirectorySeparatorChar}", path, StringComparison.Ordinal);
+        Assert.EndsWith("episode.mkv", path, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void GetDownloadPath_RelativeAndPhysicalOverloadsUseSameSanitizedName()
+    {
+        var downloadRoot = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "adbclient-download-path-tests"));
+        var download = new Download
+        {
+            Link = "https://fake.url/episode.mkv",
+            FileName = "episode:01?.mkv"
+        };
+        var torrent = new Torrent
+        {
+            Hash = "0123456789abcdef0123456789abcdef01234567",
+            RdName = "Series"
+        };
+        var fileSystem = new MockFileSystem();
+
+        var relativePath = DownloadHelper.GetDownloadPath(torrent, download);
+        var physicalPath = DownloadHelper.GetDownloadPath(downloadRoot, torrent, download, fileSystem);
+
+        Assert.Equal(Path.Combine("Series", "episode01.mkv"), relativePath);
+        Assert.Equal(Path.Combine(downloadRoot, relativePath!), physicalPath);
+    }
+
+    [Fact]
+    public void GetDownloadPath_RejectsExistingReparsePoint()
+    {
+        var downloadRoot = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "adbclient-download-path-tests"));
+        var torrentDirectory = Path.Combine(downloadRoot, "Series");
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddDirectory(torrentDirectory);
+        fileSystem.File.SetAttributes(
+            torrentDirectory,
+            fileSystem.File.GetAttributes(torrentDirectory) | FileAttributes.ReparsePoint);
+        var download = new Download
+        {
+            Link = "https://fake.url/episode.mkv",
+            FileName = "episode.mkv"
+        };
+        var torrent = new Torrent
+        {
+            Hash = "0123456789abcdef0123456789abcdef01234567",
+            RdName = "Series"
+        };
+
+        Assert.Throws<InvalidDataException>(() =>
+            DownloadHelper.GetDownloadPath(downloadRoot, torrent, download, fileSystem));
+    }
+
+    [Theory]
+    [InlineData("release.rar", true)]
+    [InlineData("release.RAR", true)]
+    [InlineData("release.zip", true)]
+    [InlineData("release.ZIP", true)]
+    [InlineData("movie.mkv", false)]
+    [InlineData(null, false)]
+    public void IsSupportedArchive_MatchesActualUnpackFormats(string? fileName, bool expected)
+    {
+        var download = new Download
+        {
+            Link = fileName == null ? null : $"https://fake.url/{fileName}",
+            FileName = fileName
+        };
+
+        Assert.Equal(expected, DownloadHelper.IsSupportedArchive(download));
     }
 }

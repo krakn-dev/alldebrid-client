@@ -7,6 +7,7 @@ using AdbClient.Data.Models.Internal;
 using AdbClient.Service;
 using AdbClient.Service.Middleware;
 using AdbClient.Service.Services;
+using AdbClient.Web;
 using Serilog;
 using Serilog.Events;
 
@@ -87,11 +88,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.Events.OnRedirectToLogin = context =>
-    {
-        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-        return Task.CompletedTask;
-    };
+    options.Events.OnRedirectToLogin = AuthenticationRedirects.HandleLogin;
     options.Cookie.Name = "SID";
 });
 

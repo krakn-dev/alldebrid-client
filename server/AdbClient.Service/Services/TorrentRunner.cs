@@ -404,17 +404,12 @@ public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Dow
                         return;
                     }
 
+                    var downloadPath = DownloadHelper.GetCategoryPath(settingDownloadPath, torrent.Category);
+
                     Log($"Marking download as started", download, torrent);
 
                     download.DownloadStarted = DateTime.UtcNow;
                     await downloads.UpdateDownloadStarted(download.DownloadId, download.DownloadStarted);
-
-                    var downloadPath = settingDownloadPath;
-
-                    if (!string.IsNullOrWhiteSpace(torrent.Category))
-                    {
-                        downloadPath = Path.Combine(downloadPath, torrent.Category);
-                    }
 
                     Log($"Setting download path to {downloadPath}", download, torrent);
 
@@ -471,11 +466,7 @@ public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Dow
                     }
 
                     // Check if the unpacking process is even needed
-                    var uri = new Uri(download.Link);
-
-                    var extension = Path.GetExtension(download.FileName);
-
-                    if ((extension != ".rar" && extension != ".zip") ||
+                    if (!DownloadHelper.IsSupportedArchive(download) ||
                         settingUnpackLimit == 0)
                     {
                         Log($"No need to unpack, setting it as unpacked", download, torrent);
@@ -506,15 +497,10 @@ public class TorrentRunner(ILogger<TorrentRunner> logger, Torrents torrents, Dow
                         continue;
                     }
 
+                    var downloadPath = DownloadHelper.GetCategoryPath(settingDownloadPath, torrent.Category);
+
                     download.UnpackingStarted = DateTimeOffset.UtcNow;
                     await downloads.UpdateUnpackingStarted(download.DownloadId, download.UnpackingStarted);
-
-                    var downloadPath = settingDownloadPath;
-
-                    if (!string.IsNullOrWhiteSpace(torrent.Category))
-                    {
-                        downloadPath = Path.Combine(downloadPath, torrent.Category);
-                    }
 
                     Log($"Setting unpack path to {downloadPath}", download, torrent);
 

@@ -337,7 +337,7 @@ public class AllDebridTorrentClient(ILogger<AllDebridTorrentClient> logger, IAll
             return null;
         }
         
-        var directory = DownloadHelper.RemoveInvalidPathChars(torrent.RdName);
+        var directory = DownloadHelper.GetTorrentDirectoryName(torrent);
 
         var matchingTorrentFiles = torrent.Files.Where(m => m.Path.EndsWith(fileName)).Where(m => !string.IsNullOrWhiteSpace(m.Path)).ToList();
 

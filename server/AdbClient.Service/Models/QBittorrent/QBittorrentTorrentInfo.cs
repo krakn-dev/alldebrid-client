@@ -33,4 +33,22 @@ public sealed class QBittorrentTorrentInfo
 
     [JsonPropertyName("eta")]
     public long Eta { get; init; }
+
+    [JsonPropertyName("ratio")]
+    public double Ratio { get; init; }
+
+    [JsonPropertyName("ratio_limit")]
+    public double RatioLimit { get; init; } = -1;
+
+    [JsonPropertyName("seeding_time")]
+    public long SeedingTime { get; init; }
+
+    [JsonPropertyName("seeding_time_limit")]
+    public long SeedingTimeLimit { get; init; } = -1;
+
+    [JsonPropertyName("inactive_seeding_time_limit")]
+    public long InactiveSeedingTimeLimit { get; init; } = -1;
+
+    [JsonPropertyName("last_activity")]
+    public long LastActivity { get; init; }
 }

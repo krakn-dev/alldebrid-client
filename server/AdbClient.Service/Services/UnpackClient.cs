@@ -57,11 +57,7 @@ public class UnpackClient(Download download, string destinationPath)
             string? extractPathTemp = null;
 
             var archiveEntries = await GetArchiveFiles(filePath);
-
-            if (!archiveEntries.Any(m => m.StartsWith(_torrent.RdName + @"\")) && !archiveEntries.Any(m => m.StartsWith(_torrent.RdName + "/")))
-            {
-                extractPath = Path.Combine(destinationPath, _torrent.RdName!);
-            }
+            extractPath = ResolveExtractionPath(destinationPath, _torrent, archiveEntries);
 
             if (archiveEntries.Any(m => m.Contains(".r00")))
             {
@@ -137,5 +133,36 @@ public class UnpackClient(Download download, string destinationPath)
             await entries[index].WriteToDirectoryAsync(extractPath, cancellationToken: cancellationToken);
             Progress = (int)Math.Round((index + 1d) / entries.Count * 100);
         }
+    }
+
+    internal static string ResolveExtractionPath(
+        string destinationPath,
+        Torrent torrent,
+        IEnumerable<string> archiveEntries)
+    {
+        var torrentDirectory = DownloadHelper.GetTorrentDirectoryName(torrent);
+        var entrySegments = archiveEntries
+                           .Where(entry => !string.IsNullOrWhiteSpace(entry))
+                           .Select(entry => entry.Split(
+                               ['/', '\\'],
+                               StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+                           .ToList();
+        var archiveContainsOnlyTorrentRoot = entrySegments.Count > 0 && entrySegments.All(segments =>
+            segments.Length > 1 &&
+            string.Equals(
+                FileHelper.RemoveInvalidFileNameChars(segments[0]),
+                torrentDirectory,
+                StringComparison.OrdinalIgnoreCase));
+        var normalizedDestination = FileSystemPath.Normalize(destinationPath);
+        var extractPath = archiveContainsOnlyTorrentRoot
+            ? normalizedDestination
+            : FileSystemPath.Normalize(Path.Combine(normalizedDestination, torrentDirectory));
+
+        if (!FileSystemPath.IsSameOrDescendant(extractPath, normalizedDestination))
+        {
+            throw new InvalidDataException("Archive extraction path is outside the configured download directory.");
+        }
+
+        return extractPath;
     }
 }

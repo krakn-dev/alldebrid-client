@@ -15,6 +15,8 @@ public sealed class QBittorrentCompatibility(
     IHttpClientFactory httpClientFactory,
     IFileSystem fileSystem) : IQBittorrentCompatibility
 {
+    public const int MaxTorrentFileSizeBytes = 32 * 1024 * 1024;
+
     private const long UnknownEta = 8_640_000;
     private const string LogposeCategory = "logpose";
     private const string LogposeRetainedCategory = "logpose-retained";
@@ -25,23 +27,56 @@ public sealed class QBittorrentCompatibility(
         return result.Succeeded;
     }
 
+    public QBittorrentPreferences GetPreferences()
+    {
+        return new()
+        {
+            SavePath = GetSavePath(null)
+        };
+    }
+
+    public async Task<IReadOnlyDictionary<string, QBittorrentCategory>> GetCategories()
+    {
+        var configuredCategories = (Settings.Get.General.Categories ?? string.Empty)
+                                   .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var assignedCategories = (await torrents.Get())
+                                .Select(torrent => torrent.Category)
+                                .Where(category => !string.IsNullOrWhiteSpace(category))
+                                .Select(category => category!);
+
+        return configuredCategories.Concat(assignedCategories)
+                                   .Distinct(StringComparer.OrdinalIgnoreCase)
+                                   .ToDictionary(
+                                       category => category,
+                                       category => new QBittorrentCategory
+                                       {
+                                           Name = category,
+                                           SavePath = GetSavePath(category)
+                                       },
+                                       StringComparer.OrdinalIgnoreCase);
+    }
+
     public async Task CreateCategory(string category)
     {
-        category = category.Trim();
-
-        if (category.Length == 0)
-        {
-            throw new ArgumentException("Category cannot be empty.", nameof(category));
-        }
+        category = NormalizeCategory(category)
+                   ?? throw new ArgumentException("Category cannot be empty.", nameof(category));
 
         var categories = (Settings.Get.General.Categories ?? string.Empty)
                          .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                          .Distinct(StringComparer.OrdinalIgnoreCase)
                          .ToList();
 
-        if (!categories.Contains(category, StringComparer.OrdinalIgnoreCase))
+        var existingIndex = categories.FindIndex(value =>
+            value.Equals(category, StringComparison.OrdinalIgnoreCase));
+
+        if (existingIndex < 0)
         {
             categories.Add(category);
+            await settings.Update("General:Categories", string.Join(',', categories));
+        }
+        else if (!categories[existingIndex].Equals(category, StringComparison.Ordinal))
+        {
+            categories[existingIndex] = category;
             await settings.Update("General:Categories", string.Join(',', categories));
         }
     }
@@ -75,9 +110,34 @@ public sealed class QBittorrentCompatibility(
             logger.LogDebug("Downloading torrent metadata from {TorrentUrl}", uri);
 
             var client = httpClientFactory.CreateClient();
-            var fileBytes = await client.GetByteArrayAsync(uri, cancellationToken);
+            using var response = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            response.EnsureSuccessStatusCode();
+
+            if (response.Content.Headers.ContentLength > MaxTorrentFileSizeBytes)
+            {
+                throw new ArgumentException("Torrent file exceeds the 32 MB limit.", nameof(urls));
+            }
+
+            await response.Content.LoadIntoBufferAsync(MaxTorrentFileSizeBytes, cancellationToken);
+            var fileBytes = await response.Content.ReadAsByteArrayAsync(cancellationToken);
             await torrents.AddFileToDebridQueue(fileBytes, torrent);
         }
+    }
+
+    public async Task Add(byte[] torrentBytes, string? category)
+    {
+        if (torrentBytes.Length == 0)
+        {
+            throw new ArgumentException("Torrent file cannot be empty.", nameof(torrentBytes));
+        }
+
+        if (torrentBytes.Length > MaxTorrentFileSizeBytes)
+        {
+            throw new ArgumentException("Torrent file exceeds the 32 MB limit.", nameof(torrentBytes));
+        }
+
+        var torrent = CreateTorrent(category);
+        await torrents.AddFileToDebridQueue(torrentBytes, torrent);
     }
 
     private static string NormalizeTorrentUrl(string torrentUrl)
@@ -127,11 +187,84 @@ public sealed class QBittorrentCompatibility(
         return filteredTorrents.Select(MapTorrent).ToList();
     }
 
+    public async Task<QBittorrentTorrentProperties?> GetProperties(string hash)
+    {
+        var torrent = await torrents.GetByHash(hash);
+
+        if (torrent == null)
+        {
+            return null;
+        }
+
+        return new()
+        {
+            Hash = torrent.Hash,
+            SavePath = GetSavePath(torrent.Category),
+            SeedingTime = 0
+        };
+    }
+
+    public async Task<IReadOnlyList<QBittorrentTorrentFile>?> GetFiles(string hash)
+    {
+        var torrent = await torrents.GetByHash(hash);
+
+        if (torrent == null)
+        {
+            return null;
+        }
+
+        var filePaths = torrent.Downloads
+                               .Select(download => DownloadHelper.GetDownloadPath(torrent, download))
+                               .Where(path => !string.IsNullOrWhiteSpace(path))
+                               .Select(path => NormalizeTorrentPath(path!))
+                               .Distinct(StringComparer.OrdinalIgnoreCase)
+                               .ToList();
+
+        if (filePaths.Count == 0)
+        {
+            filePaths = torrent.Files
+                               .Where(file => file.Selected && !string.IsNullOrWhiteSpace(file.Path))
+                               .Select(file => NormalizeTorrentPath(file.Path))
+                               .Distinct(StringComparer.OrdinalIgnoreCase)
+                               .ToList();
+        }
+
+        return filePaths.Select(path => new QBittorrentTorrentFile { Name = path }).ToList();
+    }
+
+    public async Task SetCategory(string hashes, string? category)
+    {
+        var normalizedCategory = NormalizeCategory(category);
+
+        foreach (var hash in SplitHashes(hashes))
+        {
+            var torrent = await torrents.GetByHash(hash);
+
+            if (torrent == null)
+            {
+                continue;
+            }
+
+            if (torrent.Downloads.Count > 0 || torrent.Completed.HasValue)
+            {
+                throw new InvalidOperationException("A torrent category cannot change after its local download has started.");
+            }
+
+            await torrents.UpdateCategory(hash, normalizedCategory);
+        }
+    }
+
+    public async Task SetTopPriority(string hashes)
+    {
+        foreach (var hash in SplitHashes(hashes))
+        {
+            await torrents.UpdatePriority(hash, 1);
+        }
+    }
+
     public async Task Delete(string hashes, bool deleteFiles)
     {
-        var torrentHashes = hashes.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
-        foreach (var hash in torrentHashes)
+        foreach (var hash in SplitHashes(hashes))
         {
             var torrent = await torrents.GetByHash(hash);
 
@@ -167,13 +300,81 @@ public sealed class QBittorrentCompatibility(
                 continue;
             }
 
-            await torrents.Delete(torrent.TorrentId, true, true, deleteFiles);
+            switch (torrent.FinishedAction)
+            {
+                case TorrentFinishedAction.RemoveAllTorrents:
+                    await torrents.Delete(torrent.TorrentId, true, true, deleteFiles);
+                    break;
+                case TorrentFinishedAction.RemoveProvider:
+                    await torrents.Delete(torrent.TorrentId, false, true, deleteFiles);
+                    break;
+                case TorrentFinishedAction.RemoveClient:
+                    await torrents.Delete(torrent.TorrentId, true, false, deleteFiles);
+                    break;
+                case TorrentFinishedAction.None:
+                    logger.LogDebug(
+                        "Ignoring qBittorrent delete for {TorrentHash} because its configured finished action retains it",
+                        torrent.Hash);
+                    continue;
+                default:
+                    throw new ArgumentOutOfRangeException(
+                        nameof(torrent.FinishedAction),
+                        torrent.FinishedAction,
+                        "Unsupported torrent finished action.");
+            }
 
             if (cleanupPlan != null)
             {
                 CleanupEmptyJobDirectories(cleanupPlan);
             }
         }
+    }
+
+    private static IEnumerable<string> SplitHashes(string hashes)
+    {
+        var values = hashes.Split('|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        if (values.Any(hash => hash.Equals("all", StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new ArgumentException("Bulk selection of every torrent is not supported.", nameof(hashes));
+        }
+
+        return values;
+    }
+
+    private static string NormalizeTorrentPath(string path)
+    {
+        return path.TrimStart('/', '\\').Replace('\\', '/');
+    }
+
+    private static string? NormalizeCategory(string? category)
+    {
+        if (string.IsNullOrWhiteSpace(category))
+        {
+            return null;
+        }
+
+        var normalized = category.Trim();
+        var segments = normalized.Split('/');
+
+        if (normalized.Contains('\\') ||
+            segments.Any(segment => string.IsNullOrWhiteSpace(segment) || segment is "." or "..") ||
+            normalized.Any(character => character < ' ' || "<>,:\"|?*".Contains(character)))
+        {
+            throw new ArgumentException($"Invalid torrent category: {category}", nameof(category));
+        }
+
+        var downloadRoot = FileSystemPath.Normalize(Settings.Get.Paths.DownloadPath);
+        var categoryPath = FileSystemPath.Normalize(Path.Combine(
+            downloadRoot,
+            normalized.Replace('/', Path.DirectorySeparatorChar)));
+
+        if (!FileSystemPath.IsStrictDescendant(categoryPath, downloadRoot))
+        {
+            throw new ArgumentException($"Invalid torrent category: {category}", nameof(category));
+        }
+
+        return normalized;
     }
 
     private static bool IsLogposeManagedCategory(string? category)
@@ -194,13 +395,13 @@ public sealed class QBittorrentCompatibility(
 
         try
         {
-            var downloadRoot = NormalizeFullPath(Settings.Get.Paths.DownloadPath);
+            var downloadRoot = FileSystemPath.Normalize(Settings.Get.Paths.DownloadPath);
             var cleanupCategory = categoryOverride ?? torrent.Category;
             var categoryRoot = string.IsNullOrWhiteSpace(cleanupCategory)
                 ? downloadRoot
-                : NormalizeFullPath(fileSystem.Path.Combine(downloadRoot, cleanupCategory));
+                : FileSystemPath.Normalize(fileSystem.Path.Combine(downloadRoot, cleanupCategory));
 
-            if (!IsSameOrDescendant(categoryRoot, downloadRoot))
+            if (!FileSystemPath.IsSameOrDescendant(categoryRoot, downloadRoot))
             {
                 logger.LogWarning(
                     "Skipping qBittorrent directory cleanup because category path {CategoryRoot} is outside download root {DownloadRoot}",
@@ -209,11 +410,11 @@ public sealed class QBittorrentCompatibility(
                 return null;
             }
 
-            var jobRoot = NormalizeFullPath(fileSystem.Path.Combine(
+            var jobRoot = FileSystemPath.Normalize(fileSystem.Path.Combine(
                 categoryRoot,
-                DownloadHelper.RemoveInvalidPathChars(torrent.RdName)));
+                DownloadHelper.GetTorrentDirectoryName(torrent)));
 
-            if (!IsStrictDescendant(jobRoot, categoryRoot))
+            if (!FileSystemPath.IsStrictDescendant(jobRoot, categoryRoot))
             {
                 logger.LogWarning(
                     "Skipping qBittorrent directory cleanup because job path {JobRoot} is outside category root {CategoryRoot}",
@@ -222,7 +423,7 @@ public sealed class QBittorrentCompatibility(
                 return null;
             }
 
-            var candidates = new HashSet<string>(PathComparer)
+            var candidates = new HashSet<string>(FileSystemPath.Comparer)
             {
                 jobRoot
             };
@@ -236,7 +437,7 @@ public sealed class QBittorrentCompatibility(
                     continue;
                 }
 
-                var filePath = NormalizeFullPath(fileSystem.Path.Combine(categoryRoot, relativePath));
+                var filePath = FileSystemPath.Normalize(fileSystem.Path.Combine(categoryRoot, relativePath));
                 var directory = fileSystem.Path.GetDirectoryName(filePath);
 
                 if (string.IsNullOrWhiteSpace(directory))
@@ -244,9 +445,9 @@ public sealed class QBittorrentCompatibility(
                     continue;
                 }
 
-                directory = NormalizeFullPath(directory);
+                directory = FileSystemPath.Normalize(directory);
 
-                if (!IsSameOrDescendant(directory, jobRoot))
+                if (!FileSystemPath.IsSameOrDescendant(directory, jobRoot))
                 {
                     logger.LogWarning(
                         "Skipping qBittorrent directory cleanup because download path {DownloadPath} is outside job root {JobRoot}",
@@ -276,10 +477,24 @@ public sealed class QBittorrentCompatibility(
         {
             var current = candidate;
 
-            while (IsStrictDescendant(current, plan.CategoryRoot))
+            while (FileSystemPath.IsStrictDescendant(current, plan.CategoryRoot))
             {
-                if (!IsSameOrDescendant(current, plan.DownloadRoot) ||
-                    HasReparsePoint(current, plan.DownloadRoot))
+                bool containsReparsePoint;
+
+                try
+                {
+                    containsReparsePoint = FileSystemPath.ContainsReparsePoint(
+                        fileSystem,
+                        current,
+                        plan.DownloadRoot);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, "Unable to inspect qBittorrent cleanup path {CleanupPath}", current);
+                    break;
+                }
+
+                if (!FileSystemPath.IsSameOrDescendant(current, plan.DownloadRoot) || containsReparsePoint)
                 {
                     logger.LogWarning("Skipping unsafe qBittorrent directory cleanup path {CleanupPath}", current);
                     break;
@@ -305,89 +520,15 @@ public sealed class QBittorrentCompatibility(
 
                 var parent = fileSystem.Path.GetDirectoryName(current);
 
-                if (string.IsNullOrWhiteSpace(parent) || PathsEqual(parent, current))
+                if (string.IsNullOrWhiteSpace(parent) || FileSystemPath.PathsEqual(parent, current))
                 {
                     break;
                 }
 
-                current = NormalizeFullPath(parent);
+                current = FileSystemPath.Normalize(parent);
             }
         }
     }
-
-    private bool HasReparsePoint(string path, string boundary)
-    {
-        var current = path;
-
-        while (IsSameOrDescendant(current, boundary))
-        {
-            if (fileSystem.Directory.Exists(current))
-            {
-                try
-                {
-                    if (fileSystem.File.GetAttributes(current).HasFlag(FileAttributes.ReparsePoint))
-                    {
-                        return true;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    logger.LogWarning(ex, "Unable to inspect qBittorrent cleanup path {CleanupPath}", current);
-                    return true;
-                }
-            }
-
-            if (PathsEqual(current, boundary))
-            {
-                break;
-            }
-
-            var parent = fileSystem.Path.GetDirectoryName(current);
-
-            if (string.IsNullOrWhiteSpace(parent) || PathsEqual(parent, current))
-            {
-                break;
-            }
-
-            current = NormalizeFullPath(parent);
-        }
-
-        return false;
-    }
-
-    private static string NormalizeFullPath(string path)
-    {
-        return Path.TrimEndingDirectorySeparator(Path.GetFullPath(path));
-    }
-
-    private static bool IsSameOrDescendant(string path, string root)
-    {
-        return PathsEqual(path, root) || IsStrictDescendant(path, root);
-    }
-
-    private static bool IsStrictDescendant(string path, string root)
-    {
-        var normalizedPath = NormalizeFullPath(path);
-        var normalizedRoot = NormalizeFullPath(root);
-        var rootPrefix = Path.EndsInDirectorySeparator(normalizedRoot)
-            ? normalizedRoot
-            : normalizedRoot + Path.DirectorySeparatorChar;
-
-        return normalizedPath.StartsWith(rootPrefix, PathComparison);
-    }
-
-    private static bool PathsEqual(string left, string right)
-    {
-        return string.Equals(NormalizeFullPath(left), NormalizeFullPath(right), PathComparison);
-    }
-
-    private static StringComparison PathComparison => OperatingSystem.IsWindows()
-        ? StringComparison.OrdinalIgnoreCase
-        : StringComparison.Ordinal;
-
-    private static StringComparer PathComparer => OperatingSystem.IsWindows()
-        ? StringComparer.OrdinalIgnoreCase
-        : StringComparer.Ordinal;
 
     private sealed record EmptyDirectoryCleanupPlan(
         string DownloadRoot,
@@ -397,10 +538,12 @@ public sealed class QBittorrentCompatibility(
     private static Torrent CreateTorrent(string? category)
     {
         var defaults = Settings.Get.DownloadClient.Default;
+        var normalizedCategory = NormalizeCategory(
+            string.IsNullOrWhiteSpace(category) ? defaults.Category : category);
 
         return new()
         {
-            Category = string.IsNullOrWhiteSpace(category) ? defaults.Category : category.Trim(),
+            Category = normalizedCategory,
             DownloadClient = Data.Enums.DownloadClient.Internal,
             DownloadAction = defaults.OnlyDownloadAvailableFiles
                 ? TorrentDownloadAction.DownloadAvailableFiles
@@ -450,7 +593,8 @@ public sealed class QBittorrentCompatibility(
             ContentPath = GetContentPath(torrent, savePath),
             Size = size,
             DownloadSpeed = downloadSpeed,
-            Eta = GetEta(completed, size, progress, downloadSpeed)
+            Eta = GetEta(completed, size, progress, downloadSpeed),
+            LastActivity = (torrent.Completed ?? torrent.RdEnded ?? torrent.Added).ToUnixTimeSeconds()
         };
     }
 
@@ -476,7 +620,7 @@ public sealed class QBittorrentCompatibility(
             TorrentStatus.Processing or TorrentStatus.WaitingForFileSelection => "metaDL",
             TorrentStatus.Downloading when torrent.RdSeeders < 1 => "stalledDL",
             TorrentStatus.Downloading => "downloading",
-            TorrentStatus.Uploading => "uploading",
+            TorrentStatus.Uploading => "downloading",
             _ => "queuedDL"
         };
     }
@@ -510,7 +654,10 @@ public sealed class QBittorrentCompatibility(
     {
         if (torrent.Downloads.Count == 1)
         {
-            var relativePath = DownloadHelper.GetDownloadPath(torrent, torrent.Downloads[0]);
+            var download = torrent.Downloads[0];
+            var relativePath = DownloadHelper.IsSupportedArchive(download)
+                ? null
+                : DownloadHelper.GetDownloadPath(torrent, download);
 
             if (!string.IsNullOrWhiteSpace(relativePath))
             {
@@ -520,7 +667,7 @@ public sealed class QBittorrentCompatibility(
 
         return string.IsNullOrWhiteSpace(torrent.RdName)
             ? savePath
-            : CombineMappedPath(savePath, DownloadHelper.RemoveInvalidPathChars(torrent.RdName));
+            : CombineMappedPath(savePath, DownloadHelper.GetTorrentDirectoryName(torrent));
     }
 
     private static string CombineMappedPath(string root, string? child)
@@ -531,7 +678,17 @@ public sealed class QBittorrentCompatibility(
                 ? '/'
                 : Path.DirectorySeparatorChar;
 
-        var result = root.Trim().TrimEnd('/', '\\');
+        var trimmedRoot = root.Trim();
+        var result = trimmedRoot.TrimEnd('/', '\\');
+
+        if (result.Length == 2 &&
+            result[1] == ':' &&
+            trimmedRoot.Length > result.Length &&
+            trimmedRoot[result.Length] is '/' or '\\')
+        {
+            result += separator;
+        }
+
         var rootOnly = result.Length == 0 && root.IndexOfAny(['/', '\\']) >= 0;
 
         if (rootOnly)
@@ -548,7 +705,7 @@ public sealed class QBittorrentCompatibility(
                                    .Replace('/', separator)
                                    .Replace('\\', separator);
 
-        if (result == separator.ToString())
+        if (result.EndsWith(separator))
         {
             return result + normalizedChild;
         }

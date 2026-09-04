@@ -28,6 +28,7 @@ public class Torrents(
     AllDebridTorrentClient allDebridTorrentClient)
 {
     private static readonly SemaphoreSlim ProviderUpdateLock = new(1, 1);
+    private static readonly SemaphoreSlim TorrentAddLock = new(1, 1);
 
     private static readonly JsonSerializerOptions JsonSerializerOptions = new()
     {
@@ -92,17 +93,18 @@ public class Torrents(
 
     public async Task<Torrent> AddMagnetToDebridQueue(string magnetLink, Torrent torrent)
     {
-        var enriched = await enricher.EnrichMagnetLink(magnetLink);
         MagnetLink magnet;
+
         try
         {
             magnet = MagnetLink.Parse(magnetLink);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "{ex.Message}, trying to parse {magnetLink}", ex.Message, magnetLink);
-            throw new Exception($"{ex.Message}, trying to parse {magnetLink}");
+            throw new InvalidDataException("Invalid magnet link.", ex);
         }
+
+        var enriched = await enricher.EnrichMagnetLink(magnetLink);
 
         if (!string.IsNullOrWhiteSpace(Settings.Get.General.BannedTrackers))
         {
@@ -146,6 +148,15 @@ public class Torrents(
     {
         MonoTorrent.Torrent monoTorrent;
 
+        try
+        {
+            monoTorrent = await MonoTorrent.Torrent.LoadAsync(bytes);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidDataException("Invalid torrent file.", ex);
+        }
+
         var enriched = await enricher.EnrichTorrentBytes(bytes);
 
         string fileAsBase64;
@@ -159,15 +170,6 @@ public class Torrents(
         {
             fileAsBase64 = Convert.ToBase64String(enriched);
             logger.LogDebug($"enriched bytes {enriched}");
-        }
-
-        try
-        {
-            monoTorrent = await MonoTorrent.Torrent.LoadAsync(bytes);
-        }
-        catch (Exception ex)
-        {
-            throw new Exception($"{ex.Message}, trying to parse {fileAsBase64}");
         }
 
         if (!string.IsNullOrWhiteSpace(Settings.Get.General.BannedTrackers))
@@ -379,6 +381,10 @@ public class Torrents(
             return;
         }
 
+        var localDownloadPath = deleteLocalFiles && !string.IsNullOrWhiteSpace(torrent.RdName)
+            ? GetSafeLocalDeletePath(torrent)
+            : null;
+
         Log($"Deleting", torrent);
 
         await UpdateComplete(torrentId, "Torrent deleted", DateTimeOffset.UtcNow, false);
@@ -444,14 +450,11 @@ public class Torrents(
             }
         }
 
-        if (deleteLocalFiles && !string.IsNullOrWhiteSpace(torrent.RdName))
+        if (localDownloadPath != null)
         {
-            var downloadPath = DownloadPath(torrent);
-            downloadPath = Path.Combine(downloadPath, torrent.RdName);
+            Log($"Deleting local files in {localDownloadPath}", torrent);
 
-            Log($"Deleting local files in {downloadPath}", torrent);
-
-            if (Directory.Exists(downloadPath))
+            if (fileSystem.Directory.Exists(localDownloadPath))
             {
                 var retry = 0;
 
@@ -459,7 +462,7 @@ public class Torrents(
                 {
                     try
                     {
-                        Directory.Delete(downloadPath, true);
+                        fileSystem.Directory.Delete(localDownloadPath, true);
 
                         break;
                     }
@@ -768,16 +771,30 @@ public class Torrents(
         return torrent;
     }
 
-    private static string DownloadPath(Torrent torrent, DbSettings? settings = null)
+    private string DownloadPath(Torrent torrent, DbSettings? settings = null)
     {
-        var settingDownloadPath = (settings ?? Settings.Get).Paths.DownloadPath;
+        return DownloadHelper.GetCategoryPath(
+            (settings ?? Settings.Get).Paths.DownloadPath,
+            torrent.Category,
+            fileSystem);
+    }
 
-        if (!string.IsNullOrWhiteSpace(torrent.Category))
+    private string GetSafeLocalDeletePath(Torrent torrent)
+    {
+        var downloadRoot = FileSystemPath.Normalize(Settings.Get.Paths.DownloadPath);
+        var categoryPath = DownloadPath(torrent);
+        var torrentPath = FileSystemPath.Normalize(Path.Combine(
+            categoryPath,
+            DownloadHelper.GetTorrentDirectoryName(torrent)));
+
+        if (!FileSystemPath.IsStrictDescendant(torrentPath, categoryPath) ||
+            !FileSystemPath.IsSameOrDescendant(categoryPath, downloadRoot) ||
+            FileSystemPath.ContainsReparsePoint(fileSystem, torrentPath, downloadRoot))
         {
-            settingDownloadPath = Path.Combine(settingDownloadPath, torrent.Category);
+            throw new InvalidDataException("Refusing to delete an unsafe torrent download path.");
         }
 
-        return settingDownloadPath;
+        return torrentPath;
     }
 
     private async Task<Torrent> AddQueued(string infoHash,
@@ -785,21 +802,35 @@ public class Torrents(
                                           bool isFile,
                                           Torrent torrent)
     {
-        var existingTorrent = await torrentData.GetByHash(infoHash);
+        await TorrentAddLock.WaitAsync();
 
-        if (existingTorrent != null)
+        try
         {
-            return existingTorrent;
+            var existingTorrent = await torrentData.GetByHash(infoHash);
+
+            if (existingTorrent != null)
+            {
+                if (!string.IsNullOrWhiteSpace(torrent.Category) &&
+                    !string.Equals(existingTorrent.Category, torrent.Category, StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new InvalidOperationException(
+                        $"Torrent {existingTorrent.Hash} already exists under a different category.");
+                }
+
+                return existingTorrent;
+            }
+
+            return await torrentData.Add(null,
+                                         infoHash,
+                                         fileOrMagnetContents,
+                                         isFile,
+                                         torrent.DownloadClient,
+                                         torrent);
         }
-
-        var newTorrent = await torrentData.Add(null,
-                                               infoHash,
-                                               fileOrMagnetContents,
-                                               isFile,
-                                               torrent.DownloadClient,
-                                               torrent);
-
-        return newTorrent;
+        finally
+        {
+            TorrentAddLock.Release();
+        }
     }
 
     public async Task Update(Torrent torrent)
@@ -826,7 +857,7 @@ public class Torrents(
         Log($"Parsing external program {fileName} with arguments {arguments}", torrent);
 
         var downloadPath = DownloadPath(torrent, settings);
-        var torrentPath = Path.Combine(downloadPath, torrent.RdName ?? "Unknown");
+        var torrentPath = Path.Combine(downloadPath, DownloadHelper.GetTorrentDirectoryName(torrent));
 
         var filePath = torrentPath;
 

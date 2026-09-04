@@ -78,7 +78,20 @@ public static class FileHelper
 
     public static string RemoveInvalidFileNameChars(string filename)
     {
-        return string.Concat(filename.Split(Path.GetInvalidFileNameChars()));
+        var invalidCharacters = Path.GetInvalidFileNameChars();
+        var sanitized = new string(filename
+                                  .Where(character => character >= ' ' &&
+                                                      !invalidCharacters.Contains(character) &&
+                                                      !"<>:\"/\\|?*".Contains(character))
+                                  .ToArray())
+                       .Trim();
+
+        return sanitized switch
+        {
+            "." => "_",
+            ".." => "__",
+            _ => sanitized
+        };
     }
     
     public static string GetDirectoryContents(string path)
