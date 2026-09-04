@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0](https://github.com/krakn-dev/alldebrid-client/compare/v1.5.2...v1.6.0) (2026-09-04)
+
+
+### Features
+
+* **updates:** add verified Windows service updater ([474b89d](https://github.com/krakn-dev/alldebrid-client/commit/474b89d5d6efbf98e37280900985ce5e06d847e1))
+
+
+### Bug Fixes
+
+* **settings:** use platform-appropriate download paths ([022fca8](https://github.com/krakn-dev/alldebrid-client/commit/022fca845aac52ccde75dda87ea5d85afac36cf0))
+
 ## [1.5.2](https://github.com/krakn-dev/alldebrid-client/compare/v1.5.1...v1.5.2) (2026-09-04)
 
 
