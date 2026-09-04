@@ -183,12 +183,14 @@ public class TorrentsTest
     public async Task RunTorrentComplete_WhenStdOut_Logs(Torrent torrent, List<Download> downloads)
     {
         // Arrange
+        var baseDownloadPath = Path.Combine(Path.GetTempPath(), "adb-test-downloads");
         var settings = new DbSettings
         {
             General = new()
             {
                 RunOnTorrentCompleteFileName = "/bin/echo"
-            }
+            },
+            Paths = new() { DownloadPath = baseDownloadPath }
         };
 
         var mocks = new Mocks();
@@ -196,9 +198,9 @@ public class TorrentsTest
         mocks.TorrentDataMock.Setup(t => t.GetById(torrent.TorrentId)).Returns(Task.FromResult<Torrent?>(torrent));
         mocks.DownloadsMock.Setup(d => d.GetForTorrent(torrent.TorrentId)).ReturnsAsync(downloads);
 
-        var downloadPath = $"{settings.Paths.DownloadPath}/{torrent.Category}";
-        var torrentPath = $"{downloadPath}/{torrent.RdName}";
-        var filePath = $"{torrentPath}/{downloads[0].FileName}";
+        var downloadPath = Path.Combine(baseDownloadPath, torrent.Category!);
+        var torrentPath = Path.Combine(downloadPath, torrent.RdName!);
+        var filePath = Path.Combine(torrentPath, downloads[0].FileName!);
 
         var fileSystemMock = new MockFileSystem(new Dictionary<string, MockFileData>
         {
@@ -246,12 +248,14 @@ public class TorrentsTest
     public async Task RunTorrentComplete_WhenStdErr_Logs(Torrent torrent, List<Download> downloads)
     {
         // Arrange
+        var baseDownloadPath = Path.Combine(Path.GetTempPath(), "adb-test-downloads");
         var settings = new DbSettings
         {
             General = new()
             {
                 RunOnTorrentCompleteFileName = "/bin/echo"
-            }
+            },
+            Paths = new() { DownloadPath = baseDownloadPath }
         };
 
         var mocks = new Mocks();
@@ -259,9 +263,9 @@ public class TorrentsTest
         mocks.TorrentDataMock.Setup(t => t.GetById(torrent.TorrentId)).Returns(Task.FromResult<Torrent?>(torrent));
         mocks.DownloadsMock.Setup(d => d.GetForTorrent(torrent.TorrentId)).ReturnsAsync(downloads);
 
-        var downloadPath = $"{settings.Paths.DownloadPath}/{torrent.Category}";
-        var torrentPath = $"{downloadPath}/{torrent.RdName}";
-        var filePath = $"{torrentPath}/{downloads[0].FileName}";
+        var downloadPath = Path.Combine(baseDownloadPath, torrent.Category!);
+        var torrentPath = Path.Combine(downloadPath, torrent.RdName!);
+        var filePath = Path.Combine(torrentPath, downloads[0].FileName!);
 
         var fileSystemMock = new MockFileSystem(new Dictionary<string, MockFileData>
         {
