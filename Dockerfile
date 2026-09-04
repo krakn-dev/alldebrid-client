@@ -27,7 +27,7 @@ ENV TARGETPLATFORM=${TARGETPLATFORM:-linux/amd64}
 ARG BUILDPLATFORM
 ENV BUILDPLATFORM=${BUILDPLATFORM:-linux/amd64}
 # x-release-please-start-version
-ARG VERSION=1.5.0
+ARG VERSION=1.5.1
 # x-release-please-end
 
 RUN mkdir /appserver
@@ -54,7 +54,7 @@ ENV BUILDPLATFORM=${BUILDPLATFORM:-linux/amd64}
 # set version label
 ARG BUILD_DATE
 # x-release-please-start-version
-ARG VERSION=1.5.0
+ARG VERSION=1.5.1
 # x-release-please-end
 LABEL build_version="Linuxserver.io extended version:- ${VERSION} Build-date:- ${BUILD_DATE}"
 ENV XDG_CONFIG_HOME="/config/xdg"
