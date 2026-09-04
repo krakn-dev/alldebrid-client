@@ -64,7 +64,7 @@ sudo systemctl start alldebrid-client
 1. Browse to `http://127.0.0.1:6500`.
 2. The first credentials you enter become your login.
 3. Go to **Settings → AllDebrid** and enter your API key (found at [alldebrid.com/apikeys](https://alldebrid.com/apikeys/)).
-4. Set the **Download path** to where you want files saved.
+4. Set the **Local download path** to where you want files saved.
 5. Save settings.
 
 ---
@@ -77,17 +77,17 @@ All jobs use the regular settings under **Settings → Download → Defaults**. 
 
 ### Sonarr and Radarr
 
-1. Set **Download path** to the physical download directory, such as `D:\Programs\AllDebridClient\Data\downloads`, and set the default **Post torrent download action** to **Download all files to host** so imports receive real local files.
+1. Set **Local download path** to the physical download directory, such as `D:\Programs\AllDebridClient\Data\downloads`, and set the default **Post torrent download action** to **Download all files to host** so imports receive real local files.
 2. Add AllDebrid Client as a qBittorrent download client in each application. Use the AllDebrid Client address (`127.0.0.1` when it runs on the same host), port `6500`, category `sonarr` or `radarr`, and a blank URL base unless AllDebrid Client has a base path configured. Use the **Started** initial state, leave **Content Layout** at **Default**, and leave sequential and first/last-piece options disabled. Leave the post-import category blank. Keep completed- and failed-download removal disabled when AllDebrid Client should retain its records.
-3. AllDebrid Client reports **Mapped path** to download clients. If Sonarr or Radarr cannot access that exact path, add a remote path mapping from the AllDebrid Client host and mapped path to the local physical path. For example, map host `127.0.0.1` and remote path `/media/downloads` to `D:\Programs\AllDebridClient\Data\downloads`.
+3. AllDebrid Client returns **Reported download path** through its qBittorrent API. If Sonarr or Radarr cannot access that exact path, add a Remote Path Mapping from the reported path to **Local download path**. The mapping host must exactly match the host configured on that download client. For example, when the client host is `localhost`, map host `localhost` and remote path `/media/downloads` to `D:\Programs\AllDebridClient\Data\downloads`.
 4. Test the client in Sonarr or Radarr before removing an existing download client.
 
-Each category gets its own directory beneath **Download path**. Direct integration does not use the torrent-blackhole watch directory and does not leave a loose magnet or `.torrent` file behind. The existing **Copy added torrents** setting can still be enabled when those source files are intentionally wanted.
+Each category gets its own directory beneath **Local download path**. Direct integration does not use the torrent-blackhole watch directory and does not leave a loose magnet or `.torrent` file behind. The existing **Copy added torrents** setting can still be enabled when those source files are intentionally wanted.
 
 ### Logpose
 
-1. Set **Download path** to the physical shared download directory.
-2. Set **Mapped path** to that same directory as Logpose sees it. For containers sharing `/media/downloads`, use `/media/downloads` in both applications.
+1. Set **Local download path** to the physical shared download directory.
+2. Set **Reported download path** to that same directory as Logpose sees it. For containers sharing `/media/downloads`, use `/media/downloads` in both applications.
 3. Point Logpose's normal qBittorrent configuration at AllDebrid Client:
 
 ```yaml
@@ -100,7 +100,7 @@ qbittorrent:
   password: "your-alldebrid-client-password"
 ```
 
-Use the AllDebrid Client login when username/password authentication is enabled. When authentication is disabled, the values may be blank. Logpose creates and uses the `logpose` category automatically, and files are downloaded under `<Download path>/logpose`. These jobs use the regular exposed AllDebrid Client download defaults, including file selection, host-download action, filters, retries, finished action, retention, and priority. After importing, Logpose's `deleteFiles=false` callback moves the job to `logpose-retained`, where it remains in AllDebrid Client and on the provider until the configured retention policy or the user removes it. This takes the completed job out of Logpose's active queue without deleting imported media; only safe empty staging directories are cleaned up.
+Use the AllDebrid Client login when username/password authentication is enabled. When authentication is disabled, the values may be blank. Logpose creates and uses the `logpose` category automatically, and files are downloaded under `<Local download path>/logpose`. These jobs use the regular exposed AllDebrid Client download defaults, including file selection, host-download action, filters, retries, finished action, retention, and priority. After importing, Logpose's `deleteFiles=false` callback moves the job to `logpose-retained`, where it remains in AllDebrid Client and on the provider until the configured retention policy or the user removes it. This takes the completed job out of Logpose's active queue without deleting imported media; only safe empty staging directories are cleaned up.
 
 ---
 

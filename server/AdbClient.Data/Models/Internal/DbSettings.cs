@@ -107,12 +107,12 @@ public class DbSettingsDownloadClient
 
 public class DbSettingsPaths
 {
-    [DisplayName("Download path")]
-    [Description(@"Where to save downloaded files (e.g. C:\Downloads).")]
+    [DisplayName("Local download path")]
+    [Description(@"Physical directory where AllDebrid Client writes downloaded files (e.g. C:\Downloads).")]
     public string DownloadPath { get; set; } = @"C:\Downloads";
 
-    [DisplayName("Mapped path")]
-    [Description(@"Path as seen by *arr apps (e.g. D:\Downloads). Leave blank if identical to download path.")]
+    [DisplayName("Reported download path")]
+    [Description(@"Path reported through the qBittorrent API (e.g. /media/downloads for containers). If a client sees a different local path, configure its Remote Path Mapping. Leave blank to report the local download path.")]
     public string MappedPath { get; set; } = @"C:\Downloads";
 
     [DisplayName("Copy added torrent files")]
