@@ -31,11 +31,28 @@ Keep application files and persistent data in separate directories.
 
 ### Updating a Windows service
 
-1. Back up the persistent data directory.
-2. Download and verify the checksum for the new release ZIP.
-3. Stop the `AllDebridClient` service.
-4. Replace the application files while preserving `appsettings.json` and the persistent data directory.
-5. Start the service and verify `http://127.0.0.1:6500/health` returns HTTP 200.
+Double-click `update.cmd` in the application directory. Approve the Windows administrator prompt and confirm the update. The updater:
+
+- accepts stable releases from this repository only;
+- verifies the release ZIP against its published SHA-256 checksum and, when available, the digest recorded by GitHub;
+- preserves `appsettings.json` and requires persistent data to be outside the application directory;
+- stops and restarts the service only when it was already running;
+- retains the previous application directory in a sibling backup directory; and
+- restores the previous version automatically if the service does not become healthy.
+
+Check for an update without changing the installation:
+
+```powershell
+.\update.ps1 -CheckOnly
+```
+
+Download, verify, and inspect the latest package without changing the installation:
+
+```powershell
+.\update.ps1 -ValidateOnly
+```
+
+Running the updater again when the current release is installed makes no changes. Use `-Force` only to reinstall that same release.
 
 Repository maintainers with a checkout and the standard `<install-root>\App`, `Data`, and `Backups` layout can use `deploy.ps1` from an Administrator PowerShell session. It builds into staging, preserves configuration and data, retains the previous application directory, and rolls back when the restarted service fails its health check.
 

@@ -41,7 +41,7 @@ Start the container, then open `http://<host>:6500`. The first credentials enter
 > [!IMPORTANT]
 > Authentication is disabled by default. Enable it before exposing the application beyond a trusted network.
 
-See the [Docker guide](docs/docker.md) for health checks, updates, immutable version tags, and local source builds. Windows and native Linux instructions are in the [installation guide](docs/installation.md).
+See the [Docker guide](docs/docker.md) for health checks, updates, immutable version tags, and local source builds. Windows releases include a verified service updater; Windows and native Linux instructions are in the [installation guide](docs/installation.md).
 
 ## Integrations
 

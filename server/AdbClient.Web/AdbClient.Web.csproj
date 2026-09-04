@@ -14,6 +14,8 @@
   <ItemGroup>
     <None Remove="service-install.bat" />
     <None Remove="service-remove.bat" />
+    <None Remove="update.cmd" />
+    <None Remove="update.ps1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,6 +24,14 @@
     </Content>
     <Content Include="service-remove.bat">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="update.cmd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+    </Content>
+    <Content Include="update.ps1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
     </Content>
   </ItemGroup>
 
