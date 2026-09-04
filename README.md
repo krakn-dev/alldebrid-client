@@ -1,6 +1,6 @@
 # AllDebrid Client
 
-A self-hosted web interface for managing torrents through [AllDebrid](https://alldebrid.com). Add torrents via magnet link or file, download them to your host automatically, and connect [Logpose](https://github.com/jasanpreetn9/logpose) directly.
+A self-hosted web interface for managing torrents through [AllDebrid](https://alldebrid.com). Add torrents via magnet link or file, download them to your host automatically, and connect [Logpose](https://github.com/jasanpreetn9/logpose), [Sonarr](https://sonarr.tv/), or [Radarr](https://radarr.video/) directly.
 
 Built with Angular 21 and .NET 10 LTS.
 
@@ -21,7 +21,7 @@ See [README-DOCKER.md](README-DOCKER.md) for the full Docker guide.
 ## Windows Service
 
 1. Install [ASP.NET Core Runtime 10.0](https://dotnet.microsoft.com/download/dotnet/10.0).
-2. Download the [latest Windows release](https://github.com/krkn-dev/alldebrid-client/releases/latest) and extract it.
+2. Download the [latest Windows release](https://github.com/krakn-dev/alldebrid-client/releases/latest) and extract it.
 3. In `appsettings.json`, set `DataPath` to a writable persistent directory. Use escaped backslashes, e.g. `D:\\AllDebridClient\\data`.
 4. Run `AdbClient.Web.exe` directly, or run `service-install.bat` to install it as a background service.
 
@@ -69,11 +69,24 @@ sudo systemctl start alldebrid-client
 
 ---
 
-## Logpose Integration
+## qBittorrent-Compatible Integrations
 
-AllDebrid Client implements the qBittorrent Web API subset used by Logpose. This is a focused Logpose integration, not a general qBittorrent replacement for Sonarr or Radarr.
+AllDebrid Client implements the qBittorrent Web API download-client surface used by Logpose, Sonarr, and Radarr. It accepts magnets and uploaded `.torrent` files, reports download progress and paths, and supports category creation, filtering, and pre-download assignment. It is not a general qBittorrent daemon or Web UI, and it does not move payloads between categories after a local download has started.
 
-1. In AllDebrid Client, set **Download path** to the physical shared download directory.
+All jobs use the regular settings under **Settings → Download → Defaults**. Set **Post download action** to **No Action** if external applications should not remove completed records from AllDebrid Client or AllDebrid. Use the AllDebrid Client login when authentication is enabled; leave the client credentials blank when it is disabled.
+
+### Sonarr and Radarr
+
+1. Set **Download path** to the physical download directory, such as `D:\Programs\AllDebridClient\Data\downloads`, and set the default **Post torrent download action** to **Download all files to host** so imports receive real local files.
+2. Add AllDebrid Client as a qBittorrent download client in each application. Use the AllDebrid Client address (`127.0.0.1` when it runs on the same host), port `6500`, category `sonarr` or `radarr`, and a blank URL base unless AllDebrid Client has a base path configured. Use the **Started** initial state, leave **Content Layout** at **Default**, and leave sequential and first/last-piece options disabled. Leave the post-import category blank. Keep completed- and failed-download removal disabled when AllDebrid Client should retain its records.
+3. AllDebrid Client reports **Mapped path** to download clients. If Sonarr or Radarr cannot access that exact path, add a remote path mapping from the AllDebrid Client host and mapped path to the local physical path. For example, map host `127.0.0.1` and remote path `/media/downloads` to `D:\Programs\AllDebridClient\Data\downloads`.
+4. Test the client in Sonarr or Radarr before removing an existing download client.
+
+Each category gets its own directory beneath **Download path**. Direct integration does not use the torrent-blackhole watch directory and does not leave a loose magnet or `.torrent` file behind. The existing **Copy added torrents** setting can still be enabled when those source files are intentionally wanted.
+
+### Logpose
+
+1. Set **Download path** to the physical shared download directory.
 2. Set **Mapped path** to that same directory as Logpose sees it. For containers sharing `/media/downloads`, use `/media/downloads` in both applications.
 3. Point Logpose's normal qBittorrent configuration at AllDebrid Client:
 
