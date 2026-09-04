@@ -210,15 +210,23 @@ function Publish-Local {
 
 function Start-DockerDev {
     Write-Header "Rebuild and start Docker dev container"
-    Assert-PortAvailable 6500 "the Docker dev container"
-    $dockerParams = @{
-        DockerPath = Test-RequiredCommand "docker"
-    }
+    $docker = Test-RequiredCommand "docker"
+    $composeFile = Join-Path $root "tools\docker-compose.yml"
+    $buildArguments = @("compose", "--file", $composeFile, "build")
+
     if ($SkipCache) {
-        $dockerParams.SkipCache = $true
+        $buildArguments += "--no-cache"
     }
 
-    & (Join-Path $root "tools\docker-build-dev.ps1") @dockerParams
+    & $docker @buildArguments
+    if ($LASTEXITCODE -ne 0) {
+        throw "Docker Compose build failed with exit code $LASTEXITCODE."
+    }
+
+    & $docker compose --file $composeFile up --detach
+    if ($LASTEXITCODE -ne 0) {
+        throw "Docker Compose startup failed with exit code $LASTEXITCODE."
+    }
 }
 
 function Show-Menu {

@@ -1,24 +1,43 @@
-**/.DS_Store
+# Operating-system files
+.DS_Store
+Thumbs.db
 
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+**/appsettings.Development.json
+**/appsettings.Local.json
+
+# Dependencies and generated output
+node_modules/
+client/.angular/
+client/coverage/
+client/dist/
+client/out-tsc/
+server/**/bin/
+server/**/obj/
 build/
 publish/
-node_modules/
+TestResults/
 
-# VS artifacts
+# Editor and user-specific state
+.idea/
 .vs/
+.vscode/
+*.sln.docstates
 *.suo
 *.user
 *.userprefs
 
-# .NET build output
-server/**/bin/
-server/**/obj/
+# Runtime data
+/data/
+*.db
+*.db-shm
+*.db-wal
+*.log
 
-# App config and data
-server/AdbClient.Web/appsettings.Development.json
-/data
-
-# Misc
+# Local packaging helpers and artifacts
+AllDebridClient*.zip
 Dockerfile.dev
 test.bat
-AllDebridClient.zip

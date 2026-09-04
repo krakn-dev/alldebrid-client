@@ -110,5 +110,5 @@ Each image is built from its matching Git release tag for `linux/amd64` and `lin
 ## Windows helper
 
 ```powershell
-.\tools\docker-build-dev.ps1
+.\dev.ps1 docker
 ```

@@ -1,40 +1,19 @@
-### Angular ###
-# compiled output
-client/dist/
-client/tmp/
-client/app/**/*.js
-client/app/**/*.js.map
+# Only the three source trees below are required by Dockerfile. Keeping the
+# context explicit prevents local data, credentials, tooling, and build output
+# from being sent to the builder.
+*
+!client/
+!client/**
+!root/
+!root/**
+!server/
+!server/**
 
-# dependencies
-client/node_modules/
-client/bower_components/
-
-# IDEs and editors
-client/.idea/
-
-# misc
-client/.sass-cache/
-client/connect.lock/
+client/.angular/
 client/coverage/
-client/libpeerconnection.log/
-client/npm-debug.log
-client/testem.log
-client/typings/
-
-# e2e
-client/e2e/*.js
-client/e2e/*.map
-
-#System Files
-**/.DS_Store/
-
-### DotnetCore ###
-# .NET Core build folders
-server/**/bin
-server/**/obj
-server/**/*.user
-server/**/.vs
+client/dist/
+client/node_modules/
+client/out-tsc/
+server/**/bin/
+server/**/obj/
 server/AdbClient.Web/wwwroot/
-
-build/
-publish/data
