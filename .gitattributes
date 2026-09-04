@@ -3,6 +3,7 @@
 *.sh text eol=lf
 Dockerfile text eol=lf
 root/** text eol=lf
+client/** text eol=lf
 
 *.bat text eol=crlf
 *.cmd text eol=crlf
