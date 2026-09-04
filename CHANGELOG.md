@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.1](https://github.com/krakn-dev/alldebrid-client/compare/v1.5.0...v1.5.1) (2026-09-04)
+
+
+### Bug Fixes
+
+* **settings:** clarify reported download paths ([b6e15bf](https://github.com/krakn-dev/alldebrid-client/commit/b6e15bf4780d2b8c115b8882c7184f721b36f433))
+
 ## [1.5.0](https://github.com/krakn-dev/alldebrid-client/compare/v1.4.0...v1.5.0) (2026-09-04)
 
 
