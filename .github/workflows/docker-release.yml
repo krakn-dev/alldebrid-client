@@ -19,13 +19,15 @@ on:
 
 permissions:
   contents: read
+  packages: write
 
 concurrency:
   group: docker-release-${{ inputs.tag }}
   cancel-in-progress: false
 
 env:
-  IMAGE_NAME: krakal/alldebrid-client
+  DOCKERHUB_IMAGE: krakal/alldebrid-client
+  GHCR_IMAGE: ghcr.io/${{ github.repository }}
 
 jobs:
   publish:
@@ -57,6 +59,13 @@ jobs:
           username: krakal
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
 
@@ -67,7 +76,9 @@ jobs:
         id: metadata
         uses: docker/metadata-action@v6
         with:
-          images: ${{ env.IMAGE_NAME }}
+          images: |
+            ${{ env.DOCKERHUB_IMAGE }}
+            ${{ env.GHCR_IMAGE }}
           flavor: latest=false
           tags: |
             type=semver,pattern={{version}},value=${{ steps.release.outputs.tag }}

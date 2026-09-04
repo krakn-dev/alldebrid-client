@@ -1,13 +1,13 @@
 # Docker
 
-Stable multi-platform images are published to [`krakal/alldebrid-client`](https://hub.docker.com/r/krakal/alldebrid-client) for `linux/amd64` and `linux/arm64`.
+Stable multi-platform images are published to [GitHub Container Registry](https://github.com/krakn-dev/alldebrid-client/pkgs/container/alldebrid-client) and [Docker Hub](https://hub.docker.com/r/krakal/alldebrid-client) for `linux/amd64` and `linux/arm64`. Both registries receive the same tags from the same release build.
 
 ## Docker Compose
 
 ```yaml
 services:
   alldebrid-client:
-    image: krakal/alldebrid-client:latest
+    image: ghcr.io/krakn-dev/alldebrid-client:latest
     container_name: alldebrid-client
     environment:
       PUID: 1000
@@ -49,7 +49,7 @@ docker compose pull
 docker compose up -d
 ```
 
-Releases publish immutable full-version tags plus rolling major, minor, and `latest` tags. Pin a full tag such as `1.5.2` when reproducibility is more important than following stable updates automatically.
+Releases publish immutable full-version tags plus rolling major, minor, and `latest` tags. Pin a full tag such as `1.5.2` when reproducibility is more important than following stable updates automatically. Existing Docker Hub installations can continue using `krakal/alldebrid-client` without changing their Compose file.
 
 Every release image is built from its matching Git tag. Release images include provenance and a software bill of materials.
 

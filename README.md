@@ -2,6 +2,7 @@
 
 [![Build](https://github.com/krakn-dev/alldebrid-client/actions/workflows/release.yml/badge.svg?branch=main)](https://github.com/krakn-dev/alldebrid-client/actions/workflows/release.yml)
 [![Latest release](https://img.shields.io/github/v/release/krakn-dev/alldebrid-client)](https://github.com/krakn-dev/alldebrid-client/releases/latest)
+[![Container image](https://img.shields.io/badge/container-ghcr.io-blue?logo=docker)](https://github.com/krakn-dev/alldebrid-client/pkgs/container/alldebrid-client)
 [![Docker pulls](https://img.shields.io/docker/pulls/krakal/alldebrid-client)](https://hub.docker.com/r/krakal/alldebrid-client)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
@@ -22,7 +23,7 @@ This is an independent community project and is not affiliated with AllDebrid or
 ```yaml
 services:
   alldebrid-client:
-    image: krakal/alldebrid-client:latest
+    image: ghcr.io/krakn-dev/alldebrid-client:latest
     container_name: alldebrid-client
     environment:
       PUID: 1000
