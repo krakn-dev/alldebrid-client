@@ -108,12 +108,12 @@ public class DbSettingsDownloadClient
 public class DbSettingsPaths
 {
     [DisplayName("Local download path")]
-    [Description(@"Physical directory where AllDebrid Client writes downloaded files (e.g. C:\Downloads).")]
-    public string DownloadPath { get; set; } = @"C:\Downloads";
+    [Description("Physical directory where AllDebrid Client writes downloaded files.")]
+    public string DownloadPath { get; set; } = GetDefaultDownloadPath();
 
-    [DisplayName("Reported download path")]
-    [Description(@"Path reported through the qBittorrent API (e.g. /media/downloads for containers). If a client sees a different local path, configure its Remote Path Mapping. Leave blank to report the local download path.")]
-    public string MappedPath { get; set; } = @"C:\Downloads";
+    [DisplayName("Client-visible download path (advanced)")]
+    [Description("Usually leave blank. Set only when an integrated application sees the download directory at a different path, such as across a container boundary.")]
+    public string? MappedPath { get; set; }
 
     [DisplayName("Copy added torrent files")]
     [Description("Copy each added torrent or magnet file to this directory.")]
@@ -130,6 +130,17 @@ public class DbSettingsPaths
     [DisplayName("Watch processed path")]
     [Description(@"Successful torrents are moved here. Defaults to \processed inside the watch folder.")]
     public string? WatchProcessedPath { get; set; } = null;
+
+    private static string GetDefaultDownloadPath()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return "/data/downloads";
+        }
+
+        var commonDataPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+        return Path.Combine(commonDataPath, "AllDebridClient", "downloads");
+    }
 }
 
 public class DbSettingsProvider

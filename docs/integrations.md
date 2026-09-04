@@ -7,7 +7,7 @@ AllDebrid Client implements the qBittorrent Web API surface required by Sonarr, 
 Configure these under **Settings → Download** before connecting another application:
 
 - **Local download path** is the physical directory where AllDebrid Client writes files.
-- **Reported download path** is the path returned through the qBittorrent API. Leave it blank to report the local path.
+- **Client-visible download path** is an advanced override for the path returned through the qBittorrent API. Leave it blank unless another application sees the directory at a different path.
 - **Post torrent download action** must download files to the host when another application needs to import them.
 - **Completed record action** controls whether completed AllDebrid Client and provider records are retained. It does not prevent an external client from explicitly removing a successfully imported local payload.
 
@@ -17,16 +17,17 @@ Use the AllDebrid Client login when username and password authentication is enab
 
 ## Paths and containers
 
-No Remote Path Mapping is needed when AllDebrid Client and the connecting application see the download directory under the same path.
+Use the same download path in every container whenever possible. For example, mount the same host directory as `/data/downloads` in AllDebrid Client, Sonarr, and Radarr, then leave **Client-visible download path** blank. No Remote Path Mapping is needed.
 
-When they see different paths, set **Reported download path** to the path returned to the connecting application and configure that application's Remote Path Mapping to its accessible local path. The mapping host must exactly match the host configured on the download client.
+For a native Windows AllDebrid Client used by containerized Sonarr or Radarr, mount the Windows download directory into the other container at `/data/downloads` and set **Client-visible download path** to `/data/downloads`. This keeps the path reported by AllDebrid Client identical to the path the container can read, so no Remote Path Mapping is needed there either.
 
-For example, if AllDebrid Client writes to `D:\Programs\AllDebridClient\Data\downloads` but a container sees that directory as `/media/downloads`:
+For example:
 
 - AllDebrid Client **Local download path**: `D:\Programs\AllDebridClient\Data\downloads`
-- AllDebrid Client **Reported download path**: `/media/downloads`
-- Sonarr or Radarr mapping remote path: `/media/downloads`
-- Sonarr or Radarr mapping local path: the path of the same mount inside that container
+- Sonarr or Radarr volume: `D:\Programs\AllDebridClient\Data\downloads:/data/downloads`
+- AllDebrid Client **Client-visible download path**: `/data/downloads`
+
+Remote Path Mapping is only necessary when you cannot expose the same directory under the path AllDebrid Client reports. It translates paths; it does not transfer files.
 
 ## Sonarr and Radarr
 
@@ -49,7 +50,7 @@ Sonarr and Radarr normally hardlink torrent payloads into their libraries when t
 
 ## Logpose
 
-Set **Reported download path** to the same directory as Logpose sees it. For containers sharing `/media/downloads`, use `/media/downloads` in both applications.
+Set **Client-visible download path** to the same directory as Logpose sees it. Leave it blank when both use the same path. For containers sharing `/media/downloads`, use `/media/downloads` in both applications.
 
 Point Logpose's qBittorrent configuration at AllDebrid Client:
 

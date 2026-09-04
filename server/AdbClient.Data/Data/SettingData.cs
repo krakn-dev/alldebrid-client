@@ -65,7 +65,7 @@ public class SettingData(DataContext dataContext, ILogger<SettingData> logger)
 
     public async Task Seed()
     {
-        var dbSettings = await dataContext.Settings.AsNoTracking().ToListAsync();
+        var dbSettings = await dataContext.Settings.ToListAsync();
 
         var expectedSettings = GetSettings(Get, null).Where(m => m.Type != "Object").Select(m => new Setting
         {
@@ -78,7 +78,6 @@ public class SettingData(DataContext dataContext, ILogger<SettingData> logger)
         if (newSettings.Count > 0)
         {
             await dataContext.Settings.AddRangeAsync(newSettings);
-            await dataContext.SaveChangesAsync();
         }
 
         var oldSettings = dbSettings.Where(m => expectedSettings.All(p => p.SettingId != m.SettingId)).ToList();
@@ -86,8 +85,53 @@ public class SettingData(DataContext dataContext, ILogger<SettingData> logger)
         if (oldSettings.Count > 0)
         {
             dataContext.Settings.RemoveRange(oldSettings);
+        }
+
+        NormalizePathDefaults(dbSettings);
+
+        if (dataContext.ChangeTracker.HasChanges())
+        {
             await dataContext.SaveChangesAsync();
         }
+    }
+
+    private static void NormalizePathDefaults(IList<Setting> settings)
+    {
+        const string legacyWindowsDefault = @"C:\Downloads";
+
+        var downloadPath = settings.FirstOrDefault(setting => setting.SettingId == "Paths:DownloadPath");
+        var reportedPath = settings.FirstOrDefault(setting => setting.SettingId == "Paths:MappedPath");
+        var reportedPathIsRedundant = downloadPath != null &&
+                                      reportedPath != null &&
+                                      PathsAreEquivalent(downloadPath.Value, reportedPath.Value);
+
+        if (!OperatingSystem.IsWindows() &&
+            downloadPath != null &&
+            string.Equals(downloadPath.Value, legacyWindowsDefault, StringComparison.OrdinalIgnoreCase))
+        {
+            downloadPath.Value = "/data/downloads";
+        }
+
+        if (reportedPathIsRedundant)
+        {
+            reportedPath!.Value = null;
+        }
+    }
+
+    private static bool PathsAreEquivalent(string? first, string? second)
+    {
+        if (string.IsNullOrWhiteSpace(first) || string.IsNullOrWhiteSpace(second))
+        {
+            return false;
+        }
+
+        var normalizedFirst = first.Trim().TrimEnd('/', '\\');
+        var normalizedSecond = second.Trim().TrimEnd('/', '\\');
+        var comparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+
+        return string.Equals(normalizedFirst, normalizedSecond, comparison);
     }
 
     private static List<SettingProperty> GetSettings(Object defaultSetting, string? parent)

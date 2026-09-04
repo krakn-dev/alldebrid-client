@@ -12,21 +12,6 @@ public class Settings(SettingData settingData)
 
     public static DbSettings Get => SettingData.Get;
 
-    public static string AppDefaultSavePath
-    {
-        get
-        {
-            var downloadPath = Get.Paths.MappedPath;
-
-            downloadPath = downloadPath.TrimEnd('\\')
-                                       .TrimEnd('/');
-
-            downloadPath += Path.DirectorySeparatorChar;
-
-            return downloadPath;
-        }
-    }
-
     public async Task Update(IList<SettingProperty> settings)
     {
         await settingData.Update(settings);

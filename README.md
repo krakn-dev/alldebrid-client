@@ -53,7 +53,7 @@ AllDebrid Client provides a focused qBittorrent-compatible API for download-clie
 | Radarr      | qBittorrent download client | `radarr`           |
 | Logpose     | qBittorrent configuration   | Created by Logpose |
 
-Integrated jobs use the same download defaults exposed in AllDebrid Client. **Local download path** is where AllDebrid Client writes files; **Reported download path** is the path returned to the connecting application. They can be identical when both applications see the same filesystem path. A Remote Path Mapping is needed only when the connecting application sees that directory under a different path.
+Integrated jobs use the same download defaults exposed in AllDebrid Client. Fresh Docker installations use `/data/downloads`; fresh Windows installations use the application data directory. Mount the same download directory at the same path in cooperating containers and no Remote Path Mapping is needed. **Client-visible download path** is an advanced override for mixed native/container setups where the paths cannot be identical.
 
 Follow the [integration guide](docs/integrations.md) for exact settings, container path examples, and deletion and retention behavior.
 

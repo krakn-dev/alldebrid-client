@@ -38,9 +38,9 @@ Run `docker compose up -d`, then open `http://<host>:6500`.
 | `/data/db`        | SQLite database, settings, and logs |
 | `/data/downloads` | Downloaded files                    |
 
-Both paths must use persistent mounts. Back up `/data/db` before replacing or migrating an installation.
+Both paths must use persistent mounts. `/data/downloads` is also the application's default local download path in Docker. Back up `/data/db` before replacing or migrating an installation.
 
-For integrations running in containers, mount the same host download directory into each container. Using `/data/downloads` in AllDebrid Client and `/media/downloads` in another container is valid, but the **Reported download path** and any Remote Path Mapping must describe that difference. See the [integration guide](integrations.md).
+For integrations running in containers, mount the same host download directory as `/data/downloads` in every container. The shared path lets Sonarr and Radarr import files directly without a Remote Path Mapping. See the [integration guide](integrations.md) for mixed native/container installations.
 
 ## Updating
 

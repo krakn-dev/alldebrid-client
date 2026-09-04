@@ -7,7 +7,7 @@ Docker is the recommended installation method on Linux. A framework-dependent re
 1. Open `http://127.0.0.1:6500`, or replace `127.0.0.1` with the host address.
 2. The first credentials entered become the application login.
 3. Open **Settings → AllDebrid** and enter an API key from [alldebrid.com/apikeys](https://alldebrid.com/apikeys/).
-4. Under **Settings → Download**, set **Local download path** and review the default download and retention actions.
+4. Under **Settings → Download**, review the local download path and the default download and retention actions. The platform default is usable without editing it.
 5. Save the settings before adding a torrent or configuring an integration.
 
 The default authentication mode is **No Authentication**. Enable username and password authentication before exposing the application beyond a trusted network. AllDebrid Client does not provide TLS termination; use a trusted reverse proxy when HTTPS is required.
@@ -20,13 +20,14 @@ Use the published multi-platform image and persist both `/data/db` and `/data/do
 
 1. Install the [.NET 10 ASP.NET Core Runtime](https://dotnet.microsoft.com/download/dotnet/10.0).
 2. Download and extract the [latest release ZIP](https://github.com/krakn-dev/alldebrid-client/releases/latest) to its permanent location.
-3. Edit `appsettings.json` and set `DataPath` to a writable persistent directory. JSON backslashes must be escaped, for example `D:\\AllDebridClient\\Data`.
-4. Test the application by running `AdbClient.Web.exe` and opening `http://127.0.0.1:6500`.
-5. To run it in the background, stop the test process and run `service-install.bat` as Administrator.
+3. Test the application by running `AdbClient.Web.exe` and opening `http://127.0.0.1:6500`.
+4. To run it in the background, stop the test process and run `service-install.bat` as Administrator.
 
 The installer creates an automatically started `AllDebridClient` Windows service and an inbound firewall rule for the executable. Run `service-remove.bat` as Administrator to remove both.
 
-Keep application files and persistent data in separate directories. The included update notice links to the latest completed GitHub release; the application does not replace its executable or restart its service automatically.
+The default persistent data directory is `C:\ProgramData\AllDebridClient`. To use another location, edit `appsettings.json` before first launch and set `DataPath` to a writable directory. JSON backslashes must be escaped, for example `D:\\AllDebridClient\\Data`.
+
+Keep application files and persistent data in separate directories.
 
 ### Updating a Windows service
 
