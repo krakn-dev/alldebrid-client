@@ -119,6 +119,7 @@ public class QBittorrentCompatibilityTest
         Assert.Equal(1d, info.Progress);
         Assert.Equal("pausedUP", info.State);
         Assert.Equal(0, info.Eta);
+        Assert.Equal(0, info.RatioLimit);
     }
 
     [Theory]
@@ -1398,19 +1399,128 @@ public class QBittorrentCompatibilityTest
     }
 
     [Fact]
-    public async Task Delete_RetainsNonLogposeJobWhenItsConfiguredActionIsNone()
+    public async Task DeleteWithFiles_RemovesLocalDataAndRetainsRecordWhenConfiguredActionIsNone()
     {
-        var torrent = CreateDeletionTorrent("Movie", "movie.mkv");
-        torrent.Category = "radarr";
-        torrent.FinishedAction = TorrentFinishedAction.None;
-        var torrentData = CreateTorrentDataForDelete(torrent);
-        var downloads = new Mock<IDownloads>();
-        var compatibility = CreateCompatibility(torrentData: torrentData, downloads: downloads);
+        var originalDownloadPath = Settings.Get.Paths.DownloadPath;
+        var downloadRoot = GetTestDownloadRoot();
+        var categoryRoot = Path.Combine(downloadRoot, "radarr");
+        var jobDirectory = Path.Combine(categoryRoot, "Movie");
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile(Path.Combine(jobDirectory, "movie.mkv"), new MockFileData("media"));
 
-        await compatibility.Delete(torrent.Hash, true);
+        try
+        {
+            Settings.Get.Paths.DownloadPath = downloadRoot;
+            var torrent = CreateDeletionTorrent("Movie", "movie.mkv");
+            torrent.Category = "radarr";
+            torrent.FinishedAction = TorrentFinishedAction.None;
+            var torrentData = CreateTorrentDataForDelete(torrent);
+            torrentData.Setup(data => data.UpdateCategory(torrent.TorrentId, "radarr-retained"))
+                       .Callback(() => torrent.Category = "radarr-retained")
+                       .Returns(Task.CompletedTask);
+            torrentData.Setup(data => data.Get()).ReturnsAsync([torrent]);
+            var downloads = new Mock<IDownloads>();
+            var compatibility = CreateCompatibility(
+                torrentData: torrentData,
+                downloads: downloads,
+                fileSystem: fileSystem);
 
-        torrentData.Verify(data => data.Delete(It.IsAny<Guid>()), Times.Never);
-        downloads.Verify(data => data.DeleteForTorrent(It.IsAny<Guid>()), Times.Never);
+            await compatibility.Delete(torrent.Hash, true);
+
+            Assert.False(fileSystem.Directory.Exists(jobDirectory));
+            Assert.True(fileSystem.Directory.Exists(categoryRoot));
+            Assert.True(fileSystem.Directory.Exists(downloadRoot));
+            Assert.Equal("radarr-retained", torrent.Category);
+            Assert.Empty(await compatibility.GetTorrents("radarr"));
+            Assert.Equal(torrent.Hash, Assert.Single(await compatibility.GetTorrents("all")).Hash);
+            torrentData.Verify(data => data.UpdateCategory(torrent.TorrentId, "radarr-retained"), Times.Once);
+            torrentData.Verify(data => data.Delete(It.IsAny<Guid>()), Times.Never);
+            torrentData.Verify(data => data.UpdateComplete(
+                It.IsAny<Guid>(),
+                It.IsAny<string?>(),
+                It.IsAny<DateTimeOffset?>(),
+                It.IsAny<bool>()), Times.Never);
+            downloads.Verify(data => data.DeleteForTorrent(It.IsAny<Guid>()), Times.Never);
+        }
+        finally
+        {
+            Settings.Get.Paths.DownloadPath = originalDownloadPath;
+        }
+    }
+
+    [Fact]
+    public async Task DeleteWithoutFiles_RetainsLocalDataAndRecordWhenConfiguredActionIsNone()
+    {
+        var originalDownloadPath = Settings.Get.Paths.DownloadPath;
+        var downloadRoot = GetTestDownloadRoot();
+        var jobDirectory = Path.Combine(downloadRoot, "radarr", "Movie");
+        var retainedFile = Path.Combine(jobDirectory, "movie.mkv");
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile(retainedFile, new MockFileData("media"));
+
+        try
+        {
+            Settings.Get.Paths.DownloadPath = downloadRoot;
+            var torrent = CreateDeletionTorrent("Movie", "movie.mkv");
+            torrent.Category = "radarr";
+            torrent.FinishedAction = TorrentFinishedAction.None;
+            var torrentData = CreateTorrentDataForDelete(torrent);
+            torrentData.Setup(data => data.UpdateCategory(torrent.TorrentId, "radarr-retained"))
+                       .Callback(() => torrent.Category = "radarr-retained")
+                       .Returns(Task.CompletedTask);
+            var compatibility = CreateCompatibility(torrentData: torrentData, fileSystem: fileSystem);
+
+            await compatibility.Delete(torrent.Hash, false);
+
+            Assert.True(fileSystem.File.Exists(retainedFile));
+            Assert.Equal("radarr-retained", torrent.Category);
+            torrentData.Verify(data => data.UpdateCategory(torrent.TorrentId, "radarr-retained"), Times.Once);
+            torrentData.Verify(data => data.Delete(It.IsAny<Guid>()), Times.Never);
+            torrentData.Verify(data => data.UpdateComplete(
+                It.IsAny<Guid>(),
+                It.IsAny<string?>(),
+                It.IsAny<DateTimeOffset?>(),
+                It.IsAny<bool>()), Times.Never);
+        }
+        finally
+        {
+            Settings.Get.Paths.DownloadPath = originalDownloadPath;
+        }
+    }
+
+    [Fact]
+    public async Task DeleteWithFiles_RetryIsIdempotentForRetainedRecord()
+    {
+        var originalDownloadPath = Settings.Get.Paths.DownloadPath;
+        var downloadRoot = GetTestDownloadRoot();
+        var jobDirectory = Path.Combine(downloadRoot, "sonarr", "Episode");
+        var fileSystem = new MockFileSystem();
+        fileSystem.AddFile(Path.Combine(jobDirectory, "episode.mkv"), new MockFileData("media"));
+
+        try
+        {
+            Settings.Get.Paths.DownloadPath = downloadRoot;
+            var torrent = CreateDeletionTorrent("Episode", "episode.mkv");
+            torrent.Category = "sonarr";
+            torrent.FinishedAction = TorrentFinishedAction.None;
+            var torrentData = CreateTorrentDataForDelete(torrent);
+            torrentData.Setup(data => data.UpdateCategory(torrent.TorrentId, "sonarr-retained"))
+                       .Callback(() => torrent.Category = "sonarr-retained")
+                       .Returns(Task.CompletedTask);
+            var compatibility = CreateCompatibility(torrentData: torrentData, fileSystem: fileSystem);
+
+            await compatibility.Delete(torrent.Hash, true);
+            await compatibility.Delete(torrent.Hash, true);
+
+            Assert.False(fileSystem.Directory.Exists(jobDirectory));
+            Assert.Equal("sonarr-retained", torrent.Category);
+            torrentData.Verify(data => data.UpdateCategory(torrent.TorrentId, "sonarr-retained"), Times.Once);
+            torrentData.Verify(data => data.Delete(It.IsAny<Guid>()), Times.Never);
+        }
+        finally
+        {
+            Settings.Get.Paths.DownloadPath = originalDownloadPath;
+        }
     }
 
     [Fact]

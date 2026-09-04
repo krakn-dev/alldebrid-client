@@ -73,16 +73,18 @@ sudo systemctl start alldebrid-client
 
 AllDebrid Client implements the qBittorrent Web API download-client surface used by Logpose, Sonarr, and Radarr. It accepts magnets and uploaded `.torrent` files, reports download progress and paths, and supports category creation, filtering, and pre-download assignment. It is not a general qBittorrent daemon or Web UI, and it does not move payloads between categories after a local download has started.
 
-All jobs use the regular settings under **Settings → Download → Defaults**. Set **Post download action** to **No Action** if external applications should not remove completed records from AllDebrid Client or AllDebrid. Use the AllDebrid Client login when authentication is enabled; leave the client credentials blank when it is disabled.
+All jobs use the regular settings under **Settings → Download → Defaults**. Set **Completed record action** to **No Action** if external applications should not remove completed records from AllDebrid Client or AllDebrid. When an external client removes a completed job, AllDebrid Client moves the retained record out of its active category; an explicit qBittorrent `deleteFiles` request also removes the imported job's local payload. Use the AllDebrid Client login when authentication is enabled; leave the client credentials blank when it is disabled.
 
 ### Sonarr and Radarr
 
 1. Set **Local download path** to the physical download directory, such as `D:\Programs\AllDebridClient\Data\downloads`, and set the default **Post torrent download action** to **Download all files to host** so imports receive real local files.
-2. Add AllDebrid Client as a qBittorrent download client in each application. Use the AllDebrid Client address (`127.0.0.1` when it runs on the same host), port `6500`, category `sonarr` or `radarr`, and a blank URL base unless AllDebrid Client has a base path configured. Use the **Started** initial state, leave **Content Layout** at **Default**, and leave sequential and first/last-piece options disabled. Leave the post-import category blank. Keep completed- and failed-download removal disabled when AllDebrid Client should retain its records.
+2. Add AllDebrid Client as a qBittorrent download client in each application. Use the AllDebrid Client address (`127.0.0.1` when it runs on the same host), port `6500`, category `sonarr` or `radarr`, and a blank URL base unless AllDebrid Client has a base path configured. Use the **Started** initial state, leave **Content Layout** at **Default**, and leave sequential and first/last-piece options disabled. Leave the post-import category blank. Enable completed-download removal so imported source data is cleaned up; AllDebrid Client still applies its configured **Completed record action** to the retained client and provider records. Failed-download removal is independent and can remain disabled when failed jobs should stay visible.
 3. AllDebrid Client returns **Reported download path** through its qBittorrent API. If Sonarr or Radarr cannot access that exact path, add a Remote Path Mapping from the reported path to **Local download path**. The mapping host must exactly match the host configured on that download client. For example, when the client host is `localhost`, map host `localhost` and remote path `/media/downloads` to `D:\Programs\AllDebridClient\Data\downloads`.
 4. Test the client in Sonarr or Radarr before removing an existing download client.
 
 Each category gets its own directory beneath **Local download path**. Direct integration does not use the torrent-blackhole watch directory and does not leave a loose magnet or `.torrent` file behind. The existing **Copy added torrents** setting can still be enabled when those source files are intentionally wanted.
+
+Sonarr and Radarr normally hardlink torrent payloads into their libraries. When the download and library directories are on different volumes, hardlinks are impossible and they copy instead; completed-download removal is what safely removes the source after a successful import.
 
 ### Logpose
 

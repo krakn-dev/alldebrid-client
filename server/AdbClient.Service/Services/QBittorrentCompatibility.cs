@@ -19,7 +19,8 @@ public sealed class QBittorrentCompatibility(
 
     private const long UnknownEta = 8_640_000;
     private const string LogposeCategory = "logpose";
-    private const string LogposeRetainedCategory = "logpose-retained";
+    private const string RetainedCategorySuffix = "-retained";
+    private const string LogposeRetainedCategory = LogposeCategory + RetainedCategorySuffix;
 
     public async Task<bool> Login(string userName, string password)
     {
@@ -287,10 +288,7 @@ public sealed class QBittorrentCompatibility(
                 // Logpose uses deleteFiles=false after a successful import. Move the job out
                 // of its active category so Logpose can finish, while leaving ADC and the
                 // provider record under the user's configured retention policy.
-                if (!string.Equals(torrent.Category, LogposeRetainedCategory, StringComparison.OrdinalIgnoreCase))
-                {
-                    await torrents.UpdateCategory(hash, LogposeRetainedCategory);
-                }
+                await MoveToRetainedCategory(torrent, hash);
 
                 if (cleanupPlan != null)
                 {
@@ -312,8 +310,15 @@ public sealed class QBittorrentCompatibility(
                     await torrents.Delete(torrent.TorrentId, true, false, deleteFiles);
                     break;
                 case TorrentFinishedAction.None:
+                    if (deleteFiles)
+                    {
+                        await torrents.DeleteLocalFiles(torrent);
+                    }
+
+                    await MoveToRetainedCategory(torrent, hash);
+
                     logger.LogDebug(
-                        "Ignoring qBittorrent delete for {TorrentHash} because its configured finished action retains it",
+                        "Retaining qBittorrent record {TorrentHash} under its configured finished action",
                         torrent.Hash);
                     continue;
                 default:
@@ -381,6 +386,19 @@ public sealed class QBittorrentCompatibility(
     {
         return string.Equals(category, LogposeCategory, StringComparison.OrdinalIgnoreCase) ||
                string.Equals(category, LogposeRetainedCategory, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private async Task MoveToRetainedCategory(Torrent torrent, string hash)
+    {
+        if (string.IsNullOrWhiteSpace(torrent.Category) ||
+            torrent.Category.EndsWith(RetainedCategorySuffix, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        var retainedCategory = torrent.Category + RetainedCategorySuffix;
+        await torrents.UpdateCategory(hash, retainedCategory);
+        torrent.Category = retainedCategory;
     }
 
     private EmptyDirectoryCleanupPlan? CreateEmptyDirectoryCleanupPlan(
@@ -594,6 +612,9 @@ public sealed class QBittorrentCompatibility(
             Size = size,
             DownloadSpeed = downloadSpeed,
             Eta = GetEta(completed, size, progress, downloadSpeed),
+            // ADC does not seed. A zero ratio limit tells torrent-aware clients
+            // that completed payloads are immediately eligible for post-import cleanup.
+            RatioLimit = 0,
             LastActivity = (torrent.Completed ?? torrent.RdEnded ?? torrent.Added).ToUnixTimeSeconds()
         };
     }

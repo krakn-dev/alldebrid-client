@@ -165,8 +165,8 @@ public class DbSettingsDefaultsWithCategory : DbSettingsDefaults
     [Description("Default category for watch folder imports.")]
     public string? Category { get; set; } = null;
 
-    [DisplayName("Post download action")]
-    [Description("Action to run after all files are saved to host. Not applicable with the symlink downloader.")]
+    [DisplayName("Completed record action")]
+    [Description("Controls which AllDebrid Client and provider records are removed after files are saved. External qBittorrent clients can still request removal of successfully imported local files.")]
     public TorrentFinishedAction FinishedAction { get; set; } = TorrentFinishedAction.RemoveAllTorrents;
 
     [DisplayName("Finished action delay (minutes)")]

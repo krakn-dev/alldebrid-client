@@ -257,6 +257,20 @@ public class QBittorrentContractTest
         const string hash = "0123456789abcdef0123456789abcdef01234567";
         var compatibility = new RecordingCompatibility
         {
+            Torrents =
+            [
+                new()
+                {
+                    Hash = hash,
+                    Name = "Series.Release",
+                    Category = "sonarr",
+                    Progress = 1,
+                    State = "pausedUP",
+                    ContentPath = "/media/downloads/sonarr/Series.Release",
+                    SavePath = "/media/downloads/sonarr",
+                    RatioLimit = 0
+                }
+            ],
             Properties = new()
             {
                 Hash = hash,
@@ -270,6 +284,13 @@ public class QBittorrentContractTest
         };
         await using var app = await StartApplication(compatibility);
         using var client = CreateClient(app);
+
+        using var info = await client.GetAsync("api/v2/torrents/info?category=sonarr");
+        Assert.Equal(HttpStatusCode.OK, info.StatusCode);
+        using var infoJson = JsonDocument.Parse(await info.Content.ReadAsStringAsync());
+        var torrent = Assert.Single(infoJson.RootElement.EnumerateArray());
+        Assert.Equal("pausedUP", torrent.GetProperty("state").GetString());
+        Assert.Equal(0, torrent.GetProperty("ratio_limit").GetDouble());
 
         using var properties = await client.GetAsync($"api/v2/torrents/properties?hash={hash}");
         Assert.Equal(HttpStatusCode.OK, properties.StatusCode);

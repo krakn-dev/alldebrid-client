@@ -452,32 +452,48 @@ public class Torrents(
 
         if (localDownloadPath != null)
         {
-            Log($"Deleting local files in {localDownloadPath}", torrent);
+            await DeleteLocalFiles(torrent, localDownloadPath);
+        }
+    }
 
-            if (fileSystem.Directory.Exists(localDownloadPath))
+    internal async Task DeleteLocalFiles(Torrent torrent)
+    {
+        if (string.IsNullOrWhiteSpace(torrent.RdName))
+        {
+            return;
+        }
+
+        await DeleteLocalFiles(torrent, GetSafeLocalDeletePath(torrent));
+    }
+
+    private async Task DeleteLocalFiles(Torrent torrent, string localDownloadPath)
+    {
+        Log($"Deleting local files in {localDownloadPath}", torrent);
+
+        if (!fileSystem.Directory.Exists(localDownloadPath))
+        {
+            return;
+        }
+
+        var retry = 0;
+
+        while (true)
+        {
+            try
             {
-                var retry = 0;
+                fileSystem.Directory.Delete(localDownloadPath, true);
+                return;
+            }
+            catch
+            {
+                retry++;
 
-                while (true)
+                if (retry >= 3)
                 {
-                    try
-                    {
-                        fileSystem.Directory.Delete(localDownloadPath, true);
-
-                        break;
-                    }
-                    catch
-                    {
-                        retry++;
-
-                        if (retry >= 3)
-                        {
-                            throw;
-                        }
-
-                        await Task.Delay(1000);
-                    }
+                    throw;
                 }
+
+                await Task.Delay(1000);
             }
         }
     }
