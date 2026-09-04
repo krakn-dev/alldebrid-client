@@ -105,3 +105,15 @@ jobs:
           TAG_NAME: ${{ needs.release.outputs.tag_name }}
           ASSET: ${{ steps.package.outputs.asset }}
         run: gh release upload $env:TAG_NAME $env:ASSET "$env:ASSET.sha256" --clobber
+
+  docker:
+    name: Docker image
+    if: needs.release.outputs.release_created == 'true'
+    needs: release
+    permissions:
+      contents: read
+    uses: ./.github/workflows/docker-release.yml
+    with:
+      tag: ${{ needs.release.outputs.tag_name }}
+    secrets:
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}

@@ -8,7 +8,7 @@ Built with Angular 21 and .NET 10 LTS.
 
 ## Docker Setup
 
-Build and run the container from this checkout:
+Stable multi-platform images are published to [`krakal/alldebrid-client`](https://hub.docker.com/r/krakal/alldebrid-client). To build and run locally from this checkout:
 
 ```bash
 docker compose -f tools/docker-compose.yml up -d --build
@@ -149,7 +149,7 @@ This project uses Semantic Versioning and Conventional Commits. Verified commits
 - `feat:` proposes a minor version, such as `1.1.0` to `1.2.0`.
 - A breaking change marked with `!` proposes the next major version.
 
-Merging the release pull request creates the `vX.Y.Z` tag, GitHub release, Windows ZIP, and checksum. Docker builds remain reproducible from the same tagged source. Do not create release tags by hand.
+Merging the release pull request creates the `vX.Y.Z` tag, GitHub release, versioned Windows ZIP with its checksum, and multi-platform Docker Hub image. Do not create release tags by hand.
 
 ---
 
