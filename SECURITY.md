@@ -1,21 +1,19 @@
-# Security Policy
+# Security policy
 
-## Supported Versions
+## Supported versions
 
-| Version | Supported |
-| ------- | --------- |
-| 1.x.x   | Yes       |
+Security fixes are made against the latest stable release. Older releases are not maintained; reproduce an issue on the latest version before reporting it when practical.
 
-## Reporting a Vulnerability
+## Reporting a vulnerability
 
-Please **do not** open a public GitHub issue for security vulnerabilities.
+Do not open a public issue for a suspected vulnerability. Use [GitHub private vulnerability reporting](https://github.com/krakn-dev/alldebrid-client/security/advisories/new) so details remain confidential until a fix is available.
 
-Report security issues privately via [GitHub's private vulnerability reporting](../../security/advisories/new).
+Include:
 
-Include in your report:
-- Description of the vulnerability
-- Steps to reproduce
-- Potential impact
-- Suggested fix (optional)
+- the affected version and installation method;
+- a clear description of the issue and its impact;
+- minimal reproduction steps or a proof of concept;
+- relevant logs with credentials, API keys, private URLs, and personal paths removed; and
+- a suggested fix, if you have one.
 
-You can expect an acknowledgment within 72 hours and a status update within 7 days.
+Reports will be acknowledged as soon as practical. Please avoid public disclosure until the issue has been investigated and a coordinated release is available.

@@ -137,5 +137,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Test suite updated for AllDebrid-only provider configuration
 - Cross-platform path handling in `RunTorrentComplete` test (was failing on Linux CI)
 
-[1.1.0]: https://github.com/krkn-dev/alldebrid-client/compare/v1.0.0...v1.1.0
-[1.0.0]: https://github.com/krkn-dev/alldebrid-client/releases/tag/v1.0.0
+[1.1.0]: https://github.com/krakn-dev/alldebrid-client/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/krakn-dev/alldebrid-client/releases/tag/v1.0.0
