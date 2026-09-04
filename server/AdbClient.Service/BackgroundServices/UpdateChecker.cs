@@ -8,7 +8,7 @@ namespace AdbClient.Service.BackgroundServices;
 
 public class UpdateChecker(ILogger<UpdateChecker> logger, IHttpClientFactory httpClientFactory) : BackgroundService
 {
-    private const string LatestReleaseEndpoint = "https://api.github.com/repos/krkn-dev/alldebrid-client/releases/latest";
+    private const string LatestReleaseEndpoint = "https://api.github.com/repos/krakn-dev/alldebrid-client/releases/latest";
 
     public static string? CurrentVersion { get; private set; }
 
